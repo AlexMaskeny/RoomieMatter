@@ -11,6 +11,7 @@
 		B2958F452AEDF0E500C9BBFF /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2958F442AEDF0E500C9BBFF /* ContentView.swift */; };
 		B2958F472AEDF0E600C9BBFF /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = B2958F462AEDF0E600C9BBFF /* Assets.xcassets */; };
 		B2958F4A2AEDF0E600C9BBFF /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = B2958F492AEDF0E600C9BBFF /* Preview Assets.xcassets */; };
+		B2FB8B222AEDFBDB00DEBF12 /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = B2FB8B212AEDFBDB00DEBF12 /* GoogleService-Info.plist */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -19,6 +20,7 @@
 		B2958F442AEDF0E500C9BBFF /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
 		B2958F462AEDF0E600C9BBFF /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		B2958F492AEDF0E600C9BBFF /* Preview Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Preview Assets.xcassets"; sourceTree = "<group>"; };
+		B2FB8B212AEDFBDB00DEBF12 /* GoogleService-Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = "GoogleService-Info.plist"; path = "../../../../Downloads/GoogleService-Info.plist"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -51,6 +53,7 @@
 		B2958F412AEDF0E500C9BBFF /* RoomieMatter */ = {
 			isa = PBXGroup;
 			children = (
+				B2FB8B212AEDFBDB00DEBF12 /* GoogleService-Info.plist */,
 				B2958F422AEDF0E500C9BBFF /* RoomieMatterApp.swift */,
 				B2958F442AEDF0E500C9BBFF /* ContentView.swift */,
 				B2958F462AEDF0E600C9BBFF /* Assets.xcassets */,
@@ -127,6 +130,7 @@
 			files = (
 				B2958F4A2AEDF0E600C9BBFF /* Preview Assets.xcassets in Resources */,
 				B2958F472AEDF0E600C9BBFF /* Assets.xcassets in Resources */,
+				B2FB8B222AEDFBDB00DEBF12 /* GoogleService-Info.plist in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
