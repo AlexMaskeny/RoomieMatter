@@ -8,7 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		B2958F432AEDF0E500C9BBFF /* RoomieMatterApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2958F422AEDF0E500C9BBFF /* RoomieMatterApp.swift */; };
-		B2958F452AEDF0E500C9BBFF /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2958F442AEDF0E500C9BBFF /* ContentView.swift */; };
+		B2958F452AEDF0E500C9BBFF /* InitialScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2958F442AEDF0E500C9BBFF /* InitialScreen.swift */; };
 		B2958F472AEDF0E600C9BBFF /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = B2958F462AEDF0E600C9BBFF /* Assets.xcassets */; };
 		B2958F4A2AEDF0E600C9BBFF /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = B2958F492AEDF0E600C9BBFF /* Preview Assets.xcassets */; };
 		B2FB8B242AEDFE7200DEBF12 /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = B2FB8B232AEDFE7200DEBF12 /* GoogleService-Info.plist */; };
@@ -17,15 +17,20 @@
 		B2FB8B2B2AEDFF4C00DEBF12 /* FirebaseAnalyticsSwift in Frameworks */ = {isa = PBXBuildFile; productRef = B2FB8B2A2AEDFF4C00DEBF12 /* FirebaseAnalyticsSwift */; };
 		B2FB8B2D2AEDFF4C00DEBF12 /* FirebaseAnalyticsWithoutAdIdSupport in Frameworks */ = {isa = PBXBuildFile; productRef = B2FB8B2C2AEDFF4C00DEBF12 /* FirebaseAnalyticsWithoutAdIdSupport */; };
 		B2FB8B2F2AEDFF4C00DEBF12 /* FirebaseAppCheck in Frameworks */ = {isa = PBXBuildFile; productRef = B2FB8B2E2AEDFF4C00DEBF12 /* FirebaseAppCheck */; };
+		B2FB8B3C2AEECDF400DEBF12 /* InputView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2FB8B3B2AEECDF400DEBF12 /* InputView.swift */; };
+		B2FB8B3F2AEECE1400DEBF12 /* ButtonView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2FB8B3E2AEECE1400DEBF12 /* ButtonView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
 		B2958F3F2AEDF0E500C9BBFF /* RoomieMatter.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = RoomieMatter.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		B2958F422AEDF0E500C9BBFF /* RoomieMatterApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RoomieMatterApp.swift; sourceTree = "<group>"; };
-		B2958F442AEDF0E500C9BBFF /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
+		B2958F442AEDF0E500C9BBFF /* InitialScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InitialScreen.swift; sourceTree = "<group>"; };
 		B2958F462AEDF0E600C9BBFF /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		B2958F492AEDF0E600C9BBFF /* Preview Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Preview Assets.xcassets"; sourceTree = "<group>"; };
 		B2FB8B232AEDFE7200DEBF12 /* GoogleService-Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = "GoogleService-Info.plist"; sourceTree = "<group>"; };
+		B2FB8B382AEEC85B00DEBF12 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
+		B2FB8B3B2AEECDF400DEBF12 /* InputView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InputView.swift; sourceTree = "<group>"; };
+		B2FB8B3E2AEECE1400DEBF12 /* ButtonView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ButtonView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -63,10 +68,9 @@
 		B2958F412AEDF0E500C9BBFF /* RoomieMatter */ = {
 			isa = PBXGroup;
 			children = (
-				B2FB8B232AEDFE7200DEBF12 /* GoogleService-Info.plist */,
-				B2958F422AEDF0E500C9BBFF /* RoomieMatterApp.swift */,
-				B2958F442AEDF0E500C9BBFF /* ContentView.swift */,
-				B2958F462AEDF0E600C9BBFF /* Assets.xcassets */,
+				B2FB8B382AEEC85B00DEBF12 /* Info.plist */,
+				B2FB8B312AEEB8AC00DEBF12 /* Sources */,
+				B2FB8B302AEEB89B00DEBF12 /* Resources */,
 				B2958F482AEDF0E600C9BBFF /* Preview Content */,
 			);
 			path = RoomieMatter;
@@ -78,6 +82,58 @@
 				B2958F492AEDF0E600C9BBFF /* Preview Assets.xcassets */,
 			);
 			path = "Preview Content";
+			sourceTree = "<group>";
+		};
+		B2FB8B302AEEB89B00DEBF12 /* Resources */ = {
+			isa = PBXGroup;
+			children = (
+				B2FB8B232AEDFE7200DEBF12 /* GoogleService-Info.plist */,
+				B2958F462AEDF0E600C9BBFF /* Assets.xcassets */,
+			);
+			path = Resources;
+			sourceTree = "<group>";
+		};
+		B2FB8B312AEEB8AC00DEBF12 /* Sources */ = {
+			isa = PBXGroup;
+			children = (
+				B2FB8B392AEECD3300DEBF12 /* Views */,
+				B2FB8B322AEEBA8100DEBF12 /* Screens */,
+				B2958F422AEDF0E500C9BBFF /* RoomieMatterApp.swift */,
+			);
+			path = Sources;
+			sourceTree = "<group>";
+		};
+		B2FB8B322AEEBA8100DEBF12 /* Screens */ = {
+			isa = PBXGroup;
+			children = (
+				B2FB8B342AEEBB0100DEBF12 /* Login */,
+				B2FB8B332AEEBAEA00DEBF12 /* Initial */,
+			);
+			path = Screens;
+			sourceTree = "<group>";
+		};
+		B2FB8B332AEEBAEA00DEBF12 /* Initial */ = {
+			isa = PBXGroup;
+			children = (
+				B2958F442AEDF0E500C9BBFF /* InitialScreen.swift */,
+			);
+			path = Initial;
+			sourceTree = "<group>";
+		};
+		B2FB8B342AEEBB0100DEBF12 /* Login */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			path = Login;
+			sourceTree = "<group>";
+		};
+		B2FB8B392AEECD3300DEBF12 /* Views */ = {
+			isa = PBXGroup;
+			children = (
+				B2FB8B3B2AEECDF400DEBF12 /* InputView.swift */,
+				B2FB8B3E2AEECE1400DEBF12 /* ButtonView.swift */,
+			);
+			path = Views;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -161,7 +217,9 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				B2958F452AEDF0E500C9BBFF /* ContentView.swift in Sources */,
+				B2FB8B3C2AEECDF400DEBF12 /* InputView.swift in Sources */,
+				B2958F452AEDF0E500C9BBFF /* InitialScreen.swift in Sources */,
+				B2FB8B3F2AEECE1400DEBF12 /* ButtonView.swift in Sources */,
 				B2958F432AEDF0E500C9BBFF /* RoomieMatterApp.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -299,9 +357,9 @@
 				DEVELOPMENT_TEAM = TX6TDB7G4L;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = RoomieMatter/Info.plist;
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
-				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -328,9 +386,9 @@
 				DEVELOPMENT_TEAM = TX6TDB7G4L;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = RoomieMatter/Info.plist;
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
-				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				LD_RUNPATH_SEARCH_PATHS = (

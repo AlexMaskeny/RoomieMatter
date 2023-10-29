@@ -1,6 +1,6 @@
 import SwiftUI
 
-struct ContentView: View {
+struct InitialScreen: View {
     var body: some View {
         VStack {
             Image(systemName: "globe")
@@ -12,6 +12,8 @@ struct ContentView: View {
     }
 }
 
-#Preview {
-    ContentView()
+struct InitialScreen_Previews: PreviewProvider {
+    static var previews: some View {
+        InitialScreen()
+    }
 }
