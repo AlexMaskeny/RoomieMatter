@@ -4,6 +4,10 @@ import SwiftUI
 struct InitialScreen: View {
     @State private var test = ""
     
+    func testButton() {
+        print("Test Button")
+    }
+    
     var body: some View {
         ZStack {
             Color("Primary").ignoresSafeArea()
@@ -13,8 +17,8 @@ struct InitialScreen: View {
                     .foregroundStyle(.tint)
                 Text("Hello, world!")
                 InputView(placeholder: "Email", text: $test, color: Color("Background"))
-            }
-            .padding()
+                ButtonView(text: "Test Button", type: ButtonType.outlineBlank, action: testButton)
+            }.padding(Style.screenPadding)
         }
     }
 }

@@ -7,6 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		B21F02202AF01F1A0001E8FB /* CustomModifiers.swift in Sources */ = {isa = PBXBuildFile; fileRef = B21F021F2AF01F1A0001E8FB /* CustomModifiers.swift */; };
+		B21F02222AF025E90001E8FB /* LineText.swift in Sources */ = {isa = PBXBuildFile; fileRef = B21F02212AF025E90001E8FB /* LineText.swift */; };
 		B2958F432AEDF0E500C9BBFF /* RoomieMatterApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2958F422AEDF0E500C9BBFF /* RoomieMatterApp.swift */; };
 		B2958F452AEDF0E500C9BBFF /* InitialScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2958F442AEDF0E500C9BBFF /* InitialScreen.swift */; };
 		B2958F472AEDF0E600C9BBFF /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = B2958F462AEDF0E600C9BBFF /* Assets.xcassets */; };
@@ -23,6 +25,8 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		B21F021F2AF01F1A0001E8FB /* CustomModifiers.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CustomModifiers.swift; sourceTree = "<group>"; };
+		B21F02212AF025E90001E8FB /* LineText.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LineText.swift; sourceTree = "<group>"; };
 		B2958F3F2AEDF0E500C9BBFF /* RoomieMatter.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = RoomieMatter.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		B2958F422AEDF0E500C9BBFF /* RoomieMatterApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RoomieMatterApp.swift; sourceTree = "<group>"; };
 		B2958F442AEDF0E500C9BBFF /* InitialScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InitialScreen.swift; sourceTree = "<group>"; };
@@ -135,6 +139,7 @@
 			children = (
 				B2FB8B3B2AEECDF400DEBF12 /* InputView.swift */,
 				B2FB8B3E2AEECE1400DEBF12 /* ButtonView.swift */,
+				B21F02212AF025E90001E8FB /* LineText.swift */,
 			);
 			path = Views;
 			sourceTree = "<group>";
@@ -143,6 +148,7 @@
 			isa = PBXGroup;
 			children = (
 				B2FB8B432AEED92000DEBF12 /* Constants.swift */,
+				B21F021F2AF01F1A0001E8FB /* CustomModifiers.swift */,
 			);
 			path = Settings;
 			sourceTree = "<group>";
@@ -230,7 +236,9 @@
 			files = (
 				B2FB8B442AEED92000DEBF12 /* Constants.swift in Sources */,
 				B2FB8B3C2AEECDF400DEBF12 /* InputView.swift in Sources */,
+				B21F02222AF025E90001E8FB /* LineText.swift in Sources */,
 				B2958F452AEDF0E500C9BBFF /* InitialScreen.swift in Sources */,
+				B21F02202AF01F1A0001E8FB /* CustomModifiers.swift in Sources */,
 				B2FB8B3F2AEECE1400DEBF12 /* ButtonView.swift in Sources */,
 				B2958F432AEDF0E500C9BBFF /* RoomieMatterApp.swift in Sources */,
 			);

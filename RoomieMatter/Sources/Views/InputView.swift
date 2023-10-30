@@ -9,7 +9,7 @@ struct InputView: View {
         TextField(placeholder, text: $text)
             .padding()
             .background(color)
+            .frame(minWidth: 0, maxWidth: .infinity)
             .cornerRadius(Style.borderRadius)
-            .padding([.leading, .trailing], 15)
     }
 }
