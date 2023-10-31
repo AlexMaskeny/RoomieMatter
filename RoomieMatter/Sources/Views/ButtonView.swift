@@ -9,7 +9,7 @@ enum ButtonType: CaseIterable {
 struct ButtonView: View {
     var text: String
     var type: ButtonType = ButtonType.solidColor
-    var action: () -> Void
+    var action: () -> Void = {}
     var textColor: Color? = nil
     var backgroundColor: Color? = nil
     
@@ -22,8 +22,7 @@ struct ButtonView: View {
                 .foregroundColor(buttonForeground)
                 .overlay(buttonOverlay)
                 .cornerRadius(Style.borderRadius)
-                .bold()
-                .font(.system(size: Style.fontSize.title))
+                .title()
         }
         .lightShadow()
     }
@@ -31,29 +30,29 @@ struct ButtonView: View {
     private var buttonBackground: some View {
         switch type {
         case .solidBlank:
-            return backgroundColor ?? Color("Background")
+            return backgroundColor ?? Color.background
         case .solidColor:
-            return backgroundColor ?? Color("Primary")
+            return backgroundColor ?? Color.roomieMatter
         case .outlineBlank:
-            return backgroundColor ?? Color("Primary")
+            return backgroundColor ?? Color.roomieMatter
         }
     }
     
     private var buttonForeground: Color {
         switch type {
         case .solidBlank:
-            return textColor ?? Color("TextLight")
+            return textColor ?? Color.textLight
         case .solidColor:
-            return textColor ?? Color("Background")
+            return textColor ?? Color.background
         case .outlineBlank:
-            return textColor ?? Color("Background")
+            return textColor ?? Color.background
         }
     }
     
     private var buttonOverlay: some View {
         switch type {
         case .outlineBlank:
-            return AnyView(RoundedRectangle(cornerRadius: Style.borderRadius).stroke(Color("Background"), lineWidth: 4))
+            return AnyView(RoundedRectangle(cornerRadius: Style.borderRadius).stroke(Color.background, lineWidth: 4))
         default:
             return AnyView(EmptyView())
         }

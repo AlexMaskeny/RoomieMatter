@@ -3,7 +3,7 @@ import SwiftUI
 struct InputView: View {
     var placeholder: String
     @Binding var text: String
-    var color: Color = Color("Container")
+    var color: Color = Color.container
     
     var body: some View {
         TextField(placeholder, text: $text)
