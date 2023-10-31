@@ -7,6 +7,11 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		21C2BD4F2AF0CDA60050C2E7 /* ChatListRow.swift in Sources */ = {isa = PBXBuildFile; fileRef = 21C2BD4E2AF0CDA60050C2E7 /* ChatListRow.swift */; };
+		21C2BD512AF0CF600050C2E7 /* Chat.swift in Sources */ = {isa = PBXBuildFile; fileRef = 21C2BD502AF0CF600050C2E7 /* Chat.swift */; };
+		21C2BD532AF0CF800050C2E7 /* PostView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 21C2BD522AF0CF800050C2E7 /* PostView.swift */; };
+		21C2BD552AF0CFA20050C2E7 /* ChatStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 21C2BD542AF0CFA20050C2E7 /* ChatStore.swift */; };
+		21C2BD572AF0D06D0050C2E7 /* ChatMainView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 21C2BD562AF0D06D0050C2E7 /* ChatMainView.swift */; };
 		B21F02202AF01F1A0001E8FB /* CustomModifiers.swift in Sources */ = {isa = PBXBuildFile; fileRef = B21F021F2AF01F1A0001E8FB /* CustomModifiers.swift */; };
 		B21F02222AF025E90001E8FB /* LineText.swift in Sources */ = {isa = PBXBuildFile; fileRef = B21F02212AF025E90001E8FB /* LineText.swift */; };
 		B21F02242AF035E10001E8FB /* LoginScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = B21F02232AF035E10001E8FB /* LoginScreen.swift */; };
@@ -27,6 +32,11 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		21C2BD4E2AF0CDA60050C2E7 /* ChatListRow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatListRow.swift; sourceTree = "<group>"; };
+		21C2BD502AF0CF600050C2E7 /* Chat.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Chat.swift; sourceTree = "<group>"; };
+		21C2BD522AF0CF800050C2E7 /* PostView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PostView.swift; sourceTree = "<group>"; };
+		21C2BD542AF0CFA20050C2E7 /* ChatStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatStore.swift; sourceTree = "<group>"; };
+		21C2BD562AF0D06D0050C2E7 /* ChatMainView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatMainView.swift; sourceTree = "<group>"; };
 		B21F021F2AF01F1A0001E8FB /* CustomModifiers.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CustomModifiers.swift; sourceTree = "<group>"; };
 		B21F02212AF025E90001E8FB /* LineText.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LineText.swift; sourceTree = "<group>"; };
 		B21F02232AF035E10001E8FB /* LoginScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoginScreen.swift; sourceTree = "<group>"; };
@@ -59,6 +69,18 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		21C2BD4B2AF0CD610050C2E7 /* Chat */ = {
+			isa = PBXGroup;
+			children = (
+				21C2BD562AF0D06D0050C2E7 /* ChatMainView.swift */,
+				21C2BD542AF0CFA20050C2E7 /* ChatStore.swift */,
+				21C2BD502AF0CF600050C2E7 /* Chat.swift */,
+				21C2BD522AF0CF800050C2E7 /* PostView.swift */,
+				21C2BD4E2AF0CDA60050C2E7 /* ChatListRow.swift */,
+			);
+			path = Chat;
+			sourceTree = "<group>";
+		};
 		B21F02272AF04AAA0001E8FB /* CreateAccount */ = {
 			isa = PBXGroup;
 			children = (
@@ -125,6 +147,7 @@
 		B2FB8B322AEEBA8100DEBF12 /* Screens */ = {
 			isa = PBXGroup;
 			children = (
+				21C2BD4B2AF0CD610050C2E7 /* Chat */,
 				B21F02272AF04AAA0001E8FB /* CreateAccount */,
 				B2FB8B342AEEBB0100DEBF12 /* Login */,
 				B2FB8B332AEEBAEA00DEBF12 /* Initial */,
@@ -249,13 +272,18 @@
 			buildActionMask = 2147483647;
 			files = (
 				B2FB8B442AEED92000DEBF12 /* Constants.swift in Sources */,
+				21C2BD512AF0CF600050C2E7 /* Chat.swift in Sources */,
 				B2FB8B3C2AEECDF400DEBF12 /* InputView.swift in Sources */,
+				21C2BD552AF0CFA20050C2E7 /* ChatStore.swift in Sources */,
 				B21F02222AF025E90001E8FB /* LineText.swift in Sources */,
+				21C2BD572AF0D06D0050C2E7 /* ChatMainView.swift in Sources */,
 				B2958F452AEDF0E500C9BBFF /* InitialScreen.swift in Sources */,
 				B21F02202AF01F1A0001E8FB /* CustomModifiers.swift in Sources */,
 				B21F02242AF035E10001E8FB /* LoginScreen.swift in Sources */,
 				B21F02292AF04AB90001E8FB /* CreateAccount1.swift in Sources */,
+				21C2BD4F2AF0CDA60050C2E7 /* ChatListRow.swift in Sources */,
 				B2FB8B3F2AEECE1400DEBF12 /* ButtonView.swift in Sources */,
+				21C2BD532AF0CF800050C2E7 /* PostView.swift in Sources */,
 				B2958F432AEDF0E500C9BBFF /* RoomieMatterApp.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
