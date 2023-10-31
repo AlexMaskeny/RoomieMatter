@@ -6,3 +6,7 @@ struct CreateAccount1: View {
         Text("Create Account")
     }
 }
+
+#Preview {
+    CreateAccount1()
+}

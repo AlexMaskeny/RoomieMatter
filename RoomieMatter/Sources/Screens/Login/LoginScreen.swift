@@ -1,12 +1,14 @@
 import SwiftUI
 
 struct LoginScreen: View {
+    @State private var isShowingCreateAccount1 = false
     
     func login() {
         print("Login")
     }
 
     func createAccount() {
+        isShowingCreateAccount1 = true
         print("Navigate to createAccount1")
     }
     
@@ -24,9 +26,22 @@ struct LoginScreen: View {
                            type: ButtonType.outlineBlank,
                            action: login
                 )
+                .padding(.bottom, 100)
                 Spacer()
-                LineText(text: "Or Sign Up", action: createAccount)
-            }.padding(EdgeInsets(top: 0, leading: Style.screenPadding, bottom: 100, trailing: Style.screenPadding))
+                LineText(text: "Or Sign Up", action: createAccount).padding(.horizontal, 10)
+                
+            }
+            .padding(.horizontal, Style.screenPadding)
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
+            
         }
+        .navigationDestination(isPresented: $isShowingCreateAccount1) {
+            CreateAccount1()
+        }
+        .navigationBarHidden(true)
     }
+}
+
+#Preview {
+    LoginScreen()
 }

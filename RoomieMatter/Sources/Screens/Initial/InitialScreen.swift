@@ -36,3 +36,7 @@ struct InitialScreen: View {
         }
     }
 }
+
+#Preview {
+    InitialScreen()
+}
