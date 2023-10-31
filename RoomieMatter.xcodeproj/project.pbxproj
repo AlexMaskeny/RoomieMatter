@@ -9,10 +9,10 @@
 /* Begin PBXBuildFile section */
 		B21F02202AF01F1A0001E8FB /* CustomModifiers.swift in Sources */ = {isa = PBXBuildFile; fileRef = B21F021F2AF01F1A0001E8FB /* CustomModifiers.swift */; };
 		B21F02222AF025E90001E8FB /* LineText.swift in Sources */ = {isa = PBXBuildFile; fileRef = B21F02212AF025E90001E8FB /* LineText.swift */; };
-		B21F02242AF035E10001E8FB /* LoginScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = B21F02232AF035E10001E8FB /* LoginScreen.swift */; };
-		B21F02292AF04AB90001E8FB /* CreateAccount1.swift in Sources */ = {isa = PBXBuildFile; fileRef = B21F02282AF04AB90001E8FB /* CreateAccount1.swift */; };
+		B21F02302AF18B300001E8FB /* GoogleSignIn in Frameworks */ = {isa = PBXBuildFile; productRef = B21F022F2AF18B300001E8FB /* GoogleSignIn */; };
+		B21F02322AF18B300001E8FB /* GoogleSignInSwift in Frameworks */ = {isa = PBXBuildFile; productRef = B21F02312AF18B300001E8FB /* GoogleSignInSwift */; };
 		B2958F432AEDF0E500C9BBFF /* RoomieMatterApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2958F422AEDF0E500C9BBFF /* RoomieMatterApp.swift */; };
-		B2958F452AEDF0E500C9BBFF /* InitialScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2958F442AEDF0E500C9BBFF /* InitialScreen.swift */; };
+		B2958F452AEDF0E500C9BBFF /* AuthScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2958F442AEDF0E500C9BBFF /* AuthScreen.swift */; };
 		B2958F472AEDF0E600C9BBFF /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = B2958F462AEDF0E600C9BBFF /* Assets.xcassets */; };
 		B2958F4A2AEDF0E600C9BBFF /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = B2958F492AEDF0E600C9BBFF /* Preview Assets.xcassets */; };
 		B2FB8B242AEDFE7200DEBF12 /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = B2FB8B232AEDFE7200DEBF12 /* GoogleService-Info.plist */; };
@@ -29,11 +29,9 @@
 /* Begin PBXFileReference section */
 		B21F021F2AF01F1A0001E8FB /* CustomModifiers.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CustomModifiers.swift; sourceTree = "<group>"; };
 		B21F02212AF025E90001E8FB /* LineText.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LineText.swift; sourceTree = "<group>"; };
-		B21F02232AF035E10001E8FB /* LoginScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoginScreen.swift; sourceTree = "<group>"; };
-		B21F02282AF04AB90001E8FB /* CreateAccount1.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CreateAccount1.swift; sourceTree = "<group>"; };
 		B2958F3F2AEDF0E500C9BBFF /* RoomieMatter.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = RoomieMatter.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		B2958F422AEDF0E500C9BBFF /* RoomieMatterApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RoomieMatterApp.swift; sourceTree = "<group>"; };
-		B2958F442AEDF0E500C9BBFF /* InitialScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InitialScreen.swift; sourceTree = "<group>"; };
+		B2958F442AEDF0E500C9BBFF /* AuthScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuthScreen.swift; sourceTree = "<group>"; };
 		B2958F462AEDF0E600C9BBFF /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		B2958F492AEDF0E600C9BBFF /* Preview Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Preview Assets.xcassets"; sourceTree = "<group>"; };
 		B2FB8B232AEDFE7200DEBF12 /* GoogleService-Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = "GoogleService-Info.plist"; sourceTree = "<group>"; };
@@ -50,23 +48,17 @@
 			files = (
 				B2FB8B2B2AEDFF4C00DEBF12 /* FirebaseAnalyticsSwift in Frameworks */,
 				B2FB8B272AEDFF4C00DEBF12 /* FirebaseAnalytics in Frameworks */,
+				B21F02322AF18B300001E8FB /* GoogleSignInSwift in Frameworks */,
 				B2FB8B292AEDFF4C00DEBF12 /* FirebaseAnalyticsOnDeviceConversion in Frameworks */,
 				B2FB8B2F2AEDFF4C00DEBF12 /* FirebaseAppCheck in Frameworks */,
 				B2FB8B2D2AEDFF4C00DEBF12 /* FirebaseAnalyticsWithoutAdIdSupport in Frameworks */,
+				B21F02302AF18B300001E8FB /* GoogleSignIn in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
-		B21F02272AF04AAA0001E8FB /* CreateAccount */ = {
-			isa = PBXGroup;
-			children = (
-				B21F02282AF04AB90001E8FB /* CreateAccount1.swift */,
-			);
-			path = CreateAccount;
-			sourceTree = "<group>";
-		};
 		B2958F362AEDF0E500C9BBFF = {
 			isa = PBXGroup;
 			children = (
@@ -125,27 +117,17 @@
 		B2FB8B322AEEBA8100DEBF12 /* Screens */ = {
 			isa = PBXGroup;
 			children = (
-				B21F02272AF04AAA0001E8FB /* CreateAccount */,
-				B2FB8B342AEEBB0100DEBF12 /* Login */,
-				B2FB8B332AEEBAEA00DEBF12 /* Initial */,
+				B2FB8B332AEEBAEA00DEBF12 /* Auth */,
 			);
 			path = Screens;
 			sourceTree = "<group>";
 		};
-		B2FB8B332AEEBAEA00DEBF12 /* Initial */ = {
+		B2FB8B332AEEBAEA00DEBF12 /* Auth */ = {
 			isa = PBXGroup;
 			children = (
-				B2958F442AEDF0E500C9BBFF /* InitialScreen.swift */,
+				B2958F442AEDF0E500C9BBFF /* AuthScreen.swift */,
 			);
-			path = Initial;
-			sourceTree = "<group>";
-		};
-		B2FB8B342AEEBB0100DEBF12 /* Login */ = {
-			isa = PBXGroup;
-			children = (
-				B21F02232AF035E10001E8FB /* LoginScreen.swift */,
-			);
-			path = Login;
+			path = Auth;
 			sourceTree = "<group>";
 		};
 		B2FB8B392AEECD3300DEBF12 /* Views */ = {
@@ -189,6 +171,8 @@
 				B2FB8B2A2AEDFF4C00DEBF12 /* FirebaseAnalyticsSwift */,
 				B2FB8B2C2AEDFF4C00DEBF12 /* FirebaseAnalyticsWithoutAdIdSupport */,
 				B2FB8B2E2AEDFF4C00DEBF12 /* FirebaseAppCheck */,
+				B21F022F2AF18B300001E8FB /* GoogleSignIn */,
+				B21F02312AF18B300001E8FB /* GoogleSignInSwift */,
 			);
 			productName = RoomieMatter;
 			productReference = B2958F3F2AEDF0E500C9BBFF /* RoomieMatter.app */;
@@ -220,6 +204,7 @@
 			mainGroup = B2958F362AEDF0E500C9BBFF;
 			packageReferences = (
 				B2FB8B252AEDFF4C00DEBF12 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */,
+				B21F022E2AF18B300001E8FB /* XCRemoteSwiftPackageReference "GoogleSignIn-iOS" */,
 			);
 			productRefGroup = B2958F402AEDF0E500C9BBFF /* Products */;
 			projectDirPath = "";
@@ -251,10 +236,8 @@
 				B2FB8B442AEED92000DEBF12 /* Constants.swift in Sources */,
 				B2FB8B3C2AEECDF400DEBF12 /* InputView.swift in Sources */,
 				B21F02222AF025E90001E8FB /* LineText.swift in Sources */,
-				B2958F452AEDF0E500C9BBFF /* InitialScreen.swift in Sources */,
+				B2958F452AEDF0E500C9BBFF /* AuthScreen.swift in Sources */,
 				B21F02202AF01F1A0001E8FB /* CustomModifiers.swift in Sources */,
-				B21F02242AF035E10001E8FB /* LoginScreen.swift in Sources */,
-				B21F02292AF04AB90001E8FB /* CreateAccount1.swift in Sources */,
 				B2FB8B3F2AEECE1400DEBF12 /* ButtonView.swift in Sources */,
 				B2958F432AEDF0E500C9BBFF /* RoomieMatterApp.swift in Sources */,
 			);
@@ -466,6 +449,14 @@
 /* End XCConfigurationList section */
 
 /* Begin XCRemoteSwiftPackageReference section */
+		B21F022E2AF18B300001E8FB /* XCRemoteSwiftPackageReference "GoogleSignIn-iOS" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/google/GoogleSignIn-iOS";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 7.0.0;
+			};
+		};
 		B2FB8B252AEDFF4C00DEBF12 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/firebase/firebase-ios-sdk";
@@ -477,6 +468,16 @@
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
+		B21F022F2AF18B300001E8FB /* GoogleSignIn */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = B21F022E2AF18B300001E8FB /* XCRemoteSwiftPackageReference "GoogleSignIn-iOS" */;
+			productName = GoogleSignIn;
+		};
+		B21F02312AF18B300001E8FB /* GoogleSignInSwift */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = B21F022E2AF18B300001E8FB /* XCRemoteSwiftPackageReference "GoogleSignIn-iOS" */;
+			productName = GoogleSignInSwift;
+		};
 		B2FB8B262AEDFF4C00DEBF12 /* FirebaseAnalytics */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = B2FB8B252AEDFF4C00DEBF12 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;

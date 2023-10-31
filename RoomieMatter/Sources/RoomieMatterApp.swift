@@ -13,7 +13,7 @@ struct RoomieMatterApp: App {
     var body: some Scene {
         WindowGroup {
             NavigationStack {
-                InitialScreen()
+                AuthScreen()
             }
         }
     }
