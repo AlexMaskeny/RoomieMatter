@@ -1,12 +1,15 @@
 import SwiftUI
 
 struct InitialScreen: View {
+    @State private var isShowingCreateAccount = false
+    @State private var isShowingLogIn = false
+    
     func createAccount() {
-        print("Navigate to createAccount1")
+        isShowingCreateAccount.toggle()
     }
     
     func login() {
-        print("Navigate to login")
+        isShowingLogIn.toggle()
     }
     
     var body: some View {
@@ -22,9 +25,14 @@ struct InitialScreen: View {
                            type: ButtonType.solidBlank,
                            action: createAccount
                 )
-                
                 LineText(text: "Or Login", action: login)
             }.padding(EdgeInsets(top: 0, leading: Style.screenPadding, bottom: 100, trailing: Style.screenPadding))
+        }
+        .navigationDestination(isPresented: $isShowingCreateAccount) {
+            CreateAccount1()
+        }
+        .navigationDestination(isPresented: $isShowingLogIn) {
+            LoginScreen()
         }
     }
 }
