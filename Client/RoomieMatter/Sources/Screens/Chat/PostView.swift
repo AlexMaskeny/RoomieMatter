@@ -32,9 +32,9 @@ struct PostView: View {
     @ViewBuilder
     func SubmitButton() -> some View {
         Button {
+            print("Placeholder")
 //            ChatStore.shared.postChat(Chat(username: username, message: message)) {
 //                ChatStore.shared.getChats()
-        }
             isPresented.toggle()
         } label: {
             Image(systemName: "paperplane")
