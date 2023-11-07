@@ -11,16 +11,16 @@ struct ChatScreen: View {
     private let store = ChatStore.shared
     @State private var isPresenting = false
     @State private var textInput: String = ""
+    @State private var authViewModel = AuthenticationViewModel()
 
     var body: some View {
         List(store.chats.indices, id: \.self) {
-            ChatListRow(chat: store.chats[$0])
-                .listRowSeparator(.hidden)
-                .listRowBackground(Color(($0 % 2 == 0) ? .systemGray5 : .systemGray6))
+            TextBubble(chat: store.chats[$0],
+                       position: store.chats[$0].username == authViewModel.username ? .left : .right)
         }
         .listStyle(.plain)
         .refreshable {
-            //store.getChats()
+            //store.getChats()  TODO: uncomment after defining getChats()
         }
         .navigationTitle("room_name_placeholder")
         .navigationBarTitleDisplayMode(.inline)
@@ -45,6 +45,7 @@ struct ChatScreen: View {
             Button(action: {
                 print("Message sent: \(textInput)")
                 textInput = ""
+                // store.postChat(...)  TODO: uncomment after defining postChat(), and delete PostView file
             }) {
                 Text("Send")
                     .padding(.horizontal)

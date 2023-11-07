@@ -5,8 +5,10 @@
 //  Created by David Wang on 10/31/23.
 //
 
+import Foundation
+
 struct Chat {
     var username: String?
     var message: String?
-    var timestamp: String?
+    var timestamp: Date?
 }
