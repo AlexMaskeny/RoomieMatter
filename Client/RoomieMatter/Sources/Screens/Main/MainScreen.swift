@@ -16,6 +16,8 @@ let db = Firestore.firestore()
 struct MainScreen: View {
     @State private var err : String = ""
     
+    private let store = ChoreStore.shared
+    
     var body: some View {
         HStack {
             Image(systemName: "hand.wave.fill")
@@ -58,6 +60,16 @@ struct MainScreen: View {
         }.buttonStyle(.borderedProminent)
         
         Text(err).foregroundColor(.red).font(.caption)
+        
+//      Placeholder Chore Tracking Code
+        Text("Chore Tracking")
+        
+        List(store.chores.indices, id: \.self) {
+            ChoreList(chore: store.chores[$0])
+                .listRowSeparator(.hidden)
+                .listRowBackground(Color(($0 % 2 == 0) ? .systemGray5 : .systemGray6))
+        }
+//        TODO: add properties, e.g. refreshable, navigationDestination
     }
 }
 
