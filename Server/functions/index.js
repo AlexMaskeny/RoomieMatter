@@ -1,6 +1,7 @@
 // The Cloud Functions for Firebase SDK to create Cloud Functions and triggers.
 const functions = require("firebase-functions");
 const admin = require("firebase-admin");
+const { calendar } = required("./calendar");
 
 admin.initializeApp();
 
@@ -22,3 +23,5 @@ exports.onUserSignUp = functions.auth.user().onCreate((user) => {
 
   return usersRef.doc(user.uid).set(userData);
 });
+
+exports.calendar = calendar;

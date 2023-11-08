@@ -34,6 +34,9 @@
 		B2FB8B3C2AEECDF400DEBF12 /* InputView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2FB8B3B2AEECDF400DEBF12 /* InputView.swift */; };
 		B2FB8B442AEED92000DEBF12 /* Constants.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2FB8B432AEED92000DEBF12 /* Constants.swift */; };
 		EEFC8F592AFAF90D002AE087 /* LoggedInView.swift in Sources */ = {isa = PBXBuildFile; fileRef = EEFC8F582AFAF90D002AE087 /* LoggedInView.swift */; };
+		F4C7433C2AFAF49500B3F464 /* ChoreList.swift in Sources */ = {isa = PBXBuildFile; fileRef = F4C7433B2AFAF49500B3F464 /* ChoreList.swift */; };
+		F4C743402AFAF50E00B3F464 /* Chore.swift in Sources */ = {isa = PBXBuildFile; fileRef = F4C7433F2AFAF50E00B3F464 /* Chore.swift */; };
+		F4C743422AFAF74100B3F464 /* ChoreStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = F4C743412AFAF74100B3F464 /* ChoreStore.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -57,6 +60,9 @@
 		B2FB8B3B2AEECDF400DEBF12 /* InputView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InputView.swift; sourceTree = "<group>"; };
 		B2FB8B432AEED92000DEBF12 /* Constants.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Constants.swift; sourceTree = "<group>"; };
 		EEFC8F582AFAF90D002AE087 /* LoggedInView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoggedInView.swift; sourceTree = "<group>"; };
+		F4C7433B2AFAF49500B3F464 /* ChoreList.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChoreList.swift; sourceTree = "<group>"; };
+		F4C7433F2AFAF50E00B3F464 /* Chore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Chore.swift; sourceTree = "<group>"; };
+		F4C743412AFAF74100B3F464 /* ChoreStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChoreStore.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -167,6 +173,7 @@
 			isa = PBXGroup;
 			children = (
 				B285F4682AF211B50096EE9E /* Chat */,
+				F4C7433E2AFAF4B600B3F464 /* Chore */,
 				B21F02542AF1B14D0001E8FB /* Main */,
 				B2FB8B332AEEBAEA00DEBF12 /* Auth */,
 				EEFC8F582AFAF90D002AE087 /* LoggedInView.swift */,
@@ -199,6 +206,16 @@
 				B21F021F2AF01F1A0001E8FB /* CustomModifiers.swift */,
 			);
 			path = Settings;
+			sourceTree = "<group>";
+		};
+		F4C7433E2AFAF4B600B3F464 /* Chore */ = {
+			isa = PBXGroup;
+			children = (
+				F4C7433F2AFAF50E00B3F464 /* Chore.swift */,
+				F4C7433B2AFAF49500B3F464 /* ChoreList.swift */,
+				F4C743412AFAF74100B3F464 /* ChoreStore.swift */,
+			);
+			path = Chore;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -294,7 +311,10 @@
 				B21F02222AF025E90001E8FB /* LineText.swift in Sources */,
 				21F5B4552AF84202008124D0 /* AuthenticationViewModel.swift in Sources */,
 				B285F46A2AF211E30096EE9E /* Chat.swift in Sources */,
+				F4C743402AFAF50E00B3F464 /* Chore.swift in Sources */,
+				F4C743422AFAF74100B3F464 /* ChoreStore.swift in Sources */,
 				B285F4702AF212040096EE9E /* ChatStore.swift in Sources */,
+				F4C7433C2AFAF49500B3F464 /* ChoreList.swift in Sources */,
 				B2958F452AEDF0E500C9BBFF /* AuthScreen.swift in Sources */,
 				B21F02202AF01F1A0001E8FB /* CustomModifiers.swift in Sources */,
 				EEFC8F592AFAF90D002AE087 /* LoggedInView.swift in Sources */,
@@ -435,7 +455,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_ASSET_PATHS = "\"RoomieMatter/Preview Content\"";
-				DEVELOPMENT_TEAM = TX6TDB7G4L;
+				DEVELOPMENT_TEAM = 3X6FA7ZHM7;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = RoomieMatter/Info.plist;
@@ -465,7 +485,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_ASSET_PATHS = "\"RoomieMatter/Preview Content\"";
-				DEVELOPMENT_TEAM = TX6TDB7G4L;
+				DEVELOPMENT_TEAM = 3X6FA7ZHM7;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = RoomieMatter/Info.plist;
