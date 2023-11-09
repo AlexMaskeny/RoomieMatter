@@ -183,6 +183,7 @@ const sendChat = functions.https.onCall(async (data, context) => {
 
           if (completion.function_call) {
             //Call some function and resend the result under the 'function' role
+            //Also be sure to store it in our database under the function role as well
             successMessage = "GPT_CALL_FUNCTION";
           }
 
