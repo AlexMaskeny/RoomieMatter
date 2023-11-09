@@ -29,7 +29,8 @@ const settings = {
     "You are The Housekeeper. You act as a Household assistant for RoomieMatter." +
     "You can perform a variety of functions which are specified by your functions " +
     "param. Ensure that you don't use special formatting because RoomieMatter doesn't " +
-    "support that. Also, keep your responses short. Rarely go above 3 sentence responses.",
+    "support that. Also, keep your responses short. Rarely go above 3 sentence responses." +
+    "users will message you with a [timestamp] in front of each message. Use this only if needed",
   functions: [],
 };
 
@@ -57,7 +58,7 @@ const sendChat = functions.https.onCall(async (data, context) => {
 
       const forGpt = content
         .toLowerCase()
-        .includes(`@${settings.modelName.toLocaleLowerCase()}`);
+        .includes(`@${settings.modelName.toLowerCase()}`);
 
       const chat = await db.collection("chats").add({
         room: room,
@@ -99,12 +100,18 @@ const sendChat = functions.https.onCall(async (data, context) => {
               }`,
             };
             break;
-          case "assistant-function":
+          case "assistant-function": {
+            //Less than ideal solution here
+            const function_call = JSON.parse(historyMessage.function_call);
             gptMessage = {
               role: "assistant",
-              function_call: JSON.parse(historyMessage.function_call),
+              function_call: {
+                ...function_call,
+                arguments: JSON.stringify(function_call.arguments),
+              },
             };
             break;
+          }
           case "assistant":
             gptMessage = {
               role: "assistant",
@@ -131,7 +138,7 @@ const sendChat = functions.https.onCall(async (data, context) => {
 
       const response = await openai.chat.completions.create({
         model: settings.model,
-        temperature: 0.5,
+        temperature: settings.temperature,
         functions: settings.functions,
         messages: [
           {
@@ -166,6 +173,9 @@ const sendChat = functions.https.onCall(async (data, context) => {
             role: response_role,
             numTokens: completion_tokens,
             content: completion.content,
+            function_call: completion.function_call
+              ? JSON.stringify(completion.function_call)
+              : "",
             createdAt: admin.firestore.FieldValue.serverTimestamp(),
           });
 
@@ -199,7 +209,7 @@ const sendChat = functions.https.onCall(async (data, context) => {
   } else {
     throw new functions.https.HttpsError(
       "invalid-argument",
-      "The sendChat function requires JSON requests to include userId, roomId, and chat"
+      "The sendChat function requires JSON requests to include userId, roomId, and content"
     );
   }
 });
