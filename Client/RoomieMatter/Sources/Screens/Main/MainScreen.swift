@@ -2,6 +2,7 @@ import SwiftUI
 import Firebase
 import FirebaseAuth
 import FirebaseFirestore
+import FirebaseFunctions
 
 let db = Firestore.firestore()
 
@@ -45,6 +46,31 @@ struct MainScreen: View {
             }
         } label: {
             Text("Print all users")
+        }
+        
+        Button {
+            Functions.functions().httpsCallable("sendChat").call(["text":"test"]) { result, error in
+                if let error = error as NSError? {
+                    if error.domain == FunctionsErrorDomain {
+                        let code = FunctionsErrorCode(rawValue: error.code)
+                        let message = error.localizedDescription
+                        let details = error.userInfo[FunctionsErrorDetailsKey]
+                        print("Error: Code: \(String(describing: code)), Message: \(message), Details: \(String(describing: details))")
+                    }
+                    print("Error: \(error.localizedDescription)")
+                    return
+                }
+
+                // If the function succeeded, process the result
+                if let data = result?.data as? [String: Any], let resultText = data["message"] as? String {
+                    print(resultText)
+                }
+                
+
+            }
+            
+        } label: {
+            Text("Test Functions")
         }
         
         Button{
