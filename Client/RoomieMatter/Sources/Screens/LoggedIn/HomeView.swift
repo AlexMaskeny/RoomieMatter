@@ -8,8 +8,10 @@ struct HomeView: View {
         ScrollView {
             VStack(alignment: .leading){
                 RoommateStatusView(isSelf: true, roommate: Roommate.Example1)
+                
                 Divider()
-                ForEach(roommates, id: \.name){ roommate in
+                
+                ForEach(roommates){ roommate in
                     RoommateStatusView(isSelf: false, roommate: roommate)
                     Divider()
                 }
@@ -39,7 +41,7 @@ struct HomeView: View {
                 }
                 ScrollView(.horizontal){
                     HStack{
-                        ForEach(chores, id:\.name){ chore in
+                        ForEach(chores){ chore in
                             ChoreView(chore: chore)
                         }
                     }
