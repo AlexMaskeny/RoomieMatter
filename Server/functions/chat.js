@@ -78,15 +78,13 @@ const sendChat = functions.https.onCall(async (data, context) => {
         .update({
           typing: admin.firestore.FieldValue.arrayUnion("gpt"),
         });
-      functions.logger.log("updated rooms");
+
       const history = await db
         .collection("chats")
         .where("room", "==", room)
         .orderBy("createdAt", "desc")
         .get();
       const plainHistoryData = history.docs.map((doc) => doc.data());
-
-      functions.logger.log(plainHistoryData);
 
       let totalTokens = 0;
       const formattedHistory = plainHistoryData.reduce(
@@ -100,9 +98,9 @@ const sendChat = functions.https.onCall(async (data, context) => {
             case "user":
               gptMessage = {
                 role: "user",
-                content: `[${new Date(createdAt).toISOString()}] ${
-                  historyMessage.content
-                }`,
+                content: `[${
+                  historyMessage?.createdAt?.toDate()?.toISOString() ?? ""
+                }] ${historyMessage.content}`,
               };
               break;
             case "assistant-function": {
@@ -144,10 +142,9 @@ const sendChat = functions.https.onCall(async (data, context) => {
         );
       }
 
-      const response = await openai.chat.completions.create({
+      let gptAPIObject = {
         model: settings.model,
         temperature: settings.temperature,
-        functions: settings.functions,
         messages: [
           {
             role: "system",
@@ -156,10 +153,15 @@ const sendChat = functions.https.onCall(async (data, context) => {
           ...formattedHistory,
           {
             role: "user",
-            content: `[${new Date().toISOString()}] ${message}`,
+            content: `[${new Date().toISOString()}] ${content}`,
           },
         ],
-      });
+      };
+      if (settings.functions?.length > 0) {
+        gptAPIObject.functions = settings.functions;
+      }
+
+      const response = await openai.chat.completions.create(gptAPIObject);
 
       functions.logger.log(response);
 
