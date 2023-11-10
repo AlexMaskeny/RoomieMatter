@@ -78,56 +78,64 @@ const sendChat = functions.https.onCall(async (data, context) => {
         .update({
           typing: admin.firestore.FieldValue.arrayUnion("gpt"),
         });
+      functions.logger.log("updated rooms");
       const history = await db
         .collection("chats")
         .where("room", "==", room)
         .orderBy("createdAt", "desc")
         .get();
+      const plainHistoryData = history.docs.map((doc) => doc.data());
+
+      functions.logger.log(plainHistoryData);
 
       let totalTokens = 0;
-      const formattedHistory = history.reduce((acc, historyMessage) => {
-        totalTokens += historyMessage.numTokens ?? 0;
-        let gptMessage = {};
-        switch (historyMessage.role) {
-          case "roommate": {
-            return acc;
+      const formattedHistory = plainHistoryData.reduce(
+        (acc, historyMessage) => {
+          totalTokens += historyMessage.numTokens ?? 0;
+          let gptMessage = {};
+          switch (historyMessage.role) {
+            case "roommate": {
+              return acc;
+            }
+            case "user":
+              gptMessage = {
+                role: "user",
+                content: `[${new Date(createdAt).toISOString()}] ${
+                  historyMessage.content
+                }`,
+              };
+              break;
+            case "assistant-function": {
+              //Less than ideal solution here
+              const function_call =
+                JSON.parse(historyMessage.function_call) ?? {};
+              gptMessage = {
+                role: "assistant",
+                function_call: {
+                  ...function_call,
+                  arguments: JSON.stringify(function_call.arguments),
+                },
+              };
+              break;
+            }
+            case "assistant":
+              gptMessage = {
+                role: "assistant",
+                content: historyMessage.content,
+              };
+              break;
+            case "function":
+              gptMessage = {
+                role: "function",
+                name: historyMessage.function.name,
+                content: historyMessage.function.content,
+              };
+              break;
           }
-          case "user":
-            gptMessage = {
-              role: "user",
-              content: `[${new Date(createdAt).toISOString()}] ${
-                historyMessage.content
-              }`,
-            };
-            break;
-          case "assistant-function": {
-            //Less than ideal solution here
-            const function_call = JSON.parse(historyMessage.function_call);
-            gptMessage = {
-              role: "assistant",
-              function_call: {
-                ...function_call,
-                arguments: JSON.stringify(function_call.arguments),
-              },
-            };
-            break;
-          }
-          case "assistant":
-            gptMessage = {
-              role: "assistant",
-              content: historyMessage.content,
-            };
-            break;
-          case "function":
-            gptMessage = {
-              role: "function",
-              name: historyMessage.function.name,
-              content: historyMessage.function.content,
-            };
-            break;
-        }
-        return [...acc, gptMessage];
-      }, []);
+          return [...acc, gptMessage];
+        },
+        []
+      );
 
       if (totalTokens > 7000) {
         throw new functions.https.HttpsError(
@@ -153,6 +161,8 @@ const sendChat = functions.https.onCall(async (data, context) => {
         ],
       });
 
+      functions.logger.log(response);
+
       if (response) {
         const prompt_tokens = response.usage?.prompt_tokens;
         const completion_tokens = response.usage?.completion_tokens;
@@ -164,11 +174,11 @@ const sendChat = functions.https.onCall(async (data, context) => {
             ? "assistant-function"
             : "assistant";
 
-          db.collection("chat").doc(chat.id).update({
+          db.collection("chats").doc(chat.id).update({
             numTokens: prompt_tokens,
           });
 
-          await db.collection("chat").add({
+          await db.collection("chats").add({
             room: room,
             role: response_role,
             numTokens: completion_tokens,
@@ -202,6 +212,7 @@ const sendChat = functions.https.onCall(async (data, context) => {
         );
       }
     } catch (error) {
+      functions.logger.log(error);
       throw new functions.https.HttpsError(
         "internal",
         `Error thrown by OpenAI`
