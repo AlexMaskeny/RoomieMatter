@@ -21,30 +21,18 @@ struct ChoreView: View {
             
             
             HStack {
-                ForEach(chore.assignedRoommates){roommate in
-                    if let image = roommate.image{
-                        image
-                            .frame(width: 40, height: 40)
-                            .clipShape(Circle())
-                            .scaledToFill()
-                            .overlay(
-                                Circle()
-                                    .stroke()
-                            )
-                    } else {
-                        Image(systemName: "person.fill")
-                            .font(.headline)
-                            .padding(10)
-                            .background(
-                                Circle()
-                                    .foregroundStyle(.white)
-                                    .overlay(
-                                        Circle()
-                                            .stroke()
-                                    )
-                            )
-                    }
-                    
+                ForEach(chore.assignedRoommates, id: \.name){ _ in
+                    Image(systemName: "person.fill")
+                        .font(.headline)
+                        .padding(10)
+                        .background(
+                            Circle()
+                                .foregroundStyle(.white)
+                                .overlay(
+                                    Circle()
+                                        .stroke()
+                                )
+                        )
                 }
             }
             

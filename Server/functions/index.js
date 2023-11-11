@@ -1,11 +1,11 @@
 // The Cloud Functions for Firebase SDK to create Cloud Functions and triggers.
 const admin = require("firebase-admin");
 
-admin.initializeApp();
+const { onUserSignUp } = require("./user/user");
+const { sendChat } = require("./chat/chat");
+const { get_chores } = required("./calendar");
 
-const { onUserSignUp } = require("./user");
-const { sendChat } = require("./chat");
-const { get_chores } = require("./calendar");
+admin.initializeApp();
 
 exports.onUserSignUp = onUserSignUp;
 exports.sendChat = sendChat;
