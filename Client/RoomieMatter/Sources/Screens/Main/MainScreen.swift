@@ -84,7 +84,9 @@ struct MainScreen: View {
         }label: {
             Text("Log Out").padding(8)
         }.buttonStyle(.borderedProminent)
-        
+
+        NavigationLink("Chat", destination: ChatScreen())
+
         Text(err).foregroundColor(.red).font(.caption)
         
 //      Placeholder Chore Tracking Code
