@@ -2,7 +2,6 @@ import SwiftUI
 import Firebase
 import FirebaseAuth
 import FirebaseFirestore
-import FirebaseFunctions
 
 let db = Firestore.firestore()
 
@@ -16,8 +15,6 @@ let db = Firestore.firestore()
 
 struct MainScreen: View {
     @State private var err : String = ""
-    
-    private let store = ChoreStore.shared
     
     var body: some View {
         HStack {
@@ -48,31 +45,6 @@ struct MainScreen: View {
             Text("Print all users")
         }
         
-        Button {
-            Functions.functions().httpsCallable("sendChat").call(["text":"test"]) { result, error in
-                if let error = error as NSError? {
-                    if error.domain == FunctionsErrorDomain {
-                        let code = FunctionsErrorCode(rawValue: error.code)
-                        let message = error.localizedDescription
-                        let details = error.userInfo[FunctionsErrorDetailsKey]
-                        print("Error: Code: \(String(describing: code)), Message: \(message), Details: \(String(describing: details))")
-                    }
-                    print("Error: \(error.localizedDescription)")
-                    return
-                }
-
-                // If the function succeeded, process the result
-                if let data = result?.data as? [String: Any], let resultText = data["message"] as? String {
-                    print(resultText)
-                }
-                
-
-            }
-            
-        } label: {
-            Text("Test Functions")
-        }
-        
         Button{
             Task {
                 do {
@@ -86,16 +58,6 @@ struct MainScreen: View {
         }.buttonStyle(.borderedProminent)
         
         Text(err).foregroundColor(.red).font(.caption)
-        
-//      Placeholder Chore Tracking Code
-        Text("Chore Tracking")
-        
-        List(store.chores.indices, id: \.self) {
-            ChoreList(chore: store.chores[$0])
-                .listRowSeparator(.hidden)
-                .listRowBackground(Color(($0 % 2 == 0) ? .systemGray5 : .systemGray6))
-        }
-//        TODO: add properties, e.g. refreshable, navigationDestination
     }
 }
 
