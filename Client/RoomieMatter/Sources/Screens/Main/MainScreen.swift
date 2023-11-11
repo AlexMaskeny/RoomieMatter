@@ -57,6 +57,9 @@ struct MainScreen: View {
             Text("Log Out").padding(8)
         }.buttonStyle(.borderedProminent)
         
+        NavigationLink("Chat", destination: ChatScreen())
+        NavigationLink("Home", destination: HomeView())
+        
         Text(err).foregroundColor(.red).font(.caption)
     }
 }
