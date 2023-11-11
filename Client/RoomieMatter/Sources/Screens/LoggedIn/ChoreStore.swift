@@ -42,15 +42,15 @@ final class ChoreStore {
                    self.chores = [Chore]()
                    for choreEntry in choresReceived {
                        if choreEntry.count == self.nFields {
-                           self.chores.append(Chore(username: choreEntry[0],
-                                                    message: choreEntry[1],
-                                                    timestamp: choreEntry[2]))
+                           self.chores.append(Chore(name: choreEntry[0],
+                                                    date: choreEntry[1],
+                                                    description: choreEntry[2],
+                                                    assignedRoomates: choreEntry[2]))
                        } else {
                            print("getChores: Received unexpected number of fields: \(choreEntry.count) instead of \(self.nFields).")
                        }
                    }
                }
-
             }
         }
     }
