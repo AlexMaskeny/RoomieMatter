@@ -1,16 +1,14 @@
 import SwiftUI
 import Firebase
 import FirebaseAuth
-import FirebaseFunctions
-import FirebaseFirestore
 import GoogleSignIn
 
 @main
 struct RoomieMatterApp: App {
     init() {
         print("Configuring Firebase...")
+        //errors for InAppMessaging for now until we implement that
         FirebaseApp.configure()
-
     }
     
     
