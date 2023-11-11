@@ -34,11 +34,14 @@
 		B2FB8B3C2AEECDF400DEBF12 /* InputView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2FB8B3B2AEECDF400DEBF12 /* InputView.swift */; };
 		B2FB8B442AEED92000DEBF12 /* Constants.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2FB8B432AEED92000DEBF12 /* Constants.swift */; };
 		EEFC8F592AFAF90D002AE087 /* LoggedInView.swift in Sources */ = {isa = PBXBuildFile; fileRef = EEFC8F582AFAF90D002AE087 /* LoggedInView.swift */; };
-		EEFC8FE42AFD6797002AE087 /* HomeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = EEFC8FDF2AFD6796002AE087 /* HomeView.swift */; };
-		EEFC8FE52AFD6797002AE087 /* ChoreView.swift in Sources */ = {isa = PBXBuildFile; fileRef = EEFC8FE02AFD6796002AE087 /* ChoreView.swift */; };
-		EEFC8FE62AFD6797002AE087 /* RoommateStatusView.swift in Sources */ = {isa = PBXBuildFile; fileRef = EEFC8FE12AFD6796002AE087 /* RoommateStatusView.swift */; };
-		EEFC8FE72AFD6797002AE087 /* Roommate.swift in Sources */ = {isa = PBXBuildFile; fileRef = EEFC8FE22AFD6796002AE087 /* Roommate.swift */; };
-		EEFC8FE82AFD6797002AE087 /* Chore.swift in Sources */ = {isa = PBXBuildFile; fileRef = EEFC8FE32AFD6796002AE087 /* Chore.swift */; };
+		F43F44842AFD14C500E1CC68 /* HomeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F43F447F2AFD14C400E1CC68 /* HomeView.swift */; };
+		F43F44852AFD14C500E1CC68 /* ChoreView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F43F44802AFD14C400E1CC68 /* ChoreView.swift */; };
+		F43F44862AFD14C500E1CC68 /* RoommateStatusView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F43F44812AFD14C400E1CC68 /* RoommateStatusView.swift */; };
+		F43F44872AFD14C500E1CC68 /* Roommate.swift in Sources */ = {isa = PBXBuildFile; fileRef = F43F44822AFD14C400E1CC68 /* Roommate.swift */; };
+		F43F44882AFD14C500E1CC68 /* Chore.swift in Sources */ = {isa = PBXBuildFile; fileRef = F43F44832AFD14C400E1CC68 /* Chore.swift */; };
+		F4C7433C2AFAF49500B3F464 /* ChoreList.swift in Sources */ = {isa = PBXBuildFile; fileRef = F4C7433B2AFAF49500B3F464 /* ChoreList.swift */; };
+		F4C743402AFAF50E00B3F464 /* Chore.swift in Sources */ = {isa = PBXBuildFile; fileRef = F4C7433F2AFAF50E00B3F464 /* Chore.swift */; };
+		F4C743422AFAF74100B3F464 /* ChoreStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = F4C743412AFAF74100B3F464 /* ChoreStore.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -62,11 +65,14 @@
 		B2FB8B3B2AEECDF400DEBF12 /* InputView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InputView.swift; sourceTree = "<group>"; };
 		B2FB8B432AEED92000DEBF12 /* Constants.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Constants.swift; sourceTree = "<group>"; };
 		EEFC8F582AFAF90D002AE087 /* LoggedInView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoggedInView.swift; sourceTree = "<group>"; };
-		EEFC8FDF2AFD6796002AE087 /* HomeView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = HomeView.swift; sourceTree = "<group>"; };
-		EEFC8FE02AFD6796002AE087 /* ChoreView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ChoreView.swift; sourceTree = "<group>"; };
-		EEFC8FE12AFD6796002AE087 /* RoommateStatusView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = RoommateStatusView.swift; sourceTree = "<group>"; };
-		EEFC8FE22AFD6796002AE087 /* Roommate.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Roommate.swift; sourceTree = "<group>"; };
-		EEFC8FE32AFD6796002AE087 /* Chore.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Chore.swift; sourceTree = "<group>"; };
+		F43F447F2AFD14C400E1CC68 /* HomeView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = HomeView.swift; sourceTree = "<group>"; };
+		F43F44802AFD14C400E1CC68 /* ChoreView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ChoreView.swift; sourceTree = "<group>"; };
+		F43F44812AFD14C400E1CC68 /* RoommateStatusView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = RoommateStatusView.swift; sourceTree = "<group>"; };
+		F43F44822AFD14C400E1CC68 /* Roommate.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Roommate.swift; sourceTree = "<group>"; };
+		F43F44832AFD14C400E1CC68 /* Chore.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Chore.swift; sourceTree = "<group>"; };
+		F4C7433B2AFAF49500B3F464 /* ChoreList.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChoreList.swift; sourceTree = "<group>"; };
+		F4C7433F2AFAF50E00B3F464 /* Chore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Chore.swift; sourceTree = "<group>"; };
+		F4C743412AFAF74100B3F464 /* ChoreStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChoreStore.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -176,10 +182,11 @@
 		B2FB8B322AEEBA8100DEBF12 /* Screens */ = {
 			isa = PBXGroup;
 			children = (
-				EEFC8FDE2AFD6796002AE087 /* LoggedIn */,
-				B285F4682AF211B50096EE9E /* Chat */,
-				B21F02542AF1B14D0001E8FB /* Main */,
 				B2FB8B332AEEBAEA00DEBF12 /* Auth */,
+				B285F4682AF211B50096EE9E /* Chat */,
+				F4C7433E2AFAF4B600B3F464 /* Chore */,
+				F43F447E2AFD14C400E1CC68 /* LoggedIn */,
+				B21F02542AF1B14D0001E8FB /* Main */,
 				EEFC8F582AFAF90D002AE087 /* LoggedInView.swift */,
 			);
 			path = Screens;
@@ -212,16 +219,27 @@
 			path = Settings;
 			sourceTree = "<group>";
 		};
-		EEFC8FDE2AFD6796002AE087 /* LoggedIn */ = {
+		F43F447E2AFD14C400E1CC68 /* LoggedIn */ = {
 			isa = PBXGroup;
 			children = (
-				EEFC8FDF2AFD6796002AE087 /* HomeView.swift */,
-				EEFC8FE02AFD6796002AE087 /* ChoreView.swift */,
-				EEFC8FE12AFD6796002AE087 /* RoommateStatusView.swift */,
-				EEFC8FE22AFD6796002AE087 /* Roommate.swift */,
-				EEFC8FE32AFD6796002AE087 /* Chore.swift */,
+				F43F447F2AFD14C400E1CC68 /* HomeView.swift */,
+				F43F44802AFD14C400E1CC68 /* ChoreView.swift */,
+				F43F44812AFD14C400E1CC68 /* RoommateStatusView.swift */,
+				F43F44822AFD14C400E1CC68 /* Roommate.swift */,
+				F43F44832AFD14C400E1CC68 /* Chore.swift */,
 			);
-			path = LoggedIn;
+			name = LoggedIn;
+			path = RoomieMatter/Sources/Screens/LoggedIn;
+			sourceTree = SOURCE_ROOT;
+		};
+		F4C7433E2AFAF4B600B3F464 /* Chore */ = {
+			isa = PBXGroup;
+			children = (
+				F4C7433F2AFAF50E00B3F464 /* Chore.swift */,
+				F4C7433B2AFAF49500B3F464 /* ChoreList.swift */,
+				F4C743412AFAF74100B3F464 /* ChoreStore.swift */,
+			);
+			path = Chore;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -310,7 +328,8 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				EEFC8FE62AFD6797002AE087 /* RoommateStatusView.swift in Sources */,
+				F43F44862AFD14C500E1CC68 /* RoommateStatusView.swift in Sources */,
+				F43F44872AFD14C500E1CC68 /* Roommate.swift in Sources */,
 				B2FB8B442AEED92000DEBF12 /* Constants.swift in Sources */,
 				B21F02562AF1B1700001E8FB /* MainScreen.swift in Sources */,
 				B2FB8B3C2AEECDF400DEBF12 /* InputView.swift in Sources */,
@@ -320,7 +339,12 @@
 				EEFC8FE82AFD6797002AE087 /* Chore.swift in Sources */,
 				21F5B4552AF84202008124D0 /* AuthenticationViewModel.swift in Sources */,
 				B285F46A2AF211E30096EE9E /* Chat.swift in Sources */,
+				F4C743402AFAF50E00B3F464 /* Chore.swift in Sources */,
+				F4C743422AFAF74100B3F464 /* ChoreStore.swift in Sources */,
 				B285F4702AF212040096EE9E /* ChatStore.swift in Sources */,
+				F43F44852AFD14C500E1CC68 /* ChoreView.swift in Sources */,
+				F43F44882AFD14C500E1CC68 /* Chore.swift in Sources */,
+				F4C7433C2AFAF49500B3F464 /* ChoreList.swift in Sources */,
 				B2958F452AEDF0E500C9BBFF /* AuthScreen.swift in Sources */,
 				B21F02202AF01F1A0001E8FB /* CustomModifiers.swift in Sources */,
 				EEFC8F592AFAF90D002AE087 /* LoggedInView.swift in Sources */,
@@ -330,6 +354,7 @@
 				EEFC8FE42AFD6797002AE087 /* HomeView.swift in Sources */,
 				B285F4722AF212100096EE9E /* PostView.swift in Sources */,
 				B2958F432AEDF0E500C9BBFF /* RoomieMatterApp.swift in Sources */,
+				F43F44842AFD14C500E1CC68 /* HomeView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -463,7 +488,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_ASSET_PATHS = "\"RoomieMatter/Preview Content\"";
-				DEVELOPMENT_TEAM = TX6TDB7G4L;
+				DEVELOPMENT_TEAM = 3X6FA7ZHM7;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = RoomieMatter/Info.plist;
@@ -493,7 +518,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_ASSET_PATHS = "\"RoomieMatter/Preview Content\"";
-				DEVELOPMENT_TEAM = TX6TDB7G4L;
+				DEVELOPMENT_TEAM = 3X6FA7ZHM7;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = RoomieMatter/Info.plist;
