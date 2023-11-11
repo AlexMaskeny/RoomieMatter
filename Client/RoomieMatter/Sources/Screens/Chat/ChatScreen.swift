@@ -44,8 +44,8 @@ struct ChatScreen: View {
             
             Button(action: {
                 print("Message sent: \(textInput)")
-                store.sendChat(msg: textInput)  //TODO: uncomment after defining postChat(), and delete PostView file
                 textInput = ""
+                // store.postChat(...)  TODO: uncomment after defining postChat(), and delete PostView file
             }) {
                 Text("Send")
                     .padding(.horizontal)
