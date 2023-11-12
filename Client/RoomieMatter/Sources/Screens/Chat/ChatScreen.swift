@@ -9,7 +9,6 @@ import SwiftUI
 
 struct ChatScreen: View {
     private let store = ChatStore.shared
-    @State private var isPresenting = false
     @State private var textInput: String = ""
     @State private var authViewModel = AuthenticationViewModel()
 
@@ -27,18 +26,6 @@ struct ChatScreen: View {
         }
         .navigationTitle(authViewModel.roomname ?? "failed_to_fetch_roomname")
         .navigationBarTitleDisplayMode(.inline)
-        .toolbar {
-            ToolbarItem(placement:.navigationBarTrailing) {
-                Button {
-                    isPresenting.toggle()
-                } label: {
-                    Image(systemName: "square.and.pencil")
-                }
-            }
-        }
-        .navigationDestination(isPresented: $isPresenting) {
-            PostView(isPresented: $isPresenting)
-        }
         
         HStack {
             TextField("Enter your message", text: $textInput)
