@@ -14,16 +14,17 @@ import FirebaseFirestore
 
 @Observable final class AuthenticationViewModel {
     var username: String?
+    var user_uid: String?
     var roomname: String?
+    var room_id: String?
     private var db = Firestore.firestore()
-    private var user_uid: String?
     
     init() {
-        fetchUsername()
-        fetchRoomname()
+        fetchUser()
+        fetchRoom()
     }
 
-    func fetchUsername() {
+    func fetchUser() {
         if let currentUser = Auth.auth().currentUser {
             username = currentUser.displayName
             user_uid = currentUser.uid
@@ -33,9 +34,9 @@ import FirebaseFirestore
         }
     }
     
-    func fetchRoomname() {
+    func fetchRoom() {
         guard let user_uid = user_uid else {
-            print("Cannot fetch roomname - failed to fetch signed in user")
+            print("Error getting room: failed to fetch signed in user")
             return
         }
         
@@ -47,6 +48,11 @@ import FirebaseFirestore
                 return
             }
             
+            guard userRoomDocSnapshot!.documents.count > 0 else {
+                print("Error getting room: failed to fetch room for user")
+                return
+            }
+            
             let roomRef = userRoomDocSnapshot!.documents[0].get("room") as! DocumentReference
             roomRef.getDocument { (roomSnapshot, error) in
                 guard error == nil else {
@@ -54,18 +60,20 @@ import FirebaseFirestore
                     return
                 }
                 
-                if let roomName = roomSnapshot?.get("name") as? String {
+                if let roomName = roomSnapshot?.get("name") as? String,
+                   let room_id = roomSnapshot?.documentID {
                     self.roomname = roomName
+                    self.room_id = room_id
                 } else {
-                    print("Cannot fetch roomname - name field does not exist")
+                    print("Error getting room: name field does not exist")
                 }
             }
         }
     }
 
     func refresh() {
-        fetchUsername()
-        fetchRoomname()
+        fetchUser()
+        fetchRoom()
     }
 
 }
