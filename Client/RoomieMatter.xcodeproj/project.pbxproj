@@ -26,7 +26,6 @@
 		B285F46A2AF211E30096EE9E /* Chat.swift in Sources */ = {isa = PBXBuildFile; fileRef = B285F4692AF211E30096EE9E /* Chat.swift */; };
 		B285F46E2AF211FA0096EE9E /* ChatScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = B285F46D2AF211FA0096EE9E /* ChatScreen.swift */; };
 		B285F4702AF212040096EE9E /* ChatStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = B285F46F2AF212040096EE9E /* ChatStore.swift */; };
-		B285F4722AF212100096EE9E /* PostView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B285F4712AF212100096EE9E /* PostView.swift */; };
 		B2958F432AEDF0E500C9BBFF /* RoomieMatterApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2958F422AEDF0E500C9BBFF /* RoomieMatterApp.swift */; };
 		B2958F452AEDF0E500C9BBFF /* AuthScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2958F442AEDF0E500C9BBFF /* AuthScreen.swift */; };
 		B2958F472AEDF0E600C9BBFF /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = B2958F462AEDF0E600C9BBFF /* Assets.xcassets */; };
@@ -52,7 +51,6 @@
 		B285F4692AF211E30096EE9E /* Chat.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Chat.swift; sourceTree = "<group>"; };
 		B285F46D2AF211FA0096EE9E /* ChatScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatScreen.swift; sourceTree = "<group>"; };
 		B285F46F2AF212040096EE9E /* ChatStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatStore.swift; sourceTree = "<group>"; };
-		B285F4712AF212100096EE9E /* PostView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PostView.swift; sourceTree = "<group>"; };
 		B2958F3F2AEDF0E500C9BBFF /* RoomieMatter.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = RoomieMatter.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		B2958F422AEDF0E500C9BBFF /* RoomieMatterApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RoomieMatterApp.swift; sourceTree = "<group>"; };
 		B2958F442AEDF0E500C9BBFF /* AuthScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuthScreen.swift; sourceTree = "<group>"; };
@@ -112,7 +110,6 @@
 				B285F4692AF211E30096EE9E /* Chat.swift */,
 				B285F46D2AF211FA0096EE9E /* ChatScreen.swift */,
 				B285F46F2AF212040096EE9E /* ChatStore.swift */,
-				B285F4712AF212100096EE9E /* PostView.swift */,
 			);
 			path = Chat;
 			sourceTree = "<group>";
@@ -328,7 +325,6 @@
 				EEFC8FE72AFD6797002AE087 /* Roommate.swift in Sources */,
 				B21F02342AF18F080001E8FB /* AuthModel.swift in Sources */,
 				EEFC8FE42AFD6797002AE087 /* HomeView.swift in Sources */,
-				B285F4722AF212100096EE9E /* PostView.swift in Sources */,
 				B2958F432AEDF0E500C9BBFF /* RoomieMatterApp.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
