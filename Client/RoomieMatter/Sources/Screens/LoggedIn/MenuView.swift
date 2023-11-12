@@ -21,22 +21,16 @@ struct ContentView: View {
             Spacer()
             HStack {
                 Spacer()
-                //home button
-                Button(action: {
-                    homeButtonColor = .black
-                    resetButtonColors(except: homeButtonColor)
-                }) {
+                // home button
+                Button(action: { resetCalendarProfile() }) {
                     Image(systemName: "house.fill")
-                        .foregroundColor(.blue)
+                        .foregroundColor(homeButtonColor)
                         .font(.system(size: 30))
                 }
                 Spacer()
-                
+
                 //calendar button
-                Button(action: {
-                    calendarButtonColor = .blue
-                    resetButtonColors(except: calendarButtonColor)
-                }) {
+                Button(action: { resetHomeProfile() }) {
                     Image(systemName: "calendar")
                         .foregroundColor(calendarButtonColor)
                         .font(.system(size: 30))
@@ -44,10 +38,7 @@ struct ContentView: View {
                 Spacer()
 
                 //profile button
-                Button(action: {
-                    profileButtonColor = .purple
-                    resetButtonColors(except: profileButtonColor)
-                }) {
+                Button(action: { resetHomeCalendar() }) {
                     Image(systemName: "person.fill")
                         .foregroundColor(profileButtonColor)
                         .font(.system(size: 30))
@@ -60,16 +51,20 @@ struct ContentView: View {
         }
     }
 
-    private func resetButtonColors(except selectedColor: Color) {
-        if homeButtonColor != selectedColor {
-            homeButtonColor = .blue
-        }
-        if calendarButtonColor != selectedColor {
-            calendarButtonColor = .blue
-        }
-        if profileButtonColor != selectedColor {
-            profileButtonColor = .blue
-        }
+    private func resetCalendarProfile() {
+        homeButtonColor = .blue
+        calendarButtonColor = .black
+        profileButtonColor = .black
+    }
+    private func resetHomeProfile() {
+        homeButtonColor = .black
+        calendarButtonColor = .blue
+        profileButtonColor = .black
+    }
+    private func resetHomeCalendar() {
+        homeButtonColor = .black
+        calendarButtonColor = .black
+        profileButtonColor = .blue
     }
 }
 
@@ -78,4 +73,3 @@ struct ContentView_Previews: PreviewProvider {
         ContentView()
     }
 }
-
