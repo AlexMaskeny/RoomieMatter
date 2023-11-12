@@ -7,8 +7,10 @@ const { onUserSignUp } = require("./user");
 const { sendChat } = require("./chat");
 const { getChores } = require("./calendar");
 // const { listEvents } = require("./calendar");
+const { testGetChores } = require("./calendar");
 
 exports.onUserSignUp = onUserSignUp;
 exports.sendChat = sendChat;
 exports.getChores = getChores;
 // exports.listEvents = listEvents;
+exports.testGetChores = testGetChores;
