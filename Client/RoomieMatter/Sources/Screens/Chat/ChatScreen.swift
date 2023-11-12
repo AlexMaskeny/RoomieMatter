@@ -25,7 +25,7 @@ struct ChatScreen: View {
         .refreshable {
             //store.getChats()  TODO: uncomment after defining getChats()
         }
-        .navigationTitle("room_name_placeholder")
+        .navigationTitle(authViewModel.roomname ?? "failed_to_fetch_roomname")
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
             ToolbarItem(placement:.navigationBarTrailing) {
