@@ -75,7 +75,27 @@ func getChores() -> String {
 }
 
 func addChore(name: String, date: Date, description: String, assignedRoommates: String) -> String {
-    
+//    let event = GTLRCalendar_Event()
+//    event.summary = summary
+//    event.descriptionProperty = description
+//
+//    let startDateTime = GTLRDateTime(date: startTime)
+//    let endDateTime = GTLRDateTime(date: endTime)
+//
+//    event.start = GTLRCalendar_EventDateTime()
+//    event.start?.dateTime = startDateTime
+//
+//    event.end = GTLRCalendar_EventDateTime()
+//    event.end?.dateTime = endDateTime
+//
+//    let query = GTLRCalendarQuery_EventsInsert.query(withObject: event, calendarId: calendarId)
+//    service?.executeQuery(query, completionHandler: { (_, _, error) in
+//        if let error = error {
+//            print("Error adding event: \(error.localizedDescription)")
+//        } else {
+//            print("Event added successfully")
+//        }
+//    })
     return "successfully added chore"
 }
 
@@ -89,6 +109,7 @@ func deleteOneChore(chore_id: String, calendar_id: String) {
 //            print("Event deleted successfully")
 //        }
 //    })
+    return "successfully deleted one chore"
 }
 
 func deleteAllInstancesOfEvent(eventId: String) {
@@ -100,4 +121,5 @@ func deleteAllInstancesOfEvent(eventId: String) {
 //            print("All instances of event deleted successfully")
 //        }
 //    })
+    return "successfully deleted all chores"
 }
