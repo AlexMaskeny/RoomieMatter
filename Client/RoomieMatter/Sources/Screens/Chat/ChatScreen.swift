@@ -17,6 +17,9 @@ struct ChatScreen: View {
         List(store.chats.indices, id: \.self) {
             TextBubble(chat: store.chats[$0],
                        position: store.chats[$0].username == authViewModel.username ? .left : .right)
+            .listRowSeparator(.hidden)
+            
+            .listRowInsets(.init(top: 0, leading: 0, bottom: 5, trailing: 0))
         }
         .listStyle(.plain)
         .refreshable {
