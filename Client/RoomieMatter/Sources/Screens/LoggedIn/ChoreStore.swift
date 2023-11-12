@@ -99,7 +99,7 @@ func addChore(name: String, date: Date, description: String, assignedRoommates: 
     return "successfully added chore"
 }
 
-func deleteOneChore(chore_id: String, calendar_id: String) {
+func deleteOneChore(chore_id: String, calendar_id: String) -> String {
 //    let val = GTLR
 //    let query = GTLRCalendarQuery_EventsDelete.query(withCalendarId: calendarId, eventId: eventId)
 //    service?.executeQuery(query, completionHandler: { (_, _, error) in
@@ -112,7 +112,7 @@ func deleteOneChore(chore_id: String, calendar_id: String) {
     return "successfully deleted one chore"
 }
 
-func deleteAllInstancesOfEvent(eventId: String) {
+func deleteAllInstancesOfEvent(eventId: String) -> String {
 //    let query = GTLRCalendarQuery_EventsInstancesDelete.query(withCalendarId: calendarId, eventId: eventId)
 //    service?.executeQuery(query, completionHandler: { (_, _, error) in
 //        if let error = error {
