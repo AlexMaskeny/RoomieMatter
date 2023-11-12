@@ -74,3 +74,30 @@ func getChores() -> String {
     return "hello"
 }
 
+func addChore(name: String, date: Date, description: String, assignedRoommates: String) -> String {
+    
+    return "successfully added chore"
+}
+
+func deleteOneChore(chore_id: String, calendar_id: String) {
+//    let val = GTLR
+//    let query = GTLRCalendarQuery_EventsDelete.query(withCalendarId: calendarId, eventId: eventId)
+//    service?.executeQuery(query, completionHandler: { (_, _, error) in
+//        if let error = error {
+//            print("Error deleting event: \(error.localizedDescription)")
+//        } else {
+//            print("Event deleted successfully")
+//        }
+//    })
+}
+
+func deleteAllInstancesOfEvent(eventId: String) {
+//    let query = GTLRCalendarQuery_EventsInstancesDelete.query(withCalendarId: calendarId, eventId: eventId)
+//    service?.executeQuery(query, completionHandler: { (_, _, error) in
+//        if let error = error {
+//            print("Error deleting all instances of event: \(error.localizedDescription)")
+//        } else {
+//            print("All instances of event deleted successfully")
+//        }
+//    })
+}
