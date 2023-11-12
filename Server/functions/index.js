@@ -6,7 +6,9 @@ admin.initializeApp();
 const { onUserSignUp } = require("./user");
 const { sendChat } = require("./chat");
 const { getChores } = require("./calendar");
+// const { listEvents } = require("./calendar");
 
 exports.onUserSignUp = onUserSignUp;
 exports.sendChat = sendChat;
 exports.getChores = getChores;
+// exports.listEvents = listEvents;

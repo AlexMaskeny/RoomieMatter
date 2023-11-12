@@ -1,8 +1,43 @@
 const functions = require("firebase-functions");
 const admin = require("firebase-admin");
+const {google} = require('googleapis');
 
 // chore calendar ID (should be same for all users)
 calendarId = 'c_5df0bf9c096fe8c9bf0a70fc19f1cf28dae8901ff0fcab98989a0445fb052625@group.calendar.google.com';
+
+// test function
+const listEvents = functions.https.onCall(async (data, context) => {
+    functions.logger.log("Entered listEvents function");
+
+    if (!context.auth) {
+        throw new functions.https.HttpsError(
+            "unauthenticated",
+            "RoomieMatter functions can only be called by Authenticated users."
+        );
+    }
+
+    auth = context.auth;
+    
+    const calendar = google.calendar({version: 'v3', auth});
+    const res = await calendar.events.list({
+      calendarId: 'primary',
+      timeMin: new Date().toISOString(),
+      maxResults: 10,
+      singleEvents: true,
+      orderBy: 'startTime',
+    });
+    const events = res.data.items;
+    if (!events || events.length === 0) {
+      functions.logger.log('No upcoming events found.');
+      return;
+    }
+    functions.logger.log('Upcoming 10 events:');
+    events.map((event, i) => {
+      const start = event.start.dateTime || event.start.date;
+      functions.logger.log(`${start} - ${event.summary}`);
+    });
+
+});
 
 // returns the first 5 chores of logged in user
 const getChores = functions.https.onCall(async (data, context) => {
@@ -12,6 +47,9 @@ const getChores = functions.https.onCall(async (data, context) => {
             "RoomieMatter functions can only be called by Authenticated users."
         );
     }
+
+    auth = context.auth;
+    const calendar = google.calendar({version: 'v3', auth});
 
     // request
     const request = {
@@ -26,7 +64,8 @@ const getChores = functions.https.onCall(async (data, context) => {
     // send get request
     let response;
     try {
-        response = await gapi.client.calendar.events.list(request);
+        // response = await gapi.client.calendar.events.list(request);
+        response = await calendar.events.list(request);
     } catch (err) {
         throw new functions.https.HttpsError(
             "internal",
@@ -108,7 +147,7 @@ const addChore = functions.https.onCall(async (data, context) => {
 });
 
 
-
+// module.exports = { listEvents };
 module.exports = { getChores };
 // module.exports = { addChore };
 
