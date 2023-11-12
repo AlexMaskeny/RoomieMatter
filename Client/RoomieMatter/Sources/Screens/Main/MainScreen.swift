@@ -60,6 +60,8 @@ struct MainScreen: View {
         NavigationLink("Chat", destination: ChatScreen())
         NavigationLink("Home", destination: HomeView())
         
+        Text(getChores())
+        
         Text(err).foregroundColor(.red).font(.caption)
     }
 }

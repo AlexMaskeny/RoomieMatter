@@ -34,12 +34,12 @@
 		B2FB8B3C2AEECDF400DEBF12 /* InputView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2FB8B3B2AEECDF400DEBF12 /* InputView.swift */; };
 		B2FB8B442AEED92000DEBF12 /* Constants.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2FB8B432AEED92000DEBF12 /* Constants.swift */; };
 		EEFC8F592AFAF90D002AE087 /* LoggedInView.swift in Sources */ = {isa = PBXBuildFile; fileRef = EEFC8F582AFAF90D002AE087 /* LoggedInView.swift */; };
-		EEFC8FE42AFD6797002AE087 /* HomeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = EEFC8FDF2AFD6796002AE087 /* HomeView.swift */; };
-		EEFC8FE52AFD6797002AE087 /* ChoreView.swift in Sources */ = {isa = PBXBuildFile; fileRef = EEFC8FE02AFD6796002AE087 /* ChoreView.swift */; };
 		EEFC8FE62AFD6797002AE087 /* RoommateStatusView.swift in Sources */ = {isa = PBXBuildFile; fileRef = EEFC8FE12AFD6796002AE087 /* RoommateStatusView.swift */; };
-		EEFC8FE72AFD6797002AE087 /* Roommate.swift in Sources */ = {isa = PBXBuildFile; fileRef = EEFC8FE22AFD6796002AE087 /* Roommate.swift */; };
-		EEFC8FE82AFD6797002AE087 /* Chore.swift in Sources */ = {isa = PBXBuildFile; fileRef = EEFC8FE32AFD6796002AE087 /* Chore.swift */; };
 		F4E3200A2AFFF9AF00DB34D3 /* ChoreStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = F4E320092AFFF9AF00DB34D3 /* ChoreStore.swift */; };
+		F4E3200B2B00729900DB34D3 /* Roommate.swift in Sources */ = {isa = PBXBuildFile; fileRef = EEFC8FE22AFD6796002AE087 /* Roommate.swift */; };
+		F4E3200C2B00729E00DB34D3 /* HomeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = EEFC8FDF2AFD6796002AE087 /* HomeView.swift */; };
+		F4E3200D2B0072A100DB34D3 /* ChoreView.swift in Sources */ = {isa = PBXBuildFile; fileRef = EEFC8FE02AFD6796002AE087 /* ChoreView.swift */; };
+		F4E3200E2B0072A700DB34D3 /* Chore.swift in Sources */ = {isa = PBXBuildFile; fileRef = EEFC8FE32AFD6796002AE087 /* Chore.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -314,6 +314,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				EEFC8FE62AFD6797002AE087 /* RoommateStatusView.swift in Sources */,
+				F4E3200B2B00729900DB34D3 /* Roommate.swift in Sources */,
 				B2FB8B442AEED92000DEBF12 /* Constants.swift in Sources */,
 				B21F02562AF1B1700001E8FB /* MainScreen.swift in Sources */,
 				F4E3200A2AFFF9AF00DB34D3 /* ChoreStore.swift in Sources */,
@@ -322,6 +323,7 @@
 				B21F02222AF025E90001E8FB /* LineText.swift in Sources */,
 				21F5B4552AF84202008124D0 /* AuthenticationViewModel.swift in Sources */,
 				B285F46A2AF211E30096EE9E /* Chat.swift in Sources */,
+				F4E3200D2B0072A100DB34D3 /* ChoreView.swift in Sources */,
 				B285F4702AF212040096EE9E /* ChatStore.swift in Sources */,
 				B2958F452AEDF0E500C9BBFF /* AuthScreen.swift in Sources */,
 				B21F02202AF01F1A0001E8FB /* CustomModifiers.swift in Sources */,
@@ -329,7 +331,9 @@
 				21F5B4532AF83C4B008124D0 /* TextBubble.swift in Sources */,
 				B21F02342AF18F080001E8FB /* AuthModel.swift in Sources */,
 				B285F4722AF212100096EE9E /* PostView.swift in Sources */,
+				F4E3200E2B0072A700DB34D3 /* Chore.swift in Sources */,
 				B2958F432AEDF0E500C9BBFF /* RoomieMatterApp.swift in Sources */,
+				F4E3200C2B00729E00DB34D3 /* HomeView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

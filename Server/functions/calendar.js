@@ -38,6 +38,7 @@ const getChores = functions.https.onCall(async (data, context) => {
 
     // no events found
     if (!events || events.length == 0) {
+        functions.logger.log('No upcoming events found.');
         return {};
     }
     
@@ -58,6 +59,8 @@ const getChores = functions.https.onCall(async (data, context) => {
     }, []);
 
     // TODO: make sure return next day + next assignee
+
+    functions.logger.log("Upcoming 5 events: ", output);
 
     return {"chores": output};
 });
@@ -107,4 +110,10 @@ const addChore = functions.https.onCall(async (data, context) => {
 
 
 module.exports = { getChores };
-module.exports = { addChore };
+// module.exports = { addChore };
+
+// one assignee repeating
+// delete instance of event after completion
+// functions: complete (delete instance), delete (delete all instances), edit
+
+// problems: rotating assignees

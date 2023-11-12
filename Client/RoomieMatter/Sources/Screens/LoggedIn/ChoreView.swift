@@ -41,6 +41,7 @@ struct ChoreView: View {
         .background(Color(white: 0.9))
         .cornerRadius(10)
     }
+        
 }
 
 #Preview {
