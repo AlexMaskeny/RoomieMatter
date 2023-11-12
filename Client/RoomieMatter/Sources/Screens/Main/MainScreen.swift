@@ -2,6 +2,8 @@ import SwiftUI
 import Firebase
 import FirebaseAuth
 import FirebaseFirestore
+import FirebaseFunctions
+import GoogleSignIn
 
 let db = Firestore.firestore()
 
@@ -23,6 +25,25 @@ struct MainScreen: View {
                 "Hello " +
                 (Auth.auth().currentUser!.displayName ?? "Username not found")
             )
+        }
+        
+        Button {
+            Functions.functions().httpsCallable("testCalendar").call([]) { (result, error) in
+                if let error = error as NSError? {
+                    if error.domain == FunctionsErrorDomain {
+                        let code = FunctionsErrorCode(rawValue: error.code)
+                        let message = error.localizedDescription
+                        let details = error.userInfo[FunctionsErrorDetailsKey]
+                        print("Error: \(message)")
+                    }
+                    // Handle the error
+                }
+                if let data = result?.data as? [String: Any] {
+                    print(data)
+                }
+            }
+        } label: {
+            Text("Test calendar")
         }
         
         Button {
