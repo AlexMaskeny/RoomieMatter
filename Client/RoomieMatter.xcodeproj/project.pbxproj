@@ -33,13 +33,6 @@
 		B2958F4A2AEDF0E600C9BBFF /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = B2958F492AEDF0E600C9BBFF /* Preview Assets.xcassets */; };
 		B2FB8B3C2AEECDF400DEBF12 /* InputView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2FB8B3B2AEECDF400DEBF12 /* InputView.swift */; };
 		B2FB8B442AEED92000DEBF12 /* Constants.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2FB8B432AEED92000DEBF12 /* Constants.swift */; };
-		EEAC198A2B01E35900E5A62E /* LoggedInViewViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = EEAC19892B01E35900E5A62E /* LoggedInViewViewModel.swift */; };
-		EEAC198C2B01E3A200E5A62E /* HomeViewViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = EEAC198B2B01E3A200E5A62E /* HomeViewViewModel.swift */; };
-		EEAC198E2B01E43500E5A62E /* AllChores.swift in Sources */ = {isa = PBXBuildFile; fileRef = EEAC198D2B01E43500E5A62E /* AllChores.swift */; };
-		EEAC19902B01E45600E5A62E /* ExpandedChore.swift in Sources */ = {isa = PBXBuildFile; fileRef = EEAC198F2B01E45600E5A62E /* ExpandedChore.swift */; };
-		EEAC19922B01E47900E5A62E /* ProfileView.swift in Sources */ = {isa = PBXBuildFile; fileRef = EEAC19912B01E47900E5A62E /* ProfileView.swift */; };
-		EEAC19942B01E49800E5A62E /* MyChores.swift in Sources */ = {isa = PBXBuildFile; fileRef = EEAC19932B01E49800E5A62E /* MyChores.swift */; };
-		EEAC19992B01E4E600E5A62E /* AddChoreView.swift in Sources */ = {isa = PBXBuildFile; fileRef = EEAC19982B01E4E600E5A62E /* AddChoreView.swift */; };
 		EEFC8F592AFAF90D002AE087 /* LoggedInView.swift in Sources */ = {isa = PBXBuildFile; fileRef = EEFC8F582AFAF90D002AE087 /* LoggedInView.swift */; };
 		EEFC8FE62AFD6797002AE087 /* RoommateStatusView.swift in Sources */ = {isa = PBXBuildFile; fileRef = EEFC8FE12AFD6796002AE087 /* RoommateStatusView.swift */; };
 		F4E3200A2AFFF9AF00DB34D3 /* ChoreStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = F4E320092AFFF9AF00DB34D3 /* ChoreStore.swift */; };
@@ -47,6 +40,14 @@
 		F4E3200C2B00729E00DB34D3 /* HomeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = EEFC8FDF2AFD6796002AE087 /* HomeView.swift */; };
 		F4E3200D2B0072A100DB34D3 /* ChoreView.swift in Sources */ = {isa = PBXBuildFile; fileRef = EEFC8FE02AFD6796002AE087 /* ChoreView.swift */; };
 		F4E3200E2B0072A700DB34D3 /* Chore.swift in Sources */ = {isa = PBXBuildFile; fileRef = EEFC8FE32AFD6796002AE087 /* Chore.swift */; };
+		F85B9ADD2B01EB74008F35C2 /* LoggedInViewViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = F85B9ADC2B01EB74008F35C2 /* LoggedInViewViewModel.swift */; };
+		F85B9AE12B01EBE0008F35C2 /* ManageChores in Resources */ = {isa = PBXBuildFile; fileRef = F85B9AE02B01EBE0008F35C2 /* ManageChores */; };
+		F85B9AE32B01EBFB008F35C2 /* AddChoreView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F85B9AE22B01EBFB008F35C2 /* AddChoreView.swift */; };
+		F85B9AE92B01EC55008F35C2 /* AllChores.swift in Sources */ = {isa = PBXBuildFile; fileRef = F85B9AE42B01EC55008F35C2 /* AllChores.swift */; };
+		F85B9AEA2B01EC55008F35C2 /* ExpandedChore.swift in Sources */ = {isa = PBXBuildFile; fileRef = F85B9AE52B01EC55008F35C2 /* ExpandedChore.swift */; };
+		F85B9AEB2B01EC55008F35C2 /* HomeViewViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = F85B9AE62B01EC55008F35C2 /* HomeViewViewModel.swift */; };
+		F85B9AEC2B01EC55008F35C2 /* MyChores.swift in Sources */ = {isa = PBXBuildFile; fileRef = F85B9AE72B01EC55008F35C2 /* MyChores.swift */; };
+		F85B9AED2B01EC55008F35C2 /* ProfileView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F85B9AE82B01EC55008F35C2 /* ProfileView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -69,13 +70,6 @@
 		B2FB8B382AEEC85B00DEBF12 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 		B2FB8B3B2AEECDF400DEBF12 /* InputView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InputView.swift; sourceTree = "<group>"; };
 		B2FB8B432AEED92000DEBF12 /* Constants.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Constants.swift; sourceTree = "<group>"; };
-		EEAC19892B01E35900E5A62E /* LoggedInViewViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoggedInViewViewModel.swift; sourceTree = "<group>"; };
-		EEAC198B2B01E3A200E5A62E /* HomeViewViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeViewViewModel.swift; sourceTree = "<group>"; };
-		EEAC198D2B01E43500E5A62E /* AllChores.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AllChores.swift; sourceTree = "<group>"; };
-		EEAC198F2B01E45600E5A62E /* ExpandedChore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExpandedChore.swift; sourceTree = "<group>"; };
-		EEAC19912B01E47900E5A62E /* ProfileView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProfileView.swift; sourceTree = "<group>"; };
-		EEAC19932B01E49800E5A62E /* MyChores.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MyChores.swift; sourceTree = "<group>"; };
-		EEAC19982B01E4E600E5A62E /* AddChoreView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddChoreView.swift; sourceTree = "<group>"; };
 		EEFC8F582AFAF90D002AE087 /* LoggedInView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoggedInView.swift; sourceTree = "<group>"; };
 		EEFC8FDF2AFD6796002AE087 /* HomeView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = HomeView.swift; sourceTree = "<group>"; };
 		EEFC8FE02AFD6796002AE087 /* ChoreView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ChoreView.swift; sourceTree = "<group>"; };
@@ -83,6 +77,14 @@
 		EEFC8FE22AFD6796002AE087 /* Roommate.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Roommate.swift; sourceTree = "<group>"; };
 		EEFC8FE32AFD6796002AE087 /* Chore.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Chore.swift; sourceTree = "<group>"; };
 		F4E320092AFFF9AF00DB34D3 /* ChoreStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChoreStore.swift; sourceTree = "<group>"; };
+		F85B9ADC2B01EB74008F35C2 /* LoggedInViewViewModel.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = LoggedInViewViewModel.swift; sourceTree = "<group>"; };
+		F85B9AE02B01EBE0008F35C2 /* ManageChores */ = {isa = PBXFileReference; lastKnownFileType = folder; name = ManageChores; path = Screens/ManageChores; sourceTree = "<group>"; };
+		F85B9AE22B01EBFB008F35C2 /* AddChoreView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = AddChoreView.swift; path = Screens/ManageChores/AddChoreView.swift; sourceTree = "<group>"; };
+		F85B9AE42B01EC55008F35C2 /* AllChores.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AllChores.swift; sourceTree = "<group>"; };
+		F85B9AE52B01EC55008F35C2 /* ExpandedChore.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ExpandedChore.swift; sourceTree = "<group>"; };
+		F85B9AE62B01EC55008F35C2 /* HomeViewViewModel.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = HomeViewViewModel.swift; sourceTree = "<group>"; };
+		F85B9AE72B01EC55008F35C2 /* MyChores.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MyChores.swift; sourceTree = "<group>"; };
+		F85B9AE82B01EC55008F35C2 /* ProfileView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ProfileView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -179,6 +181,8 @@
 		B2FB8B312AEEB8AC00DEBF12 /* Sources */ = {
 			isa = PBXGroup;
 			children = (
+				F85B9AE02B01EBE0008F35C2 /* ManageChores */,
+				F85B9AE22B01EBFB008F35C2 /* AddChoreView.swift */,
 				B21F02572AF1B7800001E8FB /* Models */,
 				B2FB8B402AEED6EF00DEBF12 /* Settings */,
 				B2FB8B392AEECD3300DEBF12 /* Views */,
@@ -191,13 +195,12 @@
 		B2FB8B322AEEBA8100DEBF12 /* Screens */ = {
 			isa = PBXGroup;
 			children = (
-				EEAC19952B01E4C400E5A62E /* ManageChores */,
 				EEFC8FDE2AFD6796002AE087 /* LoggedIn */,
 				B285F4682AF211B50096EE9E /* Chat */,
 				B21F02542AF1B14D0001E8FB /* Main */,
 				B2FB8B332AEEBAEA00DEBF12 /* Auth */,
 				EEFC8F582AFAF90D002AE087 /* LoggedInView.swift */,
-				EEAC19892B01E35900E5A62E /* LoggedInViewViewModel.swift */,
+				F85B9ADC2B01EB74008F35C2 /* LoggedInViewViewModel.swift */,
 			);
 			path = Screens;
 			sourceTree = "<group>";
@@ -229,29 +232,21 @@
 			path = Settings;
 			sourceTree = "<group>";
 		};
-		EEAC19952B01E4C400E5A62E /* ManageChores */ = {
-			isa = PBXGroup;
-			children = (
-				EEAC19982B01E4E600E5A62E /* AddChoreView.swift */,
-			);
-			path = ManageChores;
-			sourceTree = "<group>";
-		};
 		EEFC8FDE2AFD6796002AE087 /* LoggedIn */ = {
 			isa = PBXGroup;
 			children = (
 				EEFC8FDF2AFD6796002AE087 /* HomeView.swift */,
-				EEAC198B2B01E3A200E5A62E /* HomeViewViewModel.swift */,
 				EEFC8FE02AFD6796002AE087 /* ChoreView.swift */,
 				EEFC8FE12AFD6796002AE087 /* RoommateStatusView.swift */,
 				EEFC8FE22AFD6796002AE087 /* Roommate.swift */,
 				EEFC8FE32AFD6796002AE087 /* Chore.swift */,
+				F85B9AE42B01EC55008F35C2 /* AllChores.swift */,
+				F85B9AE52B01EC55008F35C2 /* ExpandedChore.swift */,
+				F85B9AE62B01EC55008F35C2 /* HomeViewViewModel.swift */,
+				F85B9AE72B01EC55008F35C2 /* MyChores.swift */,
+				F85B9AE82B01EC55008F35C2 /* ProfileView.swift */,
 				7A93C2862B01663900C2C69A /* MenuView.swift */,
 				F4E320092AFFF9AF00DB34D3 /* ChoreStore.swift */,
-				EEAC198D2B01E43500E5A62E /* AllChores.swift */,
-				EEAC198F2B01E45600E5A62E /* ExpandedChore.swift */,
-				EEAC19912B01E47900E5A62E /* ProfileView.swift */,
-				EEAC19932B01E49800E5A62E /* MyChores.swift */,
 			);
 			path = LoggedIn;
 			sourceTree = "<group>";
@@ -330,6 +325,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				B2958F4A2AEDF0E600C9BBFF /* Preview Assets.xcassets in Resources */,
+				F85B9AE12B01EBE0008F35C2 /* ManageChores in Resources */,
 				B2958F472AEDF0E600C9BBFF /* Assets.xcassets in Resources */,
 				B21F025D2AF1BD1A0001E8FB /* GoogleService-Info.plist in Resources */,
 			);
@@ -342,8 +338,8 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				F85B9AE32B01EBFB008F35C2 /* AddChoreView.swift in Sources */,
 				EEFC8FE62AFD6797002AE087 /* RoommateStatusView.swift in Sources */,
-				EEAC198C2B01E3A200E5A62E /* HomeViewViewModel.swift in Sources */,
 				F4E3200B2B00729900DB34D3 /* Roommate.swift in Sources */,
 				B2FB8B442AEED92000DEBF12 /* Constants.swift in Sources */,
 				B21F02562AF1B1700001E8FB /* MainScreen.swift in Sources */,
@@ -354,22 +350,22 @@
 				7A93C2872B01663900C2C69A /* MenuView.swift in Sources */,
 				21F5B4552AF84202008124D0 /* AuthenticationViewModel.swift in Sources */,
 				B285F46A2AF211E30096EE9E /* Chat.swift in Sources */,
+				F85B9AED2B01EC55008F35C2 /* ProfileView.swift in Sources */,
 				F4E3200D2B0072A100DB34D3 /* ChoreView.swift in Sources */,
 				B285F4702AF212040096EE9E /* ChatStore.swift in Sources */,
-				EEAC19922B01E47900E5A62E /* ProfileView.swift in Sources */,
 				B2958F452AEDF0E500C9BBFF /* AuthScreen.swift in Sources */,
 				B21F02202AF01F1A0001E8FB /* CustomModifiers.swift in Sources */,
 				EEFC8F592AFAF90D002AE087 /* LoggedInView.swift in Sources */,
 				21F5B4532AF83C4B008124D0 /* TextBubble.swift in Sources */,
 				B21F02342AF18F080001E8FB /* AuthModel.swift in Sources */,
-				EEAC19902B01E45600E5A62E /* ExpandedChore.swift in Sources */,
+				F85B9AEA2B01EC55008F35C2 /* ExpandedChore.swift in Sources */,
 				F4E3200E2B0072A700DB34D3 /* Chore.swift in Sources */,
-				EEAC19992B01E4E600E5A62E /* AddChoreView.swift in Sources */,
-				EEAC19942B01E49800E5A62E /* MyChores.swift in Sources */,
 				B2958F432AEDF0E500C9BBFF /* RoomieMatterApp.swift in Sources */,
-				EEAC198A2B01E35900E5A62E /* LoggedInViewViewModel.swift in Sources */,
+				F85B9AEC2B01EC55008F35C2 /* MyChores.swift in Sources */,
+				F85B9ADD2B01EB74008F35C2 /* LoggedInViewViewModel.swift in Sources */,
 				F4E3200C2B00729E00DB34D3 /* HomeView.swift in Sources */,
-				EEAC198E2B01E43500E5A62E /* AllChores.swift in Sources */,
+				F85B9AEB2B01EC55008F35C2 /* HomeViewViewModel.swift in Sources */,
+				F85B9AE92B01EC55008F35C2 /* AllChores.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -503,7 +499,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_ASSET_PATHS = "\"RoomieMatter/Preview Content\"";
-				DEVELOPMENT_TEAM = 3X6FA7ZHM7;
+				DEVELOPMENT_TEAM = K24L4VBUTW;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = RoomieMatter/Info.plist;
@@ -517,7 +513,7 @@
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.roomiematter.RoomieMatter;
+				PRODUCT_BUNDLE_IDENTIFIER = com.roomiematter.RoomieMatter1;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
@@ -533,7 +529,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_ASSET_PATHS = "\"RoomieMatter/Preview Content\"";
-				DEVELOPMENT_TEAM = 3X6FA7ZHM7;
+				DEVELOPMENT_TEAM = K24L4VBUTW;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = RoomieMatter/Info.plist;
@@ -547,7 +543,7 @@
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.roomiematter.RoomieMatter;
+				PRODUCT_BUNDLE_IDENTIFIER = com.roomiematter.RoomieMatter1;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
