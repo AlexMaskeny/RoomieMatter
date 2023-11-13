@@ -82,7 +82,7 @@ const sendChat = functions.https.onCall(async (data, context) => {
       const history = await db
         .collection("chats")
         .where("room", "==", room)
-        .orderBy("createdAt", "desc")
+        .orderBy("createdAt", "asc")
         .get();
       const plainHistoryData = history.docs.map((doc) => doc.data());
 
@@ -151,10 +151,6 @@ const sendChat = functions.https.onCall(async (data, context) => {
             content: settings.systemMessage,
           },
           ...formattedHistory,
-          {
-            role: "user",
-            content: `[${new Date().toISOString()}] ${content}`,
-          },
         ],
       };
       if (settings.functions?.length > 0) {
@@ -228,4 +224,83 @@ const sendChat = functions.https.onCall(async (data, context) => {
   }
 });
 
-module.exports = { sendChat };
+const getChats = functions.https.onCall(async (data, context) => {
+  if (!context.auth) {
+    throw new functions.https.HttpsError(
+      "unauthenticated",
+      "RoomieMatter functions can only be called by Authenticated users."
+    );
+  }
+  const roomId = data.roomId;
+  if (!roomId) {
+    throw new functions.https.HttpsError(
+      "invalid-argument",
+      "The sendChat function requires JSON requests to include roomId"
+    );
+  }
+  const room = db.collection("rooms").doc(roomId);
+  const rawHistory = await db
+    .collection("chats")
+    .where("room", "==", room)
+    .orderBy("createdAt", "asc")
+    .get();
+  const plainHistoryData = rawHistory.docs.map((doc) => doc.data());
+
+  let userRefs = [];
+  plainHistoryData.forEach((chat) => {
+    if (["roommate", "user"].includes(chat.role)) {
+      if (!userRefs.find((userRef) => userRef.id === chat.user?.id)) {
+        userRefs.push(chat.user);
+      }
+    }
+  });
+  let users = new Map();
+  for (let i = 0; i < userRefs.length; i++) {
+    const userRef = userRefs[i];
+    const userSnapshot = await userRef.get();
+    if (userSnapshot.exists) {
+      const userData = userSnapshot.data();
+      users.set(userRef.id, userData);
+    }
+  }
+
+  const history = plainHistoryData.reduce((acc, chat) => {
+    const generalParams = {
+      content: chat.content ?? "",
+      createdAt: chat.createdAt?.toDate() ?? "",
+      role: chat.role ?? "",
+    };
+    switch (chat.role) {
+      case "assistant":
+        return [
+          ...acc,
+          {
+            ...generalParams,
+            profilePicture:
+              "https://umich.edu/includes/panels/gallery/images/block-m-maize.png",
+          },
+        ];
+      case "roommate":
+      case "user": {
+        const userData = users.get(chat.user.id);
+        if (userData) {
+          return [
+            ...acc,
+            {
+              ...generalParams,
+              userId: userData.uuid,
+              displayName: userData.displayName,
+              profilePicture: userData.photoUrl,
+            },
+          ];
+        }
+        return acc;
+      }
+      default:
+        return acc;
+    }
+  }, []);
+  return { history };
+});
+
+module.exports = { sendChat, getChats };
