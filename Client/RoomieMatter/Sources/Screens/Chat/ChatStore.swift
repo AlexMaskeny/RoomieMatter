@@ -7,7 +7,6 @@
 
 import SwiftUI
 import FirebaseFunctions
-
 import Observation
 
 @Observable
@@ -25,7 +24,7 @@ final class ChatStore {
         Chat(username: "Alex David Maskeny", message: "Hi there!", timestamp: dateFormatter.date(from: "2023-11-02T15:30:00")),
             Chat(username: "David Wang", message: "Hello World!", timestamp: dateFormatter.date(from: "2023-11-02T15:30:00")),
         ]
-
+    
     func sendChat(msg: String) {
         let params = [
             "userId": authViewModel.user_uid,
