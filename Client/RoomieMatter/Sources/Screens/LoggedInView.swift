@@ -27,7 +27,7 @@ struct LoggedInView: View {
             
             .toolbar{
                 ToolbarItemGroup(placement: .topBarLeading) {
-                    Text("Name of Room")
+                    Text(viewModel.roomName)
                         .font(.title)
                         .foregroundStyle(.white)
                     
@@ -35,7 +35,7 @@ struct LoggedInView: View {
                 
                 ToolbarItemGroup(placement: .topBarTrailing) {
                     NavigationLink {
-                        Text("Chat View")
+                        ChatScreen()
                     } label: {
                         Image(systemName: "ellipsis.message")
                             .foregroundStyle(.white)

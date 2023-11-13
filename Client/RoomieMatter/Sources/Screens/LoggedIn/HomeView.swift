@@ -23,7 +23,7 @@ struct HomeView: View {
                         .bold()
                         .padding()
                     NavigationLink {
-                        Text("Add Chore View")
+                        AddChoreView()
                     } label: {
                         Image(systemName: "plus")
                             .font(.title)
@@ -36,7 +36,7 @@ struct HomeView: View {
                     }
                     Spacer()
                     NavigationLink("View All") {
-                        Text("View All Chore View")
+                        AllChores(chores: homeViewViewModel.chores)
                     }
                     .padding()
                 }
