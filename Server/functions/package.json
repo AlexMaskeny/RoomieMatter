@@ -20,6 +20,7 @@
     "openai": "^4.0.0"
   },
   "devDependencies": {
+    "eslint": "^8.53.0",
     "firebase-functions-test": "^3.1.0"
   },
   "private": true
