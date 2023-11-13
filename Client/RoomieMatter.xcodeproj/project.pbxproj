@@ -9,6 +9,7 @@
 /* Begin PBXBuildFile section */
 		21F5B4532AF83C4B008124D0 /* TextBubble.swift in Sources */ = {isa = PBXBuildFile; fileRef = 21F5B4522AF83C4B008124D0 /* TextBubble.swift */; };
 		21F5B4552AF84202008124D0 /* AuthenticationViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 21F5B4542AF84202008124D0 /* AuthenticationViewModel.swift */; };
+		7A93C2872B01663900C2C69A /* MenuView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7A93C2862B01663900C2C69A /* MenuView.swift */; };
 		B21F02202AF01F1A0001E8FB /* CustomModifiers.swift in Sources */ = {isa = PBXBuildFile; fileRef = B21F021F2AF01F1A0001E8FB /* CustomModifiers.swift */; };
 		B21F02222AF025E90001E8FB /* LineText.swift in Sources */ = {isa = PBXBuildFile; fileRef = B21F02212AF025E90001E8FB /* LineText.swift */; };
 		B21F02302AF18B300001E8FB /* GoogleSignIn in Frameworks */ = {isa = PBXBuildFile; productRef = B21F022F2AF18B300001E8FB /* GoogleSignIn */; };
@@ -43,6 +44,7 @@
 /* Begin PBXFileReference section */
 		21F5B4522AF83C4B008124D0 /* TextBubble.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TextBubble.swift; sourceTree = "<group>"; };
 		21F5B4542AF84202008124D0 /* AuthenticationViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuthenticationViewModel.swift; sourceTree = "<group>"; };
+		7A93C2862B01663900C2C69A /* MenuView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MenuView.swift; sourceTree = "<group>"; };
 		B21F021F2AF01F1A0001E8FB /* CustomModifiers.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CustomModifiers.swift; sourceTree = "<group>"; };
 		B21F02212AF025E90001E8FB /* LineText.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LineText.swift; sourceTree = "<group>"; };
 		B21F02332AF18F080001E8FB /* AuthModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuthModel.swift; sourceTree = "<group>"; };
@@ -217,6 +219,7 @@
 				EEFC8FE12AFD6796002AE087 /* RoommateStatusView.swift */,
 				EEFC8FE22AFD6796002AE087 /* Roommate.swift */,
 				EEFC8FE32AFD6796002AE087 /* Chore.swift */,
+				7A93C2862B01663900C2C69A /* MenuView.swift */,
 			);
 			path = LoggedIn;
 			sourceTree = "<group>";
@@ -314,6 +317,7 @@
 				B285F46E2AF211FA0096EE9E /* ChatScreen.swift in Sources */,
 				EEFC8FE52AFD6797002AE087 /* ChoreView.swift in Sources */,
 				B21F02222AF025E90001E8FB /* LineText.swift in Sources */,
+				7A93C2872B01663900C2C69A /* MenuView.swift in Sources */,
 				EEFC8FE82AFD6797002AE087 /* Chore.swift in Sources */,
 				21F5B4552AF84202008124D0 /* AuthenticationViewModel.swift in Sources */,
 				B285F46A2AF211E30096EE9E /* Chat.swift in Sources */,
