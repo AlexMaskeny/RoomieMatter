@@ -33,6 +33,11 @@
 		B2958F4A2AEDF0E600C9BBFF /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = B2958F492AEDF0E600C9BBFF /* Preview Assets.xcassets */; };
 		B2FB8B3C2AEECDF400DEBF12 /* InputView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2FB8B3B2AEECDF400DEBF12 /* InputView.swift */; };
 		B2FB8B442AEED92000DEBF12 /* Constants.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2FB8B432AEED92000DEBF12 /* Constants.swift */; };
+		EE4D08EF2B01B579008CC18F /* AllChores.swift in Sources */ = {isa = PBXBuildFile; fileRef = EE4D08EE2B01B579008CC18F /* AllChores.swift */; };
+		EE4D08F12B01B57F008CC18F /* ChoreStore 2.swift in Sources */ = {isa = PBXBuildFile; fileRef = EE4D08F02B01B57F008CC18F /* ChoreStore 2.swift */; };
+		EE4D08F32B01B591008CC18F /* ExpandedChore.swift in Sources */ = {isa = PBXBuildFile; fileRef = EE4D08F22B01B591008CC18F /* ExpandedChore.swift */; };
+		EE4D08F52B01B599008CC18F /* MyChores.swift in Sources */ = {isa = PBXBuildFile; fileRef = EE4D08F42B01B599008CC18F /* MyChores.swift */; };
+		EE4D08F72B01B5A1008CC18F /* ProfileView.swift in Sources */ = {isa = PBXBuildFile; fileRef = EE4D08F62B01B5A1008CC18F /* ProfileView.swift */; };
 		EEFC8F592AFAF90D002AE087 /* LoggedInView.swift in Sources */ = {isa = PBXBuildFile; fileRef = EEFC8F582AFAF90D002AE087 /* LoggedInView.swift */; };
 		EEFC8FE62AFD6797002AE087 /* RoommateStatusView.swift in Sources */ = {isa = PBXBuildFile; fileRef = EEFC8FE12AFD6796002AE087 /* RoommateStatusView.swift */; };
 		F4E3200A2AFFF9AF00DB34D3 /* ChoreStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = F4E320092AFFF9AF00DB34D3 /* ChoreStore.swift */; };
@@ -62,6 +67,11 @@
 		B2FB8B382AEEC85B00DEBF12 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 		B2FB8B3B2AEECDF400DEBF12 /* InputView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InputView.swift; sourceTree = "<group>"; };
 		B2FB8B432AEED92000DEBF12 /* Constants.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Constants.swift; sourceTree = "<group>"; };
+		EE4D08EE2B01B579008CC18F /* AllChores.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AllChores.swift; sourceTree = "<group>"; };
+		EE4D08F02B01B57F008CC18F /* ChoreStore 2.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "ChoreStore 2.swift"; sourceTree = "<group>"; };
+		EE4D08F22B01B591008CC18F /* ExpandedChore.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ExpandedChore.swift; sourceTree = "<group>"; };
+		EE4D08F42B01B599008CC18F /* MyChores.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MyChores.swift; sourceTree = "<group>"; };
+		EE4D08F62B01B5A1008CC18F /* ProfileView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ProfileView.swift; sourceTree = "<group>"; };
 		EEFC8F582AFAF90D002AE087 /* LoggedInView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoggedInView.swift; sourceTree = "<group>"; };
 		EEFC8FDF2AFD6796002AE087 /* HomeView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = HomeView.swift; sourceTree = "<group>"; };
 		EEFC8FE02AFD6796002AE087 /* ChoreView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ChoreView.swift; sourceTree = "<group>"; };
@@ -216,6 +226,8 @@
 		EEFC8FDE2AFD6796002AE087 /* LoggedIn */ = {
 			isa = PBXGroup;
 			children = (
+				EE4D08EE2B01B579008CC18F /* AllChores.swift */,
+				EE4D08F22B01B591008CC18F /* ExpandedChore.swift */,
 				EEFC8FDF2AFD6796002AE087 /* HomeView.swift */,
 				EEFC8FE02AFD6796002AE087 /* ChoreView.swift */,
 				EEFC8FE12AFD6796002AE087 /* RoommateStatusView.swift */,
@@ -223,6 +235,9 @@
 				EEFC8FE32AFD6796002AE087 /* Chore.swift */,
 				7A93C2862B01663900C2C69A /* MenuView.swift */,
 				F4E320092AFFF9AF00DB34D3 /* ChoreStore.swift */,
+				EE4D08F02B01B57F008CC18F /* ChoreStore 2.swift */,
+				EE4D08F62B01B5A1008CC18F /* ProfileView.swift */,
+				EE4D08F42B01B599008CC18F /* MyChores.swift */,
 			);
 			path = LoggedIn;
 			sourceTree = "<group>";
@@ -320,19 +335,22 @@
 				F4E3200A2AFFF9AF00DB34D3 /* ChoreStore.swift in Sources */,
 				B2FB8B3C2AEECDF400DEBF12 /* InputView.swift in Sources */,
 				B285F46E2AF211FA0096EE9E /* ChatScreen.swift in Sources */,
+				EE4D08F12B01B57F008CC18F /* ChoreStore 2.swift in Sources */,
+				EE4D08F32B01B591008CC18F /* ExpandedChore.swift in Sources */,
 				B21F02222AF025E90001E8FB /* LineText.swift in Sources */,
 				7A93C2872B01663900C2C69A /* MenuView.swift in Sources */,
-				EEFC8FE82AFD6797002AE087 /* Chore.swift in Sources */,
 				21F5B4552AF84202008124D0 /* AuthenticationViewModel.swift in Sources */,
 				B285F46A2AF211E30096EE9E /* Chat.swift in Sources */,
 				F4E3200D2B0072A100DB34D3 /* ChoreView.swift in Sources */,
+				EE4D08F72B01B5A1008CC18F /* ProfileView.swift in Sources */,
 				B285F4702AF212040096EE9E /* ChatStore.swift in Sources */,
 				B2958F452AEDF0E500C9BBFF /* AuthScreen.swift in Sources */,
 				B21F02202AF01F1A0001E8FB /* CustomModifiers.swift in Sources */,
 				EEFC8F592AFAF90D002AE087 /* LoggedInView.swift in Sources */,
 				21F5B4532AF83C4B008124D0 /* TextBubble.swift in Sources */,
+				EE4D08EF2B01B579008CC18F /* AllChores.swift in Sources */,
+				EE4D08F52B01B599008CC18F /* MyChores.swift in Sources */,
 				B21F02342AF18F080001E8FB /* AuthModel.swift in Sources */,
-				EEFC8FE42AFD6797002AE087 /* HomeView.swift in Sources */,
 				F4E3200E2B0072A700DB34D3 /* Chore.swift in Sources */,
 				B2958F432AEDF0E500C9BBFF /* RoomieMatterApp.swift in Sources */,
 				F4E3200C2B00729E00DB34D3 /* HomeView.swift in Sources */,
