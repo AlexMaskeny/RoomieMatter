@@ -11,6 +11,11 @@ struct ChatScreen: View {
     private let store = ChatStore.shared
     @State private var textInput: String = ""
     @State private var authViewModel = AuthenticationViewModel()
+    
+    init() {
+        store.getChats()
+        print("getting chats")
+    }
 
     var body: some View {
         List(store.chats.indices, id: \.self) {
@@ -36,7 +41,6 @@ struct ChatScreen: View {
                 print("Message sent: \(textInput)")
                 store.sendChat(msg: textInput)
                 textInput = ""
-                // store.postChat(...)  TODO: uncomment after defining postChat(), and delete PostView file
             }) {
                 Text("Send")
                     .padding(.horizontal)

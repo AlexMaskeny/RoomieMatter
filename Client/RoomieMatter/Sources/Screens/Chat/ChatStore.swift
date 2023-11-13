@@ -21,10 +21,7 @@ final class ChatStore {
         return formatter
     }()
     
-    private(set) var chats: [Chat] = [
-        Chat(username: "Alex David Maskeny", message: "Hi there!", timestamp: dateFormatter.date(from: "2023-11-02T15:30:00")),
-            Chat(username: "David Wang", message: "Hello World!", timestamp: dateFormatter.date(from: "2023-11-02T15:30:00")),
-        ]
+    private(set) var chats: [Chat] = []
     
     func sendChat(msg: String) {
         let params = [
@@ -58,6 +55,7 @@ final class ChatStore {
     }
     
     func getChats() {
+        print("getting chats")
         let params = [
             "roomId": authViewModel.room_id
         ]
@@ -80,18 +78,32 @@ final class ChatStore {
                     // Iterate over each chat dictionary in the history array
                     for chatDict in historyArray {
                         // Extract values and append a new Chat object
-                        if let username = chatDict["displayName"] as? String,
+                        
+                        if let role = chatDict["role"] as? String,
                            let message = chatDict["content"] as? String {
-                            //                           let timestampString = chatDict["createdAt"] as? String,
-                            //                           let timestamp = dateFormatter.date(from: timestampString) {
-                            
-                            self.chats.append(
-                                Chat(
-                                    username: username,
-                                    message: message,
-                                    timestamp: ChatStore.dateFormatter.date(from: "2023-11-02T15:30:00")
+                            if role == "assistant" {
+                                self.chats.append(
+                                    Chat(
+                                        username: "HouseKeeper",
+                                        message: message,
+                                        timestamp: ChatStore.dateFormatter.date(from: "2023-11-02T15:30:00")
+                                    )
                                 )
-                            )
+                            }
+                            else {
+                                if let username = chatDict["displayName"] as? String{
+                                    //                           let timestampString = chatDict["createdAt"] as? String,
+                                    //                           let timestamp = dateFormatter.date(from: timestampString) {
+                                    
+                                    self.chats.append(
+                                        Chat(
+                                            username: username,
+                                            message: message,
+                                            timestamp: ChatStore.dateFormatter.date(from: "2023-11-02T15:30:00")
+                                        )
+                                    )
+                                }
+                            }
                         }
                     }
                 }
@@ -99,6 +111,5 @@ final class ChatStore {
                 print("Error getting chats")
             }
         }
-        print(chats)
     }
 }
