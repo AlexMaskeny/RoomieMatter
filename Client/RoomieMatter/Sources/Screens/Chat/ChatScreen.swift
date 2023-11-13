@@ -15,14 +15,14 @@ struct ChatScreen: View {
     var body: some View {
         List(store.chats.indices, id: \.self) {
             TextBubble(chat: store.chats[$0],
-                       position: store.chats[$0].username == authViewModel.username ? .left : .right)
+                       position: store.chats[$0].username == authViewModel.username ? .right : .left)
             .listRowSeparator(.hidden)
             
             .listRowInsets(.init(top: 0, leading: 0, bottom: 5, trailing: 0))
         }
         .listStyle(.plain)
         .refreshable {
-            //store.getChats()  TODO: uncomment after defining getChats()
+            store.getChats()
         }
         .navigationTitle(authViewModel.roomname ?? "failed_to_fetch_roomname")
         .navigationBarTitleDisplayMode(.inline)
@@ -34,6 +34,7 @@ struct ChatScreen: View {
             
             Button(action: {
                 print("Message sent: \(textInput)")
+                store.sendChat(msg: textInput)
                 textInput = ""
                 // store.postChat(...)  TODO: uncomment after defining postChat(), and delete PostView file
             }) {

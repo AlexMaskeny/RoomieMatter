@@ -9,6 +9,7 @@ import SwiftUI
 import FirebaseFunctions
 import Observation
 
+
 @Observable
 final class ChatStore {
     static let shared = ChatStore()
@@ -41,9 +42,63 @@ final class ChatStore {
                 }
                 // Handle the error
             }
+            else {
+                self.chats.append(
+                    Chat(
+                        username: self.authViewModel.username,
+                        message: msg,
+                        timestamp: Date.now
+                    )
+                )
+            }
             if let data = result?.data as? [String: Any] {
                 print(data)
             }
         }
+    }
+    
+    func getChats() {
+        let params = [
+            "roomId": authViewModel.room_id
+        ]
+        Functions.functions().httpsCallable("getChats").call(params) { (result, error) in
+            if let error = error as NSError? {
+                if error.domain == FunctionsErrorDomain {
+                    let code = FunctionsErrorCode(rawValue: error.code)
+                    let message = error.localizedDescription
+                    let details = error.userInfo[FunctionsErrorDetailsKey]
+                    print("Error: \(message)")
+                }
+                // Handle the error
+            }
+
+            if let data = result?.data as? [String: Any] {
+                // Deserialize the 'history' key into an array of dictionaries
+                if let historyArray = data["history"] as? [[String: Any]] {
+                    // Clear chat data
+                    self.chats.removeAll()
+                    // Iterate over each chat dictionary in the history array
+                    for chatDict in historyArray {
+                        // Extract values and append a new Chat object
+                        if let username = chatDict["displayName"] as? String,
+                           let message = chatDict["content"] as? String {
+                            //                           let timestampString = chatDict["createdAt"] as? String,
+                            //                           let timestamp = dateFormatter.date(from: timestampString) {
+                            
+                            self.chats.append(
+                                Chat(
+                                    username: username,
+                                    message: message,
+                                    timestamp: ChatStore.dateFormatter.date(from: "2023-11-02T15:30:00")
+                                )
+                            )
+                        }
+                    }
+                }
+            } else {
+                print("Error getting chats")
+            }
+        }
+        print(chats)
     }
 }
