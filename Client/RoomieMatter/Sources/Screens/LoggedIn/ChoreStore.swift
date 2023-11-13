@@ -57,7 +57,7 @@ import FirebaseFunctions
 //}
 
 func getChores() -> String {
-    Functions.functions().httpsCallable("testGetChores").call() { (result, error) in
+    Functions.functions().httpsCallable("testGetChores").call("hello") { (result, error) in
         if let error = error as NSError? {
             if error.domain == FunctionsErrorDomain {
                 let code = FunctionsErrorCode(rawValue: error.code)

@@ -28,7 +28,8 @@ struct MainScreen: View {
         }
         
         Button {
-            Functions.functions().httpsCallable("testCalendar").call([]) { (result, error) in
+            Functions.functions().httpsCallable("testGetChores").call([]) { (result, error) in
+                print("in testGetChores")
                 if let error = error as NSError? {
                     if error.domain == FunctionsErrorDomain {
                         let code = FunctionsErrorCode(rawValue: error.code)
@@ -43,7 +44,7 @@ struct MainScreen: View {
                 }
             }
         } label: {
-            Text("Test calendar")
+            Text("Test get chores")
         }
         
         Button {
@@ -81,7 +82,7 @@ struct MainScreen: View {
         NavigationLink("Chat", destination: ChatScreen())
         NavigationLink("Home", destination: HomeView())
         
-        Text(getChores())
+//        Text(getChores())
         
         Text(err).foregroundColor(.red).font(.caption)
     }
