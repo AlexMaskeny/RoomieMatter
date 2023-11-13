@@ -15,12 +15,12 @@ final class ChatStore {
     static let shared = ChatStore()
     private var authViewModel = AuthenticationViewModel()
     
-    private static let dateFormatter: DateFormatter = {
-        let formatter = DateFormatter()
-        formatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ss"
+    private static let dateFormatter: ISO8601DateFormatter = {
+        let formatter = ISO8601DateFormatter()
+        formatter.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
         return formatter
     }()
-    
+
     private(set) var chats: [Chat] = []
     
     func sendChat(msg: String) {
@@ -80,26 +80,25 @@ final class ChatStore {
                         // Extract values and append a new Chat object
                         
                         if let role = chatDict["role"] as? String,
-                           let message = chatDict["content"] as? String {
+                           let message = chatDict["content"] as? String,
+                           let isoString = chatDict["createdAt"] as? String,
+                           let timestamp = ChatStore.dateFormatter.date(from: isoString) {
                             if role == "assistant" {
                                 self.chats.append(
                                     Chat(
                                         username: "HouseKeeper",
                                         message: message,
-                                        timestamp: ChatStore.dateFormatter.date(from: "2023-11-02T15:30:00")
+                                        timestamp: timestamp
                                     )
                                 )
                             }
                             else {
                                 if let username = chatDict["displayName"] as? String{
-                                    //                           let timestampString = chatDict["createdAt"] as? String,
-                                    //                           let timestamp = dateFormatter.date(from: timestampString) {
-                                    
                                     self.chats.append(
                                         Chat(
                                             username: username,
                                             message: message,
-                                            timestamp: ChatStore.dateFormatter.date(from: "2023-11-02T15:30:00")
+                                            timestamp: timestamp
                                         )
                                     )
                                 }
