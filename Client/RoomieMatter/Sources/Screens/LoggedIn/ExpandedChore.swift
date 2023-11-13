@@ -10,7 +10,7 @@ struct ExpandedChore: View {
                             Text(chore.name)
                                 .font(.title)
                                 .bold()
-                                .foregroundStyle(.blue)
+                                .foregroundStyle(.roomieMatter)
 
                             Group {
                                 if Calendar.current.isDateInToday(Date(timeIntervalSince1970: chore.date)) {

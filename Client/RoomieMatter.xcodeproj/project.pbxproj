@@ -40,6 +40,7 @@
 		EEAC19922B01E47900E5A62E /* ProfileView.swift in Sources */ = {isa = PBXBuildFile; fileRef = EEAC19912B01E47900E5A62E /* ProfileView.swift */; };
 		EEAC19942B01E49800E5A62E /* MyChores.swift in Sources */ = {isa = PBXBuildFile; fileRef = EEAC19932B01E49800E5A62E /* MyChores.swift */; };
 		EEAC19992B01E4E600E5A62E /* AddChoreView.swift in Sources */ = {isa = PBXBuildFile; fileRef = EEAC19982B01E4E600E5A62E /* AddChoreView.swift */; };
+		EEAC199B2B01EF4B00E5A62E /* AddChoreViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = EEAC199A2B01EF4B00E5A62E /* AddChoreViewModel.swift */; };
 		EEFC8F592AFAF90D002AE087 /* LoggedInView.swift in Sources */ = {isa = PBXBuildFile; fileRef = EEFC8F582AFAF90D002AE087 /* LoggedInView.swift */; };
 		EEFC8FE62AFD6797002AE087 /* RoommateStatusView.swift in Sources */ = {isa = PBXBuildFile; fileRef = EEFC8FE12AFD6796002AE087 /* RoommateStatusView.swift */; };
 		F4E3200A2AFFF9AF00DB34D3 /* ChoreStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = F4E320092AFFF9AF00DB34D3 /* ChoreStore.swift */; };
@@ -76,6 +77,7 @@
 		EEAC19912B01E47900E5A62E /* ProfileView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProfileView.swift; sourceTree = "<group>"; };
 		EEAC19932B01E49800E5A62E /* MyChores.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MyChores.swift; sourceTree = "<group>"; };
 		EEAC19982B01E4E600E5A62E /* AddChoreView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddChoreView.swift; sourceTree = "<group>"; };
+		EEAC199A2B01EF4B00E5A62E /* AddChoreViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddChoreViewModel.swift; sourceTree = "<group>"; };
 		EEFC8F582AFAF90D002AE087 /* LoggedInView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoggedInView.swift; sourceTree = "<group>"; };
 		EEFC8FDF2AFD6796002AE087 /* HomeView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = HomeView.swift; sourceTree = "<group>"; };
 		EEFC8FE02AFD6796002AE087 /* ChoreView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ChoreView.swift; sourceTree = "<group>"; };
@@ -233,6 +235,7 @@
 			isa = PBXGroup;
 			children = (
 				EEAC19982B01E4E600E5A62E /* AddChoreView.swift */,
+				EEAC199A2B01EF4B00E5A62E /* AddChoreViewModel.swift */,
 			);
 			path = ManageChores;
 			sourceTree = "<group>";
@@ -364,6 +367,7 @@
 				B21F02342AF18F080001E8FB /* AuthModel.swift in Sources */,
 				EEAC19902B01E45600E5A62E /* ExpandedChore.swift in Sources */,
 				F4E3200E2B0072A700DB34D3 /* Chore.swift in Sources */,
+				EEAC199B2B01EF4B00E5A62E /* AddChoreViewModel.swift in Sources */,
 				EEAC19992B01E4E600E5A62E /* AddChoreView.swift in Sources */,
 				EEAC19942B01E49800E5A62E /* MyChores.swift in Sources */,
 				B2958F432AEDF0E500C9BBFF /* RoomieMatterApp.swift in Sources */,

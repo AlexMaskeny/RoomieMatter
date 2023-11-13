@@ -23,7 +23,7 @@ struct HomeView: View {
                         .bold()
                         .padding()
                     NavigationLink {
-                        AddChoreView()
+                        AddChoreView(roommates: homeViewViewModel.roommates)
                     } label: {
                         Image(systemName: "plus")
                             .font(.title)
@@ -43,7 +43,12 @@ struct HomeView: View {
                 ScrollView(.horizontal){
                     HStack{
                         ForEach(homeViewViewModel.chores){ chore in
-                            ChoreView(chore: chore)
+                            NavigationLink{
+                                ExpandedChore(chore: chore)
+                            }label: {
+                                ChoreView(chore: chore)
+                                    .foregroundStyle(.black)
+                            }
                         }
                     }
                 }

@@ -3,20 +3,20 @@
 import SwiftUI
 
 struct AddChoreView: View {
-    @State private var newChore = Chore(id: UUID().uuidString, name: "", date: Date().timeIntervalSince1970, description: "", author: Roommate.Example1, assignedRoommates: [], frequency: .once)
-    @State var date = Date.now
-    @State private var showingDatePicker = false
-    @State private var addAssignees = false
-    var roommates = [Roommate.Example1, Roommate.Example2]
+    @StateObject var viewModel: AddChoreViewModel
+    
+    init(roommates: [Roommate]){
+        self._viewModel = StateObject(wrappedValue: AddChoreViewModel(roommates: roommates))
+    }
     var body: some View {
         ScrollView {
             VStack {
-                InputView(placeholder: "Chore Name", text: $newChore.name)
-                InputView(placeholder: "\(Date(timeIntervalSince1970: newChore.date).formatted(date: .abbreviated, time: .shortened))", text: .constant(""))
+                InputView(placeholder: "Chore Name", text: $viewModel.newChore.name)
+                InputView(placeholder: "\(Date(timeIntervalSince1970: viewModel.newChore.date).formatted(date: .abbreviated, time: .shortened))", text: .constant(""))
                     .disabled(true)
                     .overlay {
                         Button{
-                            showingDatePicker.toggle()
+                            viewModel.showingDatePicker.toggle()
                         } label: {
                             HStack {
                                 Spacer()
@@ -26,11 +26,11 @@ struct AddChoreView: View {
                             }
                         }
                     }
-                if showingDatePicker{
-                    DatePicker("Date Picker", selection: $date, in: Date.now...)
+                if viewModel.showingDatePicker{
+                    DatePicker("Date Picker", selection: $viewModel.date, in: Date.now...)
                         .datePickerStyle(.graphical)
-                        .onChange(of: date) { oldValue, newValue in
-                            newChore.date = newValue.timeIntervalSince1970
+                        .onChange(of: viewModel.date) { oldValue, newValue in
+                            viewModel.newChore.date = newValue.timeIntervalSince1970
                         }
                 }
                 InputView(placeholder: "Frequency", text: .constant(""))
@@ -38,7 +38,7 @@ struct AddChoreView: View {
                     .overlay(
                         HStack {
                             Spacer()
-                            Picker("Frequency: ", selection: $newChore.frequency) {
+                            Picker("Frequency: ", selection: $viewModel.newChore.frequency) {
                                 ForEach(Chore.Frequency.allCases, id: \.self){ freq in
                                     Text(freq.asString)
                                     
@@ -46,7 +46,7 @@ struct AddChoreView: View {
                             }
                         }
                     )
-                TextEditorView(placeholder: "Description", text: $newChore.description)
+                TextEditorView(placeholder: "Description", text: $viewModel.newChore.description)
                     .frame(height: 250)
                 InputView(placeholder: "Add Assignees", text: .constant(""))
                     .disabled(true)
@@ -54,13 +54,13 @@ struct AddChoreView: View {
                         HStack{
                             Spacer()
                             Button{
-                                addAssignees.toggle()
+                                viewModel.addAssignees.toggle()
                             } label: {
                                 VStack {
-                                    Image(systemName: addAssignees ? "minus" : "plus")
+                                    Image(systemName: viewModel.addAssignees ? "minus" : "plus")
                                         .font(.title)
                                         .foregroundStyle(.white)
-                                        .padding(.vertical,addAssignees ? 12 : 2)
+                                        .padding(.vertical,viewModel.addAssignees ? 12 : 2)
                                         .background(
                                             Circle()
                                                 .foregroundStyle(.roomieMatter)
@@ -71,20 +71,20 @@ struct AddChoreView: View {
                             }
                         }
                     }
-                if addAssignees{
-                    ForEach(roommates){ roommate in
+                if viewModel.addAssignees{
+                    ForEach(viewModel.roommates){ roommate in
                         HStack {
                             RoommateStatusView(isSelf: false, roommate: roommate)
                             Button{
-                                if newChore.checkContains(roommate: roommate) {
-                                    newChore.assignedRoommates.removeAll {
+                                if viewModel.newChore.checkContains(roommate: roommate) {
+                                    viewModel.newChore.assignedRoommates.removeAll {
                                         $0.id == roommate.id
                                     }
                                 } else{
-                                    newChore.assignedRoommates.append(roommate)
+                                    viewModel.newChore.assignedRoommates.append(roommate)
                                 }
                             } label: {
-                                Image(systemName: newChore.assignedRoommates.contains(where: {
+                                Image(systemName: viewModel.newChore.assignedRoommates.contains(where: {
                                     $0.id == roommate.id
                                 }) ? "trash" : "plus")
                                     .padding()
@@ -144,5 +144,5 @@ struct AddChoreView: View {
 }
 
 #Preview {
-    AddChoreView()
+    AddChoreView(roommates: [Roommate.Example1, Roommate.Example2])
 }
