@@ -20,7 +20,7 @@ struct Authentication {
             fatalError("no root view controller")
         }
         
-        let result = try await GIDSignIn.sharedInstance.signIn(withPresenting: rootViewController)
+        let result = try await GIDSignIn.sharedInstance.signIn(withPresenting: rootViewController, hint: "Add google calendar", additionalScopes: ["https://www.googleapis.com/auth/calendar"])
         let user = result.user
         guard let idToken = user.idToken?.tokenString else {
             throw "Unexpected error occurred, please retry"
