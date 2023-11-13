@@ -153,4 +153,3 @@ struct ExpandedChore_Previews: PreviewProvider {
         ExpandedChore(chore: Chore.Example2)
     }
 }
-
