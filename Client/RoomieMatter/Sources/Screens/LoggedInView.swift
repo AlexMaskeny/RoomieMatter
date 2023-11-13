@@ -1,15 +1,48 @@
-//
-//  LoggedInView.swift
-//  RoomieMatter
-//
-//  Created by Dylan Shelton on 11/7/23.
-//
+
 
 import SwiftUI
 
 struct LoggedInView: View {
     var body: some View {
-        Text(/*@START_MENU_TOKEN@*/"Hello, World!"/*@END_MENU_TOKEN@*/)
+        NavigationStack{
+            TabView {
+                HomeView()
+                    .tabItem {
+                        Image(systemName: "house")
+                    }
+                
+                Text("Calendar View")
+                    .tabItem {
+                        Image(systemName: "calendar")
+                    }
+                
+                ProfileView(isSelf: true, roommate: Roommate.Example1)
+                    .tabItem {
+                        Image(systemName: "person.fill")
+                    }
+            }
+            
+            .toolbar{
+                ToolbarItemGroup(placement: .topBarLeading) {
+                    Text("Name of Room")
+                        .font(.title)
+                        .foregroundStyle(.white)
+                    
+                }
+                
+                ToolbarItemGroup(placement: .topBarTrailing) {
+                    NavigationLink {
+                        Text("Chat View")
+                    } label: {
+                        Image(systemName: "ellipsis.message")
+                            .foregroundStyle(.white)
+                    }
+                }
+                
+            }
+            .toolbarBackground(Color.roomieMatter)
+            .toolbarBackground(.visible, for: .navigationBar)
+        }
     }
 }
 
