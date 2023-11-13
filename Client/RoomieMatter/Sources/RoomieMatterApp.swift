@@ -29,7 +29,7 @@ struct Content: View {
         VStack {
             if userLoggedIn {
                 NavigationStack {
-                    MainScreen()
+                    LoggedInView()
                 }
             } else {
                 AuthScreen()

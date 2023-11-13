@@ -1,15 +1,18 @@
 
 import SwiftUI
+import Firebase
+import FirebaseAuth
+import FirebaseFirestore
 
 struct HomeView: View {
-    let roommates = [Roommate.Example2,  Roommate.Example3,  Roommate.Example4]
-    let chores = [Chore.Example1, Chore.Example2]
+    @StateObject var homeViewViewModel = HomeViewViewModel()
+    
     var body: some View {
         ScrollView {
             VStack(alignment: .leading){
-                RoommateStatusView(isSelf: true, roommate: Roommate.Example1)
+                RoommateStatusView(isSelf: true, roommate: homeViewViewModel.user)
                 Divider()
-                ForEach(roommates, id: \.name){ roommate in
+                ForEach(homeViewViewModel.roommates){ roommate in
                     RoommateStatusView(isSelf: false, roommate: roommate)
                     Divider()
                 }
@@ -39,7 +42,7 @@ struct HomeView: View {
                 }
                 ScrollView(.horizontal){
                     HStack{
-                        ForEach(chores, id:\.name){ chore in
+                        ForEach(homeViewViewModel.chores){ chore in
                             ChoreView(chore: chore)
                         }
                     }

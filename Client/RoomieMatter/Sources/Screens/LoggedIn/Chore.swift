@@ -1,26 +1,45 @@
-//
-//  Chore.swift
-//  RoomieMatter
-//
-//  Created by Dylan Shelton on 11/7/23.
-//
+
 
 import Foundation
 
-//TODO: change to nullable types
-struct Chore{
-    let name: String
-    let date: Double
-    let description: String
+struct Chore: Identifiable{
+    let id: String
+    var name: String
+    var date: Double
+    var description: String
+    var author: Roommate
     var assignedRoommates: [Roommate]
+    var frequency: Frequency
     
-    static let Example1 = Chore(name: "Clean Living Room", date: Date().timeIntervalSince1970, description: "Vacuum and mop living room.", assignedRoommates: [Roommate.Example1])
-    static let Example2 = Chore(name: "Prepare Thanksgiving Dinner", date: Date().timeIntervalSince1970 + 86400, description: "This Thursday we will have a small dinner with some friends. Could you make it?", assignedRoommates: [Roommate.Example3, Roommate.Example4])
+    static let Example1 = Chore(id: "1", name: "Clean Living Room", date: Date().timeIntervalSince1970, description: "Vacuum and mop living room.", author: Roommate.Example2, assignedRoommates: [Roommate.Example1], frequency: .once)
+    static let Example2 = Chore(id: "2", name: "Prepare Thanksgiving Dinner", date: Date().timeIntervalSince1970 + 86400, description: "This Thursday we will have a small dinner with some friends. Could you make it?", author: Roommate.Example2, assignedRoommates: [Roommate.Example3, Roommate.Example2, Roommate.Example4], frequency: .weekly)
+    
+    func checkContains(roommate: Roommate) -> Bool{
+        assignedRoommates.contains { roommate1 in
+            roommate1.id == roommate.id
+        }
+    }
+    
+    enum Frequency: CaseIterable{
+        case once
+        case daily
+        case weekly
+        case monthly
+        case biweekly
+        
+        var asString: String{
+            switch self {
+            case .once:
+                "Once"
+            case .daily:
+                "Daily"
+            case .weekly:
+                "Weekly"
+            case .monthly:
+                "Monthly"
+            case .biweekly:
+                "Biweekly"
+            }
+        }
+    }
 }
-
-//struct Chore {
-//    var name: String?
-//    var date: Double?
-//    var description: String?
-//    var assignedRoomates: [Roommate]?
-//}
