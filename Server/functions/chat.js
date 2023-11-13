@@ -39,6 +39,14 @@ const openai = new OpenAI({
   apiKey: "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",
 });
 
+const stopGPTTyping = (roomId) => {
+  db.collection("room")
+    .doc(roomId)
+    .update({
+      typing: admin.firestore.FieldValue.arrayRemove("gpt"),
+    });
+};
+
 const sendChat = functions.https.onCall(async (data, context) => {
   if (!context.auth) {
     throw new functions.https.HttpsError(
@@ -136,6 +144,7 @@ const sendChat = functions.https.onCall(async (data, context) => {
       );
 
       if (totalTokens > 7000) {
+        stopGPTTyping(roomId);
         throw new functions.https.HttpsError(
           "internal",
           "History exceeds total limit. Time to add embeddings?"
@@ -195,15 +204,12 @@ const sendChat = functions.https.onCall(async (data, context) => {
             successMessage = "GPT_CALL_FUNCTION";
           }
 
-          db.collection("room")
-            .doc(roomId)
-            .update({
-              typing: admin.firestore.FieldValue.arrayRemove("gpt"),
-            });
+          stopGPTTyping(roomId);
 
           return { success: true, message: successMessage };
         }
       } else {
+        stopGPTTyping(roomId);
         throw new functions.https.HttpsError(
           "internal",
           `Error thrown by OpenAI`
@@ -267,9 +273,10 @@ const getChats = functions.https.onCall(async (data, context) => {
   const history = plainHistoryData.reduce((acc, chat) => {
     const generalParams = {
       content: chat.content ?? "",
-      createdAt: chat.createdAt?.toDate() ?? "",
+      createdAt: chat.createdAt?.toDate()?.toISOString() ?? "",
       role: chat.role ?? "",
     };
+
     switch (chat.role) {
       case "assistant":
         return [
