@@ -21,7 +21,7 @@ struct ContentView: View {
             Spacer()
             HStack {
                 Spacer()
-                // home button
+                //home button
                 Button(action: { resetCalendarProfile() }) {
                     Image(systemName: "house.fill")
                         .foregroundColor(homeButtonColor)
