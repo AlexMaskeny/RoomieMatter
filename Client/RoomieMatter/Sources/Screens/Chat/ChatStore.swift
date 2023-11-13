@@ -12,8 +12,7 @@ import Observation
 @Observable
 final class ChatStore {
     static let shared = ChatStore()
-
-    //  Placeholders
+    private var authViewModel = AuthenticationViewModel()
     
     private static let dateFormatter: DateFormatter = {
         let formatter = DateFormatter()
@@ -27,24 +26,24 @@ final class ChatStore {
         ]
     
     func sendChat(msg: String) {
-           let params = [
-               "userId": "ALfAiMtHmWhfUgaSQWGIUHUujUs1",
-               "roomId": "ymHbFA1lhmBJMyHARUMk",
-               "content": msg
-           ]
-           Functions.functions().httpsCallable("sendChat").call(params) { (result, error) in
-               if let error = error as NSError? {
-                   if error.domain == FunctionsErrorDomain {
-                       let code = FunctionsErrorCode(rawValue: error.code)
-                       let message = error.localizedDescription
-                       let details = error.userInfo[FunctionsErrorDetailsKey]
-                       print("Error: \(message)")
-                   }
-                   // Handle the error
-               }
-               if let data = result?.data as? [String: Any] {
-                   print(data)
-               }
-           }
-       }
+        let params = [
+            "userId": authViewModel.user_uid,
+            "roomId": authViewModel.room_id,
+            "content": msg
+        ]
+        Functions.functions().httpsCallable("sendChat").call(params) { (result, error) in
+            if let error = error as NSError? {
+                if error.domain == FunctionsErrorDomain {
+                    let code = FunctionsErrorCode(rawValue: error.code)
+                    let message = error.localizedDescription
+                    let details = error.userInfo[FunctionsErrorDetailsKey]
+                    print("Error: \(message)")
+                }
+                // Handle the error
+            }
+            if let data = result?.data as? [String: Any] {
+                print(data)
+            }
+        }
+    }
 }

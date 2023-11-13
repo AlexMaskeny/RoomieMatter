@@ -6,26 +6,74 @@
 //
 
 import SwiftUI
-import Firebase
 import Observation
+import Firebase
+import FirebaseAuth
+import FirebaseFirestore
 
-@Observable class AuthenticationViewModel {
+
+@Observable final class AuthenticationViewModel {
     var username: String?
-
+    var user_uid: String?
+    var roomname: String?
+    var room_id: String?
+    private var db = Firestore.firestore()
+    
     init() {
-        updateUsername()
+        fetchUser()
+        fetchRoom()
     }
 
-    func updateUsername() {
+    func fetchUser() {
         if let currentUser = Auth.auth().currentUser {
             username = currentUser.displayName
+            user_uid = currentUser.uid
         } else {
             username = nil
+            user_uid = nil
+        }
+    }
+    
+    func fetchRoom() {
+        guard let user_uid = user_uid else {
+            print("Error getting room: failed to fetch signed in user")
+            return
+        }
+        
+        let userRef = db.collection("users").document(user_uid)
+        
+        db.collection("user_rooms").whereField("user", isEqualTo: userRef).getDocuments { userRoomDocSnapshot, error in
+            guard error == nil else {
+                print("Error getting user: \(error!.localizedDescription)")
+                return
+            }
+            
+            guard userRoomDocSnapshot!.documents.count > 0 else {
+                print("Error getting room: failed to fetch room for user")
+                return
+            }
+            
+            let roomRef = userRoomDocSnapshot!.documents[0].get("room") as! DocumentReference
+            roomRef.getDocument { (roomSnapshot, error) in
+                guard error == nil else {
+                    print("Error getting user: \(error!.localizedDescription)")
+                    return
+                }
+                
+                if let roomName = roomSnapshot?.get("name") as? String,
+                   let room_id = roomSnapshot?.documentID {
+                    self.roomname = roomName
+                    self.room_id = room_id
+                } else {
+                    print("Error getting room: name field does not exist")
+                }
+            }
         }
     }
 
     func refresh() {
-        updateUsername()
+        fetchUser()
+        fetchRoom()
     }
 
 }

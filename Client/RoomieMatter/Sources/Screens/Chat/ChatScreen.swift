@@ -9,7 +9,6 @@ import SwiftUI
 
 struct ChatScreen: View {
     private let store = ChatStore.shared
-    @State private var isPresenting = false
     @State private var textInput: String = ""
     @State private var authViewModel = AuthenticationViewModel()
 
@@ -17,25 +16,16 @@ struct ChatScreen: View {
         List(store.chats.indices, id: \.self) {
             TextBubble(chat: store.chats[$0],
                        position: store.chats[$0].username == authViewModel.username ? .left : .right)
+            .listRowSeparator(.hidden)
+            
+            .listRowInsets(.init(top: 0, leading: 0, bottom: 5, trailing: 0))
         }
         .listStyle(.plain)
         .refreshable {
             //store.getChats()  TODO: uncomment after defining getChats()
         }
-        .navigationTitle("room_name_placeholder")
+        .navigationTitle(authViewModel.roomname ?? "failed_to_fetch_roomname")
         .navigationBarTitleDisplayMode(.inline)
-        .toolbar {
-            ToolbarItem(placement:.navigationBarTrailing) {
-                Button {
-                    isPresenting.toggle()
-                } label: {
-                    Image(systemName: "square.and.pencil")
-                }
-            }
-        }
-        .navigationDestination(isPresented: $isPresenting) {
-            PostView(isPresented: $isPresenting)
-        }
         
         HStack {
             TextField("Enter your message", text: $textInput)
