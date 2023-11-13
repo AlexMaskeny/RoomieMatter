@@ -13,10 +13,10 @@ import FirebaseFunctions
 //final class ChoreStore {
 //    static let shared = ChoreStore()
 //    private init() {}
-//    
+//
 //    private(set) var chores = [Chore]()
 //    private let nFields = Mirror(reflecting: Chore()).children.count
-//    
+//
 //    func getChores() {
 //        Functions.functions().httpsCallable("getChores").call() { (result, error) in
 //           if let error = error as NSError? {
