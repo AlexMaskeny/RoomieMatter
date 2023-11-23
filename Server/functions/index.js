@@ -9,7 +9,6 @@ const { getChores, testGetChores } = require("./calendar");
 
 exports.onUserSignUp = onUserSignUp;
 exports.sendChat = sendChat;
-exports.getChores = getChores;
 exports.getChats = getChats;
-// exports.listEvents = listEvents;
+exports.getChores = getChores;
 exports.testGetChores = testGetChores;

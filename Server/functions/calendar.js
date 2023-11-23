@@ -2,14 +2,14 @@ const functions = require("firebase-functions");
 const admin = require("firebase-admin");
 const { google } = require("googleapis");
 
-// chore calendar ID (should be same for all users)
+// chore calendar ID (same for all users)
 calendarId =
   "c_5df0bf9c096fe8c9bf0a70fc19f1cf28dae8901ff0fcab98989a0445fb052625@group.calendar.google.com";
 const SCOPES = ["https://www.googleapis.com/auth/calendar.readonly"];
 
-// test function for google calendar
-const listEvents = functions.https.onCall(async (data, context) => {
-  functions.logger.log("Entered listEvents function");
+// returns the first 5 chores of logged in user
+const getChores = functions.https.onCall(async (data, context) => {
+  functions.logger.log("Entered getChores function");
 
   if (!context.auth) {
     throw new functions.https.HttpsError(
@@ -18,184 +18,55 @@ const listEvents = functions.https.onCall(async (data, context) => {
     );
   }
 
-  // let auth = context.auth;
-  let auth = context.auth.token.firebase.identities["google.com"][0];
+  const user = await admin.auth().getUser(context.auth.uid);
+  functions.logger.log('Refresh token:', user.tokensValidAfterTime);  
 
-  const calendar = google.calendar({ version: "v3", auth });
+  const oauth2Client = new google.auth.OAuth2(
+    "710199503493-96nefndmgukcakadatjm1ff5au3733p3.apps.googleusercontent.com", 
+    "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", 
+    "https://roomiematter.firebaseapp.com/__/auth/handler",
+  );
+
+  const idToken = "ya29.a0AfB_byBzbl9-DpVORkxh1JUZ3cjIyoASQzG7czJZEz3zwiwt7RUVRSkgw7E7OyTMYf0a6fYrhg9iplIrnB3sjjM2cPXek-AAAlYtHOx27xiPpdfdSYQyNakBYnMyZ5XM0tAF6cAdQkudTySNe7nDZ1BHECzM7xyt0zBMaCgYKAeoSARESFQHGX2Mi-zimEsvaXZmF85EtVY9kLA0171";
+
+  oauth2Client.setCredentials({
+    access_token: idToken,
+    refresh_token: user.tokensValidAfterTime,
+  });
+
+  const calendar = google.calendar({ version: "v3", oauth2Client });
+  functions.logger.log(calendar);
+
   const res = await calendar.events.list({
-    calendarId: "primary",
+    calendarId: calendarId,
     timeMin: new Date().toISOString(),
-    maxResults: 10,
+    maxResults: 5,
     singleEvents: true,
     orderBy: "startTime",
   });
   const events = res.data.items;
   if (!events || events.length === 0) {
     functions.logger.log("No upcoming events found.");
-    return;
+    return {};
   }
-  functions.logger.log("Upcoming 10 events:");
-  events.map((event, i) => {
-    const start = event.start.dateTime || event.start.date;
-    functions.logger.log(`${start} - ${event.summary}`);
-  });
-});
-
-function getCalendarService(oauthAccessToken) {
-  const oAuth2Client = new google.auth.OAuth2();
-  oAuth2Client.setCredentials({
-    access_token: oauthAccessToken,
-  });
-
-  return google.calendar({ version: "v3", auth: oAuth2Client });
-}
-
-// returns the first 5 chores of logged in user
-const getChores = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
-    throw new functions.https.HttpsError(
-      "unauthenticated",
-      "RoomieMatter functions can only be called by Authenticated users."
-    );
-  }
-
-  const userIdToken = context.auth.token;
-
-  admin
-    .auth()
-    .verifyIdToken(userIdToken)
-    .then((decodedToken) => {
-      const uid = decodedToken.uid;
-      // Now you have the user's Firebase UID
-      // You can access other fields from the decoded token, such as oauth access token
-      functions.logger.log(decodedToken);
-    })
-    .catch((error) => {
-      // Handle error
-      throw new functions.https.HttpsError(
-        "unable to verify token",
-        `Error thrown by Google Calendar: ${error.message}`
-      );
-    });
-
-  const calendarService = getCalendarService(decodedToken.oauthAccessToken);
-
-  calendarService.events.list(
-    {
-      calendarId: calendarId,
-      timeMin: new Date().toISOString(),
-      maxResults: 10,
-      singleEvents: true,
-      orderBy: "startTime",
-    },
-    (err, res) => {
-      if (err) return functions.logger.log("The API returned an error: " + err);
-      const events = res.data.items;
-      if (events.length) {
-        functions.logger.log("Upcoming 10 events:");
-        events.map((event, i) => {
-          const start = event.start.dateTime || event.start.date;
-          functions.logger.log(`${start} - ${event.summary}`);
-        });
-      } else {
-        functions.logger.log("No upcoming events found.");
-      }
+  const output = events.reduce((jsonArray, event) => {
+    const startIndex = event.recurrence[0].indexOf("FREQ=") + 5;
+    const endIndex = event.recurrence[0].indexOf(";");
+    if (endIndex == -1) {
+        endIndex = event.recurrence[0].length;
     }
-  );
-
-  // auth = context.auth;
-  // let auth = context.auth.token.firebase.identities["google.com"][0];
-  // const calendar = google.calendar({version: 'v3', auth});
-
-  // request
-  // const request = {
-  // 'calendarId': calendarId,
-  // 'timeMin': (new Date()).toISOString(),
-  // 'showDeleted': false,
-  // 'singleEvents': true,
-  // 'maxResults': 5,
-  // 'orderBy': 'startTime',
-  // };
-
-  // // send get request
-  // let response;
-  // try {
-  //     // response = await gapi.client.calendar.events.list(request);
-  //     response = await calendar.events.list(request);
-  // } catch (err) {
-  //     throw new functions.https.HttpsError(
-  //         "internal",
-  //         `Error thrown by Google Calendar: ${err.message}`
-  //     );
-  // }
-
-  // const events = response.result.items;
-
-  // // no events found
-  // if (!events || events.length == 0) {
-  //     functions.logger.log('No upcoming events found.');
-  //     return {};
-  // }
-
-  // // parse events {event title, start date, frequency}
-  // const output = events.reduce((jsonArray, event) => {
-  //     const startIndex = event.recurrence[0].indexOf("FREQ=") + 5;
-  //     const endIndex = event.recurrence[0].indexOf(";");
-  //     if (endIndex == -1) {
-  //         endIndex = event.recurrence[0].length;
-  //     }
-  //     jsonArray.push({
-  //         summary: event.summary,
-  //         startDate: event.start.date,
-  //         frequency: event.recurrence[0].substring(startIndex, endIndex),
-  //         assignee: ""
-  //     });
-  //     return jsonArray;
-  // }, []);
-
-  // TODO: make sure return next day + next assignee
-
-  functions.logger.log("Upcoming 10 events: ", events);
-
-  // return {"chores": output};
-});
-
-// add new chore
-const addChore = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
-    throw new functions.https.HttpsError(
-      "unauthenticated",
-      "RoomieMatter functions can only be called by Authenticated users."
-    );
-  }
-
-  var event = {
-    summary: "Clean Bathroom",
-    start: {
-      date: "2023-11-1",
-    },
-    end: {
-      date: "2023-11-1",
-    },
-    recurrence: ["RRULE:FREQ=DAILY"],
-    attendees: [{ email: "lteresa@umich.edu" }],
-  };
-
-  // send get request
-  let response;
-  try {
-    response = await gapi.client.calendar.events.insert({
-      calendarId: calendarId,
-      resource: event,
+    jsonArray.push({
+        summary: event.summary,
+        startDate: event.start.date,
+        frequency: event.recurrence[0].substring(startIndex, endIndex),
+        assignee: event.attendees
     });
-  } catch (err) {
-    throw new functions.https.HttpsError(
-      "internal",
-      `Error thrown by Google Calendar: ${err.message}`
-    );
-  }
+    return jsonArray;
+  }, []);
 
-  return event.htmlLink;
+  // functions.logger.log("Upcoming 5 events: ", events);
+
+  return {"chores": output};
 });
 
 // test function that returns hardcoded JSON for frontend testing
@@ -238,12 +109,5 @@ const testGetChores = functions.https.onCall(async (data, context) => {
   return result;
 });
 
-// module.exports = { listEvents };
 module.exports = { getChores, testGetChores };
 // module.exports = { addChore };
-
-// one assignee repeating
-// delete instance of event after completion
-// functions: complete (delete instance), delete (delete all instances), edit
-
-// problems: rotating assignees
