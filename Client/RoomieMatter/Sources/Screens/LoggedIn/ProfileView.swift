@@ -8,6 +8,9 @@ struct ProfileView: View {
     @State private var err : String = ""
     let isSelf: Bool
     let roommate: Roommate
+    
+    @State private var selectedStatus = "At Home"
+        let statusOptions = ["At Home", "Sleeping", "In Class", "Do not disturb", "Studying"]
 
     var body: some View {
         GeometryReader { geometry in
@@ -51,13 +54,20 @@ struct ProfileView: View {
                                 .foregroundStyle(.black)
                                 .multilineTextAlignment(.center)
                         }
+                        
+                        Picker(selection: $selectedStatus, label: Text("User Status")) {
+                                                ForEach(statusOptions, id: \.self) {
+                                                    Text($0)
+                                                }
+                                            }
+                                            .pickerStyle(.menu)
 
-                        Group{
-                            Text(roommate.status.status)
-                                .font(.title3)
-                                .foregroundStyle(.gray)
-                                .multilineTextAlignment(.center)
-                        }
+//                        Group{
+//                            Text(roommate.status.status)
+//                                .font(.title3)
+//                                .foregroundStyle(.gray)
+//                                .multilineTextAlignment(.center)
+//                        }
                         
                         Spacer()
                             .frame(width: 40)
