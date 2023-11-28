@@ -67,6 +67,7 @@ func getChores() -> String {
             }
             // Handle the error
         }
+        print("in get chores")
         if let data = result?.data as? [String: Any] {
             print(data)
         }
