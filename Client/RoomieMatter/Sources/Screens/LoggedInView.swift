@@ -14,10 +14,10 @@ struct LoggedInView: View {
                         Image(systemName: "house")
                     }
                 
-//                CalendarView()
-//                    .tabItem {
-//                        Image(systemName: "calendar")
-//                    }
+                CalendarView()
+                    .tabItem {
+                        Image(systemName: "calendar")
+                    }
                 
                 ProfileView(isSelf: true, roommate: viewModel.user)
                     .tabItem {

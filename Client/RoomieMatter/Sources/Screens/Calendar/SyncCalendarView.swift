@@ -61,6 +61,7 @@ struct SyncCalendarView: View {
 
                     SyncButton(title: "Sync to Google Calendar", backgroundColor: .roomieMatter) {
                         // Add your sync to Google Calendar logic here
+                        print("syncEvents: ", syncEvents, "syncChoreTasks: ", syncChoreTasks)
                     }
                     
                     Spacer()
