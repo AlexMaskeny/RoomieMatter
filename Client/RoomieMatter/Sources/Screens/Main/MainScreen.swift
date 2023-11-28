@@ -80,7 +80,7 @@ struct MainScreen: View {
         }.buttonStyle(.borderedProminent)
         
         NavigationLink("Chat", destination: ChatScreen())
-        NavigationLink("Home", destination: HomeView())
+        //NavigationLink("Home", destination: HomeView())
         
 //        Text(getChores())
         

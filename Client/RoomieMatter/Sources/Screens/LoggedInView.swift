@@ -9,7 +9,7 @@ struct LoggedInView: View {
     var body: some View {
         NavigationStack{
             TabView {
-                HomeView()
+                HomeView(chores: viewModel.chores, events: viewModel.events)
                     .tabItem {
                         Image(systemName: "house")
                     }
