@@ -14,6 +14,12 @@ class HomeViewViewModel: ObservableObject {
     }
     
     var events: [Chore]
+    
+    var myEvents: [Chore] {
+        events.filter { event in
+            event.checkContains(roommate: user)
+        }
+    }
     @Published var user: Roommate
     @Published var showingAddChore = false
     

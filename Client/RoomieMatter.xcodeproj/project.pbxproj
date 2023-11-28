@@ -39,6 +39,8 @@
 		EE36BB9C2B165AE7009C5B5C /* EditChoreView.swift in Sources */ = {isa = PBXBuildFile; fileRef = EE36BB9B2B165AE7009C5B5C /* EditChoreView.swift */; };
 		EE36BB9E2B165AFB009C5B5C /* EditChoreViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = EE36BB9D2B165AFB009C5B5C /* EditChoreViewModel.swift */; };
 		EE36BBA12B165C32009C5B5C /* ChoreViewViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = EE36BBA02B165C32009C5B5C /* ChoreViewViewModel.swift */; };
+		EE36BBA42B1661C5009C5B5C /* EditEventViewViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = EE36BBA32B1661C5009C5B5C /* EditEventViewViewModel.swift */; };
+		EE36BBA62B1661D1009C5B5C /* EditEventView.swift in Sources */ = {isa = PBXBuildFile; fileRef = EE36BBA52B1661D1009C5B5C /* EditEventView.swift */; };
 		EEFC8F592AFAF90D002AE087 /* LoggedInView.swift in Sources */ = {isa = PBXBuildFile; fileRef = EEFC8F582AFAF90D002AE087 /* LoggedInView.swift */; };
 		EEFC8FE62AFD6797002AE087 /* RoommateStatusView.swift in Sources */ = {isa = PBXBuildFile; fileRef = EEFC8FE12AFD6796002AE087 /* RoommateStatusView.swift */; };
 		F4E3200A2AFFF9AF00DB34D3 /* ChoreStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = F4E320092AFFF9AF00DB34D3 /* ChoreStore.swift */; };
@@ -82,6 +84,8 @@
 		EE36BB9B2B165AE7009C5B5C /* EditChoreView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EditChoreView.swift; sourceTree = "<group>"; };
 		EE36BB9D2B165AFB009C5B5C /* EditChoreViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EditChoreViewModel.swift; sourceTree = "<group>"; };
 		EE36BBA02B165C32009C5B5C /* ChoreViewViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChoreViewViewModel.swift; sourceTree = "<group>"; };
+		EE36BBA32B1661C5009C5B5C /* EditEventViewViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EditEventViewViewModel.swift; sourceTree = "<group>"; };
+		EE36BBA52B1661D1009C5B5C /* EditEventView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EditEventView.swift; sourceTree = "<group>"; };
 		EEFC8F582AFAF90D002AE087 /* LoggedInView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoggedInView.swift; sourceTree = "<group>"; };
 		EEFC8FDF2AFD6796002AE087 /* HomeView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = HomeView.swift; sourceTree = "<group>"; };
 		EEFC8FE02AFD6796002AE087 /* ChoreView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ChoreView.swift; sourceTree = "<group>"; };
@@ -270,11 +274,21 @@
 			path = HomeView;
 			sourceTree = "<group>";
 		};
+		EE36BBA22B1661A2009C5B5C /* ManageEvent */ = {
+			isa = PBXGroup;
+			children = (
+				EE36BBA52B1661D1009C5B5C /* EditEventView.swift */,
+				EE36BBA32B1661C5009C5B5C /* EditEventViewViewModel.swift */,
+			);
+			path = ManageEvent;
+			sourceTree = "<group>";
+		};
 		EEFC8FDE2AFD6796002AE087 /* LoggedIn */ = {
 			isa = PBXGroup;
 			children = (
 				EE36BB9F2B165B31009C5B5C /* HomeView */,
 				EE36BB9A2B165AB4009C5B5C /* ManageChore */,
+				EE36BBA22B1661A2009C5B5C /* ManageEvent */,
 				EEFC8FE22AFD6796002AE087 /* Roommate.swift */,
 				EEFC8FE32AFD6796002AE087 /* Chore.swift */,
 				F85B9AE82B01EC55008F35C2 /* ProfileView.swift */,
@@ -380,6 +394,7 @@
 				B2FB8B3C2AEECDF400DEBF12 /* InputView.swift in Sources */,
 				B285F46E2AF211FA0096EE9E /* ChatScreen.swift in Sources */,
 				B21F02222AF025E90001E8FB /* LineText.swift in Sources */,
+				EE36BBA62B1661D1009C5B5C /* EditEventView.swift in Sources */,
 				7A93C2872B01663900C2C69A /* MenuView.swift in Sources */,
 				7A93C2892B01B29500C2C69A /* SelectRoomView.swift in Sources */,
 				21F5B4552AF84202008124D0 /* AuthenticationViewModel.swift in Sources */,
@@ -389,6 +404,7 @@
 				F85B9AED2B01EC55008F35C2 /* ProfileView.swift in Sources */,
 				F4E3200D2B0072A100DB34D3 /* ChoreView.swift in Sources */,
 				EE36BB9E2B165AFB009C5B5C /* EditChoreViewModel.swift in Sources */,
+				EE36BBA42B1661C5009C5B5C /* EditEventViewViewModel.swift in Sources */,
 				B285F4702AF212040096EE9E /* ChatStore.swift in Sources */,
 				B2958F452AEDF0E500C9BBFF /* AuthScreen.swift in Sources */,
 				EE36BB972B1659D0009C5B5C /* CustomButton.swift in Sources */,
