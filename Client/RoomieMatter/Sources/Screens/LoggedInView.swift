@@ -46,6 +46,7 @@ struct LoggedInView: View {
             .toolbarBackground(Color.roomieMatter)
             .toolbarBackground(.visible, for: .navigationBar)
         }
+        .environmentObject(viewModel)
     }
 }
 func interpretString(status: String) -> Status{

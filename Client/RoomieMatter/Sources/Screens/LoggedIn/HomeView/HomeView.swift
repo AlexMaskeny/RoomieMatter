@@ -6,11 +6,12 @@ import FirebaseFirestore
 
 struct HomeView: View {
     @StateObject var homeViewViewModel:HomeViewViewModel
+    @EnvironmentObject var loggedInViewViewModel: LoggedInViewViewModel
     
     var body: some View {
         ScrollView {
             VStack(alignment: .leading){
-                RoommateStatusView(isSelf: true, roommate: homeViewViewModel.user)
+                RoommateStatusView(isSelf: true, roommate: loggedInViewViewModel.user)
                 Divider()
                 ForEach(homeViewViewModel.roommates){ roommate in
                     RoommateStatusView(isSelf: false, roommate: roommate)
