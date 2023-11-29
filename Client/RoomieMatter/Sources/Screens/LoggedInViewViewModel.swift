@@ -7,7 +7,7 @@ import Foundation
 class LoggedInViewViewModel: ObservableObject{
     @Published var user: Roommate
     @Published var chores: [Chore]
-    @Published var events: [Chore]
+    @Published var events: [Event]
     @Published var roomName = ""
     
     init(){
@@ -16,7 +16,7 @@ class LoggedInViewViewModel: ObservableObject{
         let photoURL = Auth.auth().currentUser?.photoURL
         
         chores = [Chore]()
-        events = [Chore]()
+        events = [Event]()
         
         self.user = Roommate(id: userID, displayName: displayName, photoURL: photoURL, status: .home)
         
@@ -54,7 +54,7 @@ class LoggedInViewViewModel: ObservableObject{
     }
     
     func getEvents(){
-        events = [Chore.Example1, Chore.Example2]
+        events = [Event.Example1, Event.Example2]
     }
     
     func getChores1(){

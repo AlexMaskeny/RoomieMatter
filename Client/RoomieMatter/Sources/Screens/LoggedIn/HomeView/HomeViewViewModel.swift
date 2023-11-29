@@ -13,9 +13,9 @@ class HomeViewViewModel: ObservableObject {
         }
     }
     
-    var events: [Chore]
+    var events: [Event]
     
-    var myEvents: [Chore] {
+    var myEvents: [Event] {
         events.filter { event in
             event.checkContains(roommate: user)
         }
@@ -57,7 +57,7 @@ class HomeViewViewModel: ObservableObject {
         }
     }
     
-    init(chores: [Chore], events: [Chore]){
+    init(chores: [Chore], events: [Event]){
         let userID = Auth.auth().currentUser?.uid ?? "uid"
         let displayName = Auth.auth().currentUser?.displayName ?? "unkniown"
         let photoURL = Auth.auth().currentUser?.photoURL

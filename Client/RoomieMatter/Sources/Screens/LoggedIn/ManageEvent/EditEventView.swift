@@ -6,7 +6,7 @@ struct EditEventView: View {
     @StateObject var viewModel: EditEventViewModel
     @Environment(\.dismiss) private var dismiss
     
-    init(roommates: [Roommate], event: Chore){
+    init(roommates: [Roommate], event: Event){
         self._viewModel = StateObject(wrappedValue: EditEventViewModel(roommates: roommates, event: event))
     }
     
@@ -35,19 +35,6 @@ struct EditEventView: View {
                             viewModel.event.date = newValue.timeIntervalSince1970
                         }
                 }
-                InputView(placeholder: "Frequency", text: .constant(""))
-                    .disabled(true)
-                    .overlay(
-                        HStack {
-                            Spacer()
-                            Picker("Frequency: ", selection: $viewModel.event.frequency) {
-                                ForEach(Chore.Frequency.allCases, id: \.self){ freq in
-                                    Text(freq.asString)
-                                    
-                                }
-                            }
-                        }
-                    )
                 TextEditorView(text: $viewModel.event.description)
                     .frame(height: 250)
                 
@@ -56,14 +43,14 @@ struct EditEventView: View {
                         RoommateStatusView(isSelf: false, roommate: roommate)
                         Button{
                             if viewModel.event.checkContains(roommate: roommate) {
-                                viewModel.event.assignedRoommates.removeAll {
+                                viewModel.event.Guests.removeAll {
                                     $0.id == roommate.id
                                 }
                             } else{
-                                viewModel.event.assignedRoommates.append(roommate)
+                                viewModel.event.Guests.append(roommate)
                             }
                         } label: {
-                            Image(systemName: viewModel.event.assignedRoommates.contains(where: {
+                            Image(systemName: viewModel.event.Guests.contains(where: {
                                 $0.id == roommate.id
                             }) ? "trash" : "plus")
                             .padding()
@@ -100,5 +87,5 @@ struct EditEventView: View {
 }
 
 #Preview {
-    EditEventView(roommates: [Roommate.Example1, Roommate.Example2], event: Chore.Example1)
+    EditEventView(roommates: [Roommate.Example1, Roommate.Example2], event: Event.Example1)
 }

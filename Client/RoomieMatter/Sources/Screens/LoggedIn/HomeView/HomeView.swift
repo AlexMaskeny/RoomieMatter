@@ -125,7 +125,7 @@ struct HomeView: View {
                                 NavigationLink{
                                     EditEventView(roommates: homeViewViewModel.roommates, event: event)
                                 }label: {
-                                    ChoreView(chore: event)
+                                    EventView(event: event)
                                         .foregroundStyle(.black)
                                 }
                             }
@@ -163,7 +163,7 @@ struct HomeView: View {
                                 NavigationLink{
                                     EditEventView(roommates: homeViewViewModel.roommates, event: event)
                                 }label: {
-                                    ChoreView(chore: event)
+                                    EventView(event: event)
                                         .foregroundStyle(.black)
                                 }
                             }
@@ -180,11 +180,11 @@ struct HomeView: View {
         .padding(.top)
     }
     
-    init(chores:[Chore], events:[Chore]){
+    init(chores:[Chore], events:[Event]){
         self._homeViewViewModel = StateObject(wrappedValue: HomeViewViewModel(chores: chores, events: events))
     }
 }
 
 #Preview {
-    HomeView(chores: [Chore.Example1, Chore.Example2], events: [Chore.Example1, Chore.Example2])
+    HomeView(chores: [Chore.Example1, Chore.Example2], events: [Event.Example1, Event.Example2])
 }
