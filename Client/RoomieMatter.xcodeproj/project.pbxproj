@@ -53,15 +53,17 @@
 		F4E3200E2B0072A700DB34D3 /* Chore.swift in Sources */ = {isa = PBXBuildFile; fileRef = EEFC8FE32AFD6796002AE087 /* Chore.swift */; };
 		F805C0932B15BFD500F6AA9E /* SyncCalendarView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F805C0912B15BFD500F6AA9E /* SyncCalendarView.swift */; };
 		F805C0942B15BFD500F6AA9E /* CalendarView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F805C0922B15BFD500F6AA9E /* CalendarView.swift */; };
-		F805C0962B15C21800F6AA9E /* Event.swift in Sources */ = {isa = PBXBuildFile; fileRef = F805C0952B15C21800F6AA9E /* Event.swift */; };
 		F85B9ADD2B01EB74008F35C2 /* LoggedInViewViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = F85B9ADC2B01EB74008F35C2 /* LoggedInViewViewModel.swift */; };
 		F85B9AE92B01EC55008F35C2 /* AllChores.swift in Sources */ = {isa = PBXBuildFile; fileRef = F85B9AE42B01EC55008F35C2 /* AllChores.swift */; };
 		F85B9AEA2B01EC55008F35C2 /* ExpandedChore.swift in Sources */ = {isa = PBXBuildFile; fileRef = F85B9AE52B01EC55008F35C2 /* ExpandedChore.swift */; };
 		F85B9AEB2B01EC55008F35C2 /* HomeViewViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = F85B9AE62B01EC55008F35C2 /* HomeViewViewModel.swift */; };
 		F85B9AEC2B01EC55008F35C2 /* MyChores.swift in Sources */ = {isa = PBXBuildFile; fileRef = F85B9AE72B01EC55008F35C2 /* MyChores.swift */; };
 		F85B9AED2B01EC55008F35C2 /* ProfileView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F85B9AE82B01EC55008F35C2 /* ProfileView.swift */; };
-		F88B105D2B01FC8B00D48908 /* AddChoreView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F88B105B2B01FC8B00D48908 /* AddChoreView.swift */; };
-		F88B105E2B01FC8B00D48908 /* AddChoreViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = F88B105C2B01FC8B00D48908 /* AddChoreViewModel.swift */; };
+		F8A48F3C2B17F6C700B0638D /* AddEventViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = F8A48F382B17F6C700B0638D /* AddEventViewModel.swift */; };
+		F8A48F3D2B17F6C700B0638D /* AddEventView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F8A48F392B17F6C700B0638D /* AddEventView.swift */; };
+		F8A48F3E2B17F6C700B0638D /* AddChoreView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F8A48F3A2B17F6C700B0638D /* AddChoreView.swift */; };
+		F8A48F3F2B17F6C700B0638D /* AddChoreViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = F8A48F3B2B17F6C700B0638D /* AddChoreViewModel.swift */; };
+		F8A48F412B17F6E200B0638D /* EventInfo.swift in Sources */ = {isa = PBXBuildFile; fileRef = F8A48F402B17F6E200B0638D /* EventInfo.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -104,15 +106,17 @@
 		F4E320092AFFF9AF00DB34D3 /* ChoreStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChoreStore.swift; sourceTree = "<group>"; };
 		F805C0912B15BFD500F6AA9E /* SyncCalendarView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = SyncCalendarView.swift; path = Calendar/SyncCalendarView.swift; sourceTree = "<group>"; };
 		F805C0922B15BFD500F6AA9E /* CalendarView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = CalendarView.swift; path = Calendar/CalendarView.swift; sourceTree = "<group>"; };
-		F805C0952B15C21800F6AA9E /* Event.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Event.swift; sourceTree = "<group>"; };
 		F85B9ADC2B01EB74008F35C2 /* LoggedInViewViewModel.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = LoggedInViewViewModel.swift; sourceTree = "<group>"; };
 		F85B9AE42B01EC55008F35C2 /* AllChores.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AllChores.swift; sourceTree = "<group>"; };
 		F85B9AE52B01EC55008F35C2 /* ExpandedChore.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ExpandedChore.swift; sourceTree = "<group>"; };
 		F85B9AE62B01EC55008F35C2 /* HomeViewViewModel.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = HomeViewViewModel.swift; sourceTree = "<group>"; };
 		F85B9AE72B01EC55008F35C2 /* MyChores.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MyChores.swift; sourceTree = "<group>"; };
 		F85B9AE82B01EC55008F35C2 /* ProfileView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ProfileView.swift; sourceTree = "<group>"; };
-		F88B105B2B01FC8B00D48908 /* AddChoreView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AddChoreView.swift; sourceTree = "<group>"; };
-		F88B105C2B01FC8B00D48908 /* AddChoreViewModel.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AddChoreViewModel.swift; sourceTree = "<group>"; };
+		F8A48F382B17F6C700B0638D /* AddEventViewModel.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AddEventViewModel.swift; sourceTree = "<group>"; };
+		F8A48F392B17F6C700B0638D /* AddEventView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AddEventView.swift; sourceTree = "<group>"; };
+		F8A48F3A2B17F6C700B0638D /* AddChoreView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AddChoreView.swift; sourceTree = "<group>"; };
+		F8A48F3B2B17F6C700B0638D /* AddChoreViewModel.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AddChoreViewModel.swift; sourceTree = "<group>"; };
+		F8A48F402B17F6E200B0638D /* EventInfo.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = EventInfo.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -221,13 +225,8 @@
 		B2FB8B322AEEBA8100DEBF12 /* Screens */ = {
 			isa = PBXGroup;
 			children = (
-<<<<<<< HEAD
 				F805C0922B15BFD500F6AA9E /* CalendarView.swift */,
 				F805C0912B15BFD500F6AA9E /* SyncCalendarView.swift */,
-				F88B105B2B01FC8B00D48908 /* AddChoreView.swift */,
-				F88B105C2B01FC8B00D48908 /* AddChoreViewModel.swift */,
-=======
->>>>>>> origin/EditChoreView
 				EEFC8FDE2AFD6796002AE087 /* LoggedIn */,
 				B285F4682AF211B50096EE9E /* Chat */,
 				B21F02542AF1B14D0001E8FB /* Main */,
@@ -270,9 +269,11 @@
 		EE36BB9A2B165AB4009C5B5C /* ManageChore */ = {
 			isa = PBXGroup;
 			children = (
-				F88B105B2B01FC8B00D48908 /* AddChoreView.swift */,
-				F88B105C2B01FC8B00D48908 /* AddChoreViewModel.swift */,
 				EE36BB9B2B165AE7009C5B5C /* EditChoreView.swift */,
+				F8A48F3A2B17F6C700B0638D /* AddChoreView.swift */,
+				F8A48F3B2B17F6C700B0638D /* AddChoreViewModel.swift */,
+				F8A48F392B17F6C700B0638D /* AddEventView.swift */,
+				F8A48F382B17F6C700B0638D /* AddEventViewModel.swift */,
 				EE36BB9D2B165AFB009C5B5C /* EditChoreViewModel.swift */,
 			);
 			path = ManageChore;
@@ -289,7 +290,6 @@
 				EE36BBAD2B17B84A009C5B5C /* EventViewViewModel.swift */,
 				EEFC8FE12AFD6796002AE087 /* RoommateStatusView.swift */,
 				F85B9AE42B01EC55008F35C2 /* AllChores.swift */,
-				F805C0952B15C21800F6AA9E /* Event.swift */,
 				F85B9AE52B01EC55008F35C2 /* ExpandedChore.swift */,
 				F85B9AE72B01EC55008F35C2 /* MyChores.swift */,
 			);
@@ -313,6 +313,7 @@
 				EE36BBA22B1661A2009C5B5C /* ManageEvent */,
 				EEFC8FE22AFD6796002AE087 /* Roommate.swift */,
 				EEFC8FE32AFD6796002AE087 /* Chore.swift */,
+				F8A48F402B17F6E200B0638D /* EventInfo.swift */,
 				EE36BBA72B17AFEF009C5B5C /* Event.swift */,
 				F85B9AE82B01EC55008F35C2 /* ProfileView.swift */,
 				7A93C2862B01663900C2C69A /* MenuView.swift */,
@@ -408,8 +409,9 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				F8A48F412B17F6E200B0638D /* EventInfo.swift in Sources */,
+				F8A48F3E2B17F6C700B0638D /* AddChoreView.swift in Sources */,
 				EEFC8FE62AFD6797002AE087 /* RoommateStatusView.swift in Sources */,
-				F805C0962B15C21800F6AA9E /* Event.swift in Sources */,
 				F4E3200B2B00729900DB34D3 /* Roommate.swift in Sources */,
 				F805C0942B15BFD500F6AA9E /* CalendarView.swift in Sources */,
 				B2FB8B442AEED92000DEBF12 /* Constants.swift in Sources */,
@@ -421,22 +423,20 @@
 				B2FB8B3C2AEECDF400DEBF12 /* InputView.swift in Sources */,
 				B285F46E2AF211FA0096EE9E /* ChatScreen.swift in Sources */,
 				B21F02222AF025E90001E8FB /* LineText.swift in Sources */,
+				F8A48F3C2B17F6C700B0638D /* AddEventViewModel.swift in Sources */,
 				EE36BBA62B1661D1009C5B5C /* EditEventView.swift in Sources */,
 				7A93C2872B01663900C2C69A /* MenuView.swift in Sources */,
 				7A93C2892B01B29500C2C69A /* SelectRoomView.swift in Sources */,
 				21F5B4552AF84202008124D0 /* AuthenticationViewModel.swift in Sources */,
 				EE36BBB02B17B853009C5B5C /* EventView.swift in Sources */,
 				B285F46A2AF211E30096EE9E /* Chat.swift in Sources */,
-				F88B105D2B01FC8B00D48908 /* AddChoreView.swift in Sources */,
 				EE36BB9C2B165AE7009C5B5C /* EditChoreView.swift in Sources */,
 				F85B9AED2B01EC55008F35C2 /* ProfileView.swift in Sources */,
 				F4E3200D2B0072A100DB34D3 /* ChoreView.swift in Sources */,
-<<<<<<< HEAD
+				F8A48F3F2B17F6C700B0638D /* AddChoreViewModel.swift in Sources */,
 				F805C0932B15BFD500F6AA9E /* SyncCalendarView.swift in Sources */,
-=======
 				EE36BB9E2B165AFB009C5B5C /* EditChoreViewModel.swift in Sources */,
 				EE36BBA42B1661C5009C5B5C /* EditEventViewViewModel.swift in Sources */,
->>>>>>> origin/EditChoreView
 				B285F4702AF212040096EE9E /* ChatStore.swift in Sources */,
 				B2958F452AEDF0E500C9BBFF /* AuthScreen.swift in Sources */,
 				EE36BB972B1659D0009C5B5C /* CustomButton.swift in Sources */,
@@ -448,8 +448,8 @@
 				F4E3200E2B0072A700DB34D3 /* Chore.swift in Sources */,
 				EE36BB992B1659F6009C5B5C /* CustomTextEditor.swift in Sources */,
 				B2958F432AEDF0E500C9BBFF /* RoomieMatterApp.swift in Sources */,
-				F88B105E2B01FC8B00D48908 /* AddChoreViewModel.swift in Sources */,
 				F85B9AEC2B01EC55008F35C2 /* MyChores.swift in Sources */,
+				F8A48F3D2B17F6C700B0638D /* AddEventView.swift in Sources */,
 				F85B9ADD2B01EB74008F35C2 /* LoggedInViewViewModel.swift in Sources */,
 				F4E3200C2B00729E00DB34D3 /* HomeView.swift in Sources */,
 				F85B9AEB2B01EC55008F35C2 /* HomeViewViewModel.swift in Sources */,
