@@ -28,7 +28,14 @@ struct MainScreen: View {
         }
         
         Button {
-            Functions.functions().httpsCallable("testGetChores").call([]) { (result, error) in
+            guard let user = GIDSignIn.sharedInstance.currentUser else {
+                print("User not properly signed in")
+                return
+            }
+            let token = user.accessToken.tokenString
+            print(token)
+            
+            Functions.functions().httpsCallable("testGetChores").call(["token": token]) { (result, error) in
                 print("in testGetChores")
                 if let error = error as NSError? {
                     if error.domain == FunctionsErrorDomain {
