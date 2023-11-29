@@ -272,8 +272,6 @@
 				EE36BB9B2B165AE7009C5B5C /* EditChoreView.swift */,
 				F8A48F3A2B17F6C700B0638D /* AddChoreView.swift */,
 				F8A48F3B2B17F6C700B0638D /* AddChoreViewModel.swift */,
-				F8A48F392B17F6C700B0638D /* AddEventView.swift */,
-				F8A48F382B17F6C700B0638D /* AddEventViewModel.swift */,
 				EE36BB9D2B165AFB009C5B5C /* EditChoreViewModel.swift */,
 			);
 			path = ManageChore;
@@ -299,6 +297,8 @@
 		EE36BBA22B1661A2009C5B5C /* ManageEvent */ = {
 			isa = PBXGroup;
 			children = (
+				F8A48F392B17F6C700B0638D /* AddEventView.swift */,
+				F8A48F382B17F6C700B0638D /* AddEventViewModel.swift */,
 				EE36BBA52B1661D1009C5B5C /* EditEventView.swift */,
 				EE36BBA32B1661C5009C5B5C /* EditEventViewViewModel.swift */,
 			);
