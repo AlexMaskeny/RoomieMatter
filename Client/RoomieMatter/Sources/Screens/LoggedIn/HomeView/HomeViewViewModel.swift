@@ -6,7 +6,23 @@ import Foundation
 class HomeViewViewModel: ObservableObject {
     @Published var roommates: [Roommate]
     var chores: [Chore]
+    
+    var myChores: [Chore]{
+        chores.filter { chore in
+            chore.checkContains(roommate: user)
+        }
+    }
+    
+    var events: [Event]
+    
+    var myEvents: [Event] {
+        events.filter { event in
+            event.checkContains(roommate: user)
+        }
+    }
     @Published var user: Roommate
+    @Published var showingAddChore = false
+    
     
     
     func getRoommates(){
@@ -41,14 +57,15 @@ class HomeViewViewModel: ObservableObject {
         }
     }
     
-    init(){
+    init(chores: [Chore], events: [Event]){
         let userID = Auth.auth().currentUser?.uid ?? "uid"
         let displayName = Auth.auth().currentUser?.displayName ?? "unkniown"
         let photoURL = Auth.auth().currentUser?.photoURL
         user = Roommate(id: userID, displayName: displayName, photoURL: photoURL, status: .home)
         
         roommates = [Roommate]()
-        chores = [Chore.Example1, Chore.Example2]
+        self.chores = chores
+        self.events = events
         getRoommates()
     }
 }

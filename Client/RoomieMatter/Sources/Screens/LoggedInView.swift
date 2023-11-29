@@ -9,7 +9,7 @@ struct LoggedInView: View {
     var body: some View {
         NavigationStack{
             TabView {
-                HomeView()
+                HomeView(chores: viewModel.chores, events: viewModel.events)
                     .tabItem {
                         Image(systemName: "house")
                     }
@@ -52,19 +52,9 @@ struct LoggedInView: View {
             .toolbarBackground(Color.roomieMatter)
             .toolbarBackground(.visible, for: .navigationBar)
         }
+        .environmentObject(viewModel)
     }
 }
-func interpretString(status: String) -> Status{
-    switch status{
-    case "At Home":
-        return .home
-    case "Studying":
-        return .studying
-    case "In Class":
-        return .inClass
-    default:
-        return .sleeping
-    }
-}
+
 
 

@@ -2,6 +2,7 @@ import SwiftUI
 
 struct ExpandedChore: View {
     var chore: Chore
+    var roommates: [Roommate]
 
     var body: some View {
         GeometryReader { geometry in
@@ -144,12 +145,22 @@ struct ExpandedChore: View {
                 }
                 .padding()
             }
+            .toolbar{
+                NavigationLink{
+                    EditChoreView(roommates: roommates, chore: chore)
+                } label: {
+                    Image(systemName: "pencil")
+                        .foregroundStyle(.white)
+                }
+            }
+            .toolbarBackground(Color.roomieMatter)
+            .toolbarBackground(.visible, for: .navigationBar)
         }
     }
 }
 
 struct ExpandedChore_Previews: PreviewProvider {
     static var previews: some View {
-        ExpandedChore(chore: Chore.Example2)
+        ExpandedChore(chore: Chore.Example2, roommates: [Roommate.Example1])
     }
 }

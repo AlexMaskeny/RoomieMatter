@@ -10,7 +10,7 @@ struct Roommate: Identifiable{
     static var Example1 = Roommate(id: "ALfAiMtHmWhfUgaSQWGIUHUujUs2", displayName: "David Wang", status: .studying)
     static var Example2 = Roommate(id: "ALfAiMtHmWhfUgaSQWGIUHUujUs1", displayName: "Alexander David Maskeny", photoURL: URL(string: "https://lh3.googleusercontent.com/a/ACg8ocJt1Aq-Ispdj61KV4np-4ECP6TrTxYdrP2BXIrPWaXXzQw=s96-c"), status: .home)
     static var Example3 = Roommate(id: "ALfAiMtHmWhfUgaSQWGIUHUujUs3", displayName: "Teresa Lee", status: .sleeping)
-    static var Example4 = Roommate(id: "ALfAiMtHmWhfUgaSQWGIUHUujUs4", displayName: "Dylan Shelton", status: .inClass)
+    static var Example4 = Roommate(id: "ALfAiMtHmWhfUgaSQWGIUHUujUs4", displayName: "Dylan Shelton", status: .notHome)
     
     var image: AsyncImage<_ConditionalContent<Image, Image>>?{
         if let photoURL = photoURL{
@@ -28,7 +28,7 @@ enum Status{
     case studying
     case home
     case sleeping
-    case inClass
+    case notHome
     
     var color: Color{
         switch self {
@@ -37,9 +37,9 @@ enum Status{
         case .home:
             Color.green
         case .sleeping:
+            Color.blue
+        case .notHome:
             Color.gray
-        case .inClass:
-            Color.red
         }
     }
     
@@ -51,8 +51,21 @@ enum Status{
             "At Home"
         case .sleeping:
             "Sleeping"
-        case .inClass:
-            "In Class"
+        case .notHome:
+            "Not Home"
         }
+    }
+}
+
+func interpretString(status: String) -> Status{
+    switch status{
+    case "home":
+        return .home
+    case "studying":
+        return .studying
+    case "sleeping":
+        return .sleeping
+    default:
+        return .notHome
     }
 }

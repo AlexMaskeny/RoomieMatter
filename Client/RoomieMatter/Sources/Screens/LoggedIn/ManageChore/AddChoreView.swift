@@ -4,6 +4,7 @@ import SwiftUI
 
 struct AddChoreView: View {
     @StateObject var viewModel: AddChoreViewModel
+    @Environment(\.dismiss) private var dismiss
     
     init(roommates: [Roommate]){
         self._viewModel = StateObject(wrappedValue: AddChoreViewModel(roommates: roommates))
@@ -46,7 +47,7 @@ struct AddChoreView: View {
                             }
                         }
                     )
-                TextEditorView(placeholder: "Description", text: $viewModel.newChore.description)
+                TextEditorView(text: $viewModel.newChore.description)
                     .frame(height: 250)
                 InputView(placeholder: "Add Assignees", text: .constant(""))
                     .disabled(true)
@@ -87,58 +88,24 @@ struct AddChoreView: View {
                                 Image(systemName: viewModel.newChore.assignedRoommates.contains(where: {
                                     $0.id == roommate.id
                                 }) ? "trash" : "plus")
-                                    .padding()
-                                    .font(.title)
-                                    .foregroundStyle(.black)
-                        }
+                                .padding()
+                                .font(.title)
+                                .foregroundStyle(.black)
+                            }
                         }
                         Divider()
                     }
                 }
-                TLButton(title: "Save", backgroundColor: .roomieMatter){
-                    
+                CustomButton(title: "Save", backgroundColor: .roomieMatter){
+                    viewModel.saveChore()
+                    dismiss()
                 }
                 
                 Spacer()
             }
             .padding()
             .toolbarBackground(Color.roomieMatter)
-        .toolbarBackground(.visible, for: .navigationBar)
-        }
-    }
-    
-    struct TextEditorView: View {
-        var placeholder: String
-        @Binding var text: String
-        var color: Color = Color.container
-        
-        var body: some View {
-            TextEditor(text: $text)
-                .padding()
-                .background(color)
-                .scrollContentBackground(.hidden)
-                .frame(minWidth: 0, maxWidth: .infinity)
-                .cornerRadius(Style.borderRadius)
-        }
-    }
-    struct TLButton: View {
-        let title:String
-        let backgroundColor:Color
-        let action: () -> Void
-        var body: some View {
-            Button {
-                action()
-            } label: {
-                ZStack{
-                    RoundedRectangle(cornerRadius: 10)
-                        .foregroundColor(backgroundColor)
-                    Text(title)
-                        .font(.headline)
-                        .foregroundColor(.white)
-                        .bold()
-                        .padding(.vertical, 10)
-                }
-            }
+            .toolbarBackground(.visible, for: .navigationBar)
         }
     }
 }
