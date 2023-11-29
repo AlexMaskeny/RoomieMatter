@@ -49,17 +49,6 @@ struct LoggedInView: View {
         .environmentObject(viewModel)
     }
 }
-func interpretString(status: String) -> Status{
-    switch status{
-    case "At Home":
-        return .home
-    case "Studying":
-        return .studying
-    case "In Class":
-        return .inClass
-    default:
-        return .sleeping
-    }
-}
+
 
 
