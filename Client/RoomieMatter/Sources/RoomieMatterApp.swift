@@ -29,7 +29,7 @@ struct Content: View {
         VStack {
             if userLoggedIn {
                 NavigationStack {
-                    LoggedInView()
+                    MainScreen()
                 }
             } else {
                 AuthScreen()
@@ -39,9 +39,22 @@ struct Content: View {
             Auth.auth().addStateDidChangeListener{ auth, user in
                 if (user != nil) {
                     userLoggedIn = true
+                    silentGoogleSignIn() // New addition
                 } else {
                     userLoggedIn = false
                 }
+            }
+        }
+    }
+    
+    private func silentGoogleSignIn() {
+        if GIDSignIn.sharedInstance.hasPreviousSignIn() {
+            GIDSignIn.sharedInstance.restorePreviousSignIn { user, error in
+                if error != nil || user == nil {
+                    // Handle error or sign-out state
+                }
+                // User is signed in with Google
+                // Proceed with app flow
             }
         }
     }

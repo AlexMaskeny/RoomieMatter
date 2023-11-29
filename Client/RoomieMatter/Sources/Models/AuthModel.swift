@@ -26,6 +26,7 @@ struct Authentication {
             throw "Unexpected error occurred, please retry"
         }
         
+        
         let credential = GoogleAuthProvider.credential(withIDToken: idToken, accessToken: user.accessToken.tokenString)
         try await Auth.auth().signIn(with: credential)
     }
