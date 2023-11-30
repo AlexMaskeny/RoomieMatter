@@ -8,6 +8,7 @@
 import Foundation
 import Observation
 import FirebaseFunctions
+import GoogleSignIn
 
 //@Observable
 //final class ChoreStore {
@@ -56,8 +57,16 @@ import FirebaseFunctions
 //    }
 //}
 
-func getChores() -> String {
-    Functions.functions().httpsCallable("testGetChores").call("hello") { (result, error) in
+func getChores() {
+    guard let user = GIDSignIn.sharedInstance.currentUser else {
+        print("User not properly signed in")
+        return
+    }
+    let token = user.accessToken.tokenString
+    print(token)
+    
+    Functions.functions().httpsCallable("getChores").call(["token": token]) { (result, error) in
+        print("in getChores")
         if let error = error as NSError? {
             if error.domain == FunctionsErrorDomain {
                 let code = FunctionsErrorCode(rawValue: error.code)
@@ -71,7 +80,6 @@ func getChores() -> String {
             print(data)
         }
     }
-    return "hello"
 }
 
 func addChore(name: String, date: Date, description: String, assignedRoommates: String) -> String {
