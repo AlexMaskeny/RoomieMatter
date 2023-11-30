@@ -3,6 +3,38 @@ const { google } = require("googleapis");
 
 choresCalendarId = "c_5df0bf9c096fe8c9bf0a70fc19f1cf28dae8901ff0fcab98989a0445fb052625@group.calendar.google.com"
 
+// returns details of a chore
+async function getChore(calendar, id) {
+  const res = await calendar.events.get({
+    calendarId: choresCalendarId,
+    eventId: id
+  });
+
+  functions.logger.log(res?.data ?? "Failurreeee! in getChore");
+  const event = res.data;
+  functions.logger.log(event);
+
+  if (!event) {
+    functions.logger.log('No event found.');
+    return {};
+  }
+
+  const startIndex = event.recurrence[0].indexOf("FREQ=") + 5;
+  const endIndex = event.recurrence[0].indexOf(";");
+  if (endIndex == -1) {
+      endIndex = event.recurrence[0].length;
+  }
+  const eventData = {
+    summary: event.summary,
+    startDate: event.start.date, 
+    frequency: event.recurrence[0].substring(startIndex, endIndex),
+    assignee: event.creator.email /*TODO: modify this to assignees*/
+  };
+  functions.logger.log(eventData);
+
+  return eventData;
+}
+
 // returns list of chores
 const getChores = functions.https.onCall(async (data, context) => {
   if (!context.auth) {
@@ -20,7 +52,7 @@ const getChores = functions.https.onCall(async (data, context) => {
   const res = await calendar.events.list({
     calendarId: choresCalendarId,
     timeMin: new Date().toISOString(),
-    maxResults: 10,
+    maxResults: 5,
     singleEvents: true,
     orderBy: "startTime",
   });
@@ -33,14 +65,30 @@ const getChores = functions.https.onCall(async (data, context) => {
     functions.logger.log('No upcoming events found.');
     return;
   }
-  functions.logger.log('Upcoming 10 events:');
+  functions.logger.log('Upcoming 5 events:');
 
-  const eventsData = events.map(event => ({
-    summary: event.summary,
-    created: event.created,
-    htmlLink: event.htmlLink
-  }));
+  const eventsData = [];
 
+  for (const event of events) {
+    functions.logger.log(event.recurringEventId);
+
+    try {
+      // Call the asynchronous function using await
+      const choreResult = await getChore(calendar, event.recurringEventId);
+      choreResult.startDate = event.start.date;
+
+      // Log the result
+      functions.logger.log(choreResult);
+
+      // Push the result to the eventsData array
+      eventsData.push(choreResult);
+    } catch (error) {
+      // Handle errors if necessary
+      functions.logger.error(`Error processing event ${event.id}: ${error.message}`);
+    }
+  }
+
+  functions.logger.log("eventsData:");
   functions.logger.log(eventsData);
 
   return { eventsData };

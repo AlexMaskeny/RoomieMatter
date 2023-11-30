@@ -36,7 +36,7 @@ struct MainScreen: View {
             print(token)
             
             Functions.functions().httpsCallable("getChores").call(["token": token]) { (result, error) in
-                print("in testGetChores")
+                print("in getChores")
                 if let error = error as NSError? {
                     if error.domain == FunctionsErrorDomain {
                         let code = FunctionsErrorCode(rawValue: error.code)
