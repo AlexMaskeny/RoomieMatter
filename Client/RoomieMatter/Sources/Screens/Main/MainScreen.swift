@@ -35,7 +35,7 @@ struct MainScreen: View {
             let token = user.accessToken.tokenString
             print(token)
             
-            Functions.functions().httpsCallable("testGetChores").call(["token": token]) { (result, error) in
+            Functions.functions().httpsCallable("getChores").call(["token": token]) { (result, error) in
                 print("in testGetChores")
                 if let error = error as NSError? {
                     if error.domain == FunctionsErrorDomain {
@@ -88,8 +88,6 @@ struct MainScreen: View {
         
         NavigationLink("Chat", destination: ChatScreen())
         NavigationLink("Home", destination: HomeView())
-        
-//        Text(getChores())
         
         Text(err).foregroundColor(.red).font(.caption)
     }

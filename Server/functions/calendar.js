@@ -1,9 +1,10 @@
 const functions = require("firebase-functions");
-
 const { google } = require("googleapis");
 
-// test function that returns hardcoded JSON for frontend testing
-const testGetChores = functions.https.onCall(async (data, context) => {
+choresCalendarId = "c_5df0bf9c096fe8c9bf0a70fc19f1cf28dae8901ff0fcab98989a0445fb052625@group.calendar.google.com"
+
+// returns list of chores
+const getChores = functions.https.onCall(async (data, context) => {
   if (!context.auth) {
     throw new functions.https.HttpsError(
       "unauthenticated",
@@ -17,53 +18,32 @@ const testGetChores = functions.https.onCall(async (data, context) => {
   oAuth2Client.setCredentials({ access_token: token });
   const calendar = google.calendar({ version: "v3", auth: oAuth2Client });
   const res = await calendar.events.list({
-    calendarId: "primary",
+    calendarId: choresCalendarId,
     timeMin: new Date().toISOString(),
     maxResults: 10,
     singleEvents: true,
     orderBy: "startTime",
   });
+
   functions.logger.log(res?.data?.items ?? "Failurreeee!");
+  functions.logger.log(res);
 
-  functions.logger.log("Entered testGetChores function");
+  const events = res.data.items;
+  if (!events || events.length === 0) {
+    functions.logger.log('No upcoming events found.');
+    return;
+  }
+  functions.logger.log('Upcoming 10 events:');
 
-  // /*
-  const result = [
-    {
-      summary: "Vacuum",
-      startDate: "2023-10-31",
-      frequency: "WEEKLY",
-      assignee: "lteresa@umich.edu",
-    },
-    {
-      summary: "Take Out Trash",
-      startDate: "2023-11-02",
-      frequency: "WEEKLY",
-      assignee: "lteresa@umich.edu",
-    },
-    {
-      summary: "Mop the floor",
-      startDate: "2023-11-08",
-      frequency: "MONTHLY",
-      assignee: "lteresa@umich.edu",
-    },
-    {
-      summary: "Dishes",
-      startDate: "2023-11-09",
-      frequency: "DAILY",
-      assignee: "lteresa@umich.edu",
-    },
-    {
-      summary: "Clean Bathroom",
-      startDate: "2023-11-11",
-      frequency: "DAILY",
-      assignee: "lteresa@umich.edu",
-    },
-  ];
+  const eventsData = events.map(event => ({
+    summary: event.summary,
+    created: event.created,
+    htmlLink: event.htmlLink
+  }));
 
-  return { result };
-  // */
+  functions.logger.log(eventsData);
+
+  return { eventsData };
 });
 
-module.exports = { testGetChores };
-// module.exports = { addChore };
+module.exports = { getChores };

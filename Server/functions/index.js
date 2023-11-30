@@ -5,10 +5,9 @@ admin.initializeApp();
 
 const { onUserSignUp } = require("./user");
 const { sendChat, getChats } = require("./chat");
-const { testGetChores } = require("./calendar");
+const { getChores } = require("./calendar");
 
 exports.onUserSignUp = onUserSignUp;
 exports.sendChat = sendChat;
 exports.getChats = getChats;
-//exports.getChores = getChores;
-exports.testGetChores = testGetChores;
+exports.getChores = getChores;
