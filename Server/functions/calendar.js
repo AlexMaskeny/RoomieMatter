@@ -19,16 +19,28 @@ async function getChore(calendar, id) {
     return {};
   }
 
-  const startIndex = event.recurrence[0].indexOf("FREQ=") + 5;
-  const endIndex = event.recurrence[0].indexOf(";");
-  if (endIndex == -1) {
-      endIndex = event.recurrence[0].length;
+  let frequency = "";
+  if (event.recurrence) {
+    const startIndex = event.recurrence[0].indexOf("FREQ=") + 5;
+    const endIndex = event.recurrence[0].indexOf(";");
+    if (endIndex == -1) {
+        endIndex = event.recurrence[0].length;
+    }
+    frequency = event.recurrence[0].substring(startIndex, endIndex);
   }
+
+  let assignees = [];
+  if (event.attendees) {
+    functions.logger.log(event.attendees);
+    for (const attendee of event.attendees) {
+      assignees.push(attendee.email);
+    }
+  }
+
   const eventData = {
     summary: event.summary,
-    startDate: event.start.date, 
-    frequency: event.recurrence[0].substring(startIndex, endIndex),
-    assignee: event.creator.email /*TODO: modify this to assignees*/
+    frequency: frequency,
+    assignees: assignees
   };
   functions.logger.log(eventData);
 
