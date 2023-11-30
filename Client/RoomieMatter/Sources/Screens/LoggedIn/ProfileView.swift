@@ -17,9 +17,6 @@ struct ProfileView: View {
             VStack {
                 VStack {
                     Group{
-                        Text(getChores())
-                        Spacer()
-                        
                         if let image = roommate.image{
                             image
                                 .frame(width: 100, height: 100)
