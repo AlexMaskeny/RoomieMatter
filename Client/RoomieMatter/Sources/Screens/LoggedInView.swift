@@ -9,12 +9,12 @@ struct LoggedInView: View {
     var body: some View {
         NavigationStack{
             TabView {
-                HomeView()
+                HomeView(chores: viewModel.chores, events: viewModel.events)
                     .tabItem {
                         Image(systemName: "house")
                     }
                 
-                Text("Calendar View")
+                CalendarView()
                     .tabItem {
                         Image(systemName: "calendar")
                     }
@@ -35,6 +35,12 @@ struct LoggedInView: View {
                 
                 ToolbarItemGroup(placement: .topBarTrailing) {
                     NavigationLink {
+                        SyncCalendarView()
+                    } label: {
+                        Image(systemName: "calendar")
+                            .foregroundStyle(.white)
+                    }
+                    NavigationLink {
                         ChatScreen()
                     } label: {
                         Image(systemName: "ellipsis.message")
@@ -46,19 +52,9 @@ struct LoggedInView: View {
             .toolbarBackground(Color.roomieMatter)
             .toolbarBackground(.visible, for: .navigationBar)
         }
+        .environmentObject(viewModel)
     }
 }
-func interpretString(status: String) -> Status{
-    switch status{
-    case "At Home":
-        return .home
-    case "Studying":
-        return .studying
-    case "In Class":
-        return .inClass
-    default:
-        return .sleeping
-    }
-}
+
 
 

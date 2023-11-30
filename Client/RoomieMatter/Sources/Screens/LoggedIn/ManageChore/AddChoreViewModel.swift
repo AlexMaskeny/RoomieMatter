@@ -12,4 +12,8 @@ class AddChoreViewModel:ObservableObject{
     init(roommates: [Roommate]){
         self.roommates = roommates
     }
+    
+    func saveChore(){
+        
+    }
 }

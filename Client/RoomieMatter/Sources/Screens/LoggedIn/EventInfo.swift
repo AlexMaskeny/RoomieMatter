@@ -1,34 +1,41 @@
+//
+//  EventInfo.swift
+//  RoomieMatter
+//
+//  Created by Lasya Mantha on 11/29/23.
+//
+
 import SwiftUI
 
-struct ExpandedChore: View {
-    var chore: Chore
+struct EventInfo: View {
+    var event: Event
 
     var body: some View {
         GeometryReader { geometry in
             VStack(alignment: .leading) {
                         VStack(alignment: .leading) {
-                            Text(chore.name)
+                            Text(event.name)
                                 .font(.title)
                                 .bold()
                                 .foregroundStyle(.roomieMatter)
 
                             Group {
-                                if Calendar.current.isDateInToday(Date(timeIntervalSince1970: chore.date)) {
+                                if Calendar.current.isDateInToday(Date(timeIntervalSince1970: event.date)) {
                                     Text("Today")
                                         .font(.subheadline)
                                         
-                                } else if Calendar.current.isDateInTomorrow(Date(timeIntervalSince1970: chore.date)) {
+                                } else if Calendar.current.isDateInTomorrow(Date(timeIntervalSince1970: event.date)) {
                                     Text("Tomorrow")
                                         .font(.subheadline)
                                         
                                 } else {
-                                    Text(Date(timeIntervalSince1970: chore.date), format: .dateTime.weekday())
+                                    Text(Date(timeIntervalSince1970: event.date), format: .dateTime.weekday())
                                         .font(.subheadline)
                                         
                                 }
                                 Spacer()
                                     .frame(height: 20)
-                                Text(chore.description)
+                                Text(event.description)
                                     
                             }
                         }
@@ -42,7 +49,7 @@ struct ExpandedChore: View {
 
                         HStack {
                             Group {
-                                if let image = chore.author.image {
+                                if let image = event.author.image {
                                     image
                                         .frame(width: 40, height: 40)
                                         .clipShape(Circle())
@@ -68,13 +75,13 @@ struct ExpandedChore: View {
                             .overlay(alignment: .bottomTrailing) {
                                 Circle()
                                     .frame(width: 15)
-                                    .foregroundStyle(chore.author.status.color)
+                                    .foregroundStyle(event.author.status.color)
                             }
 
                             VStack(alignment: .leading) {
                                 Text("Created by:")
                                     .multilineTextAlignment(.leading)
-                                Text(chore.author.displayName)
+                                Text(event.author.displayName)
                                     .font(.caption)
                                     .multilineTextAlignment(.leading)
                             }
@@ -88,7 +95,7 @@ struct ExpandedChore: View {
 
                 VStack(alignment: .leading) {
                     Text("Assignees:")
-                    ForEach(chore.assignedRoommates) { roommate in
+                    ForEach(event.Guests) { roommate in
                         HStack{
                             Group{
                                 if let image = roommate.image{
@@ -148,8 +155,9 @@ struct ExpandedChore: View {
     }
 }
 
-struct ExpandedChore_Previews: PreviewProvider {
+struct EventInfo_Previews: PreviewProvider {
     static var previews: some View {
-        ExpandedChore(chore: Chore.Example2)
+        EventInfo(event: Event.Example1)
     }
 }
+

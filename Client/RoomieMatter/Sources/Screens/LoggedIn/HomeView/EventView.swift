@@ -2,26 +2,18 @@
 
 import SwiftUI
 
-struct ChoreView: View {
-    var chore: Chore
+struct EventView: View {
+    @StateObject var viewModel: EventViewViewModel
     var body: some View {
         VStack(alignment: .leading){
-            Text(chore.name)
+            Text(viewModel.event.name)
                 .font(.headline)
-            if Calendar.current.isDateInToday(Date(timeIntervalSince1970: chore.date)){
-                Text("Today")
-                    .font(.subheadline)
-            } else if Calendar.current.isDateInTomorrow(Date(timeIntervalSince1970: chore.date)) {
-                Text("Tomorrow")
-                    .font(.subheadline)
-            } else{
-                Text(Date(timeIntervalSince1970: chore.date), format: .dateTime.weekday())
-                    .font(.subheadline)
-            }
+            Text(viewModel.dateText)
+                .font(.subheadline)
             
             
             HStack {
-                ForEach(chore.assignedRoommates){roommate in
+                ForEach(viewModel.event.Guests){roommate in
                     if let image = roommate.image{
                         image
                             .frame(width: 40, height: 40)
@@ -53,8 +45,12 @@ struct ChoreView: View {
         .background(Color(white: 0.9))
         .cornerRadius(10)
     }
+    
+    init(event: Event){
+        self._viewModel = StateObject(wrappedValue: EventViewViewModel(event: event))
+    }
 }
 
 #Preview {
-    ChoreView(chore: Chore.Example1)
+    EventView(event: Event.Example1)
 }

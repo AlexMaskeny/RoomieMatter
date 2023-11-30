@@ -1,18 +1,23 @@
-
+//
+//  AddEventView.swift
+//  RoomieMatter
+//
+//  Created by Lasya Mantha on 11/29/23.
+//
 
 import SwiftUI
 
-struct AddChoreView: View {
-    @StateObject var viewModel: AddChoreViewModel
+struct AddEventView: View {
+    @StateObject var viewModel: AddEventViewModel
     
     init(roommates: [Roommate]){
-        self._viewModel = StateObject(wrappedValue: AddChoreViewModel(roommates: roommates))
+        self._viewModel = StateObject(wrappedValue: AddEventViewModel(roommates: roommates))
     }
     var body: some View {
         ScrollView {
             VStack {
-                InputView(placeholder: "Chore Name", text: $viewModel.newChore.name)
-                InputView(placeholder: "\(Date(timeIntervalSince1970: viewModel.newChore.date).formatted(date: .abbreviated, time: .shortened))", text: .constant(""))
+                InputView(placeholder: "Event Name", text: $viewModel.newEvent.name)
+                InputView(placeholder: "\(Date(timeIntervalSince1970: viewModel.newEvent.date).formatted(date: .abbreviated, time: .shortened))", text: .constant(""))
                     .disabled(true)
                     .overlay {
                         Button{
@@ -30,37 +35,37 @@ struct AddChoreView: View {
                     DatePicker("Date Picker", selection: $viewModel.date, in: Date.now...)
                         .datePickerStyle(.graphical)
                         .onChange(of: viewModel.date) { oldValue, newValue in
-                            viewModel.newChore.date = newValue.timeIntervalSince1970
+                            viewModel.newEvent.date = newValue.timeIntervalSince1970
                         }
                 }
-                InputView(placeholder: "Frequency", text: .constant(""))
-                    .disabled(true)
-                    .overlay(
-                        HStack {
-                            Spacer()
-                            Picker("Frequency: ", selection: $viewModel.newChore.frequency) {
-                                ForEach(Chore.Frequency.allCases, id: \.self){ freq in
-                                    Text(freq.asString)
-                                    
-                                }
-                            }
-                        }
-                    )
-                TextEditorView(placeholder: "Description", text: $viewModel.newChore.description)
+//                InputView(placeholder: "Frequency", text: .constant(""))
+//                    .disabled(true)
+//                    .overlay(
+//                        HStack {
+//                            Spacer()
+//                            Picker("Frequency: ", selection: $viewModel.newChore.frequency) {
+//                                ForEach(Event.Frequency.allCases, id: \.self){ freq in
+//                                    Text(freq.asString)
+//                                    
+//                                }
+//                            }
+//                        }
+//                    )
+                TextEditorView(placeholder: "Description", text: $viewModel.newEvent.description)
                     .frame(height: 250)
-                InputView(placeholder: "Add Assignees", text: .constant(""))
+                InputView(placeholder: "Add Guests", text: .constant(""))
                     .disabled(true)
                     .overlay {
                         HStack{
                             Spacer()
                             Button{
-                                viewModel.addAssignees.toggle()
+                                viewModel.addGuests.toggle()
                             } label: {
                                 VStack {
-                                    Image(systemName: viewModel.addAssignees ? "minus" : "plus")
+                                    Image(systemName: viewModel.addGuests ? "minus" : "plus")
                                         .font(.title)
                                         .foregroundStyle(.white)
-                                        .padding(.vertical,viewModel.addAssignees ? 12 : 2)
+                                        .padding(.vertical,viewModel.addGuests ? 12 : 2)
                                         .background(
                                             Circle()
                                                 .foregroundStyle(.roomieMatter)
@@ -71,20 +76,20 @@ struct AddChoreView: View {
                             }
                         }
                     }
-                if viewModel.addAssignees{
+                if viewModel.addGuests{
                     ForEach(viewModel.roommates){ roommate in
                         HStack {
                             RoommateStatusView(isSelf: false, roommate: roommate)
                             Button{
-                                if viewModel.newChore.checkContains(roommate: roommate) {
-                                    viewModel.newChore.assignedRoommates.removeAll {
+                                if viewModel.newEvent.checkContains(roommate: roommate) {
+                                    viewModel.newEvent.assignedRoommates.removeAll {
                                         $0.id == roommate.id
                                     }
                                 } else{
-                                    viewModel.newChore.assignedRoommates.append(roommate)
+                                    viewModel.newEvent.assignedRoommates.append(roommate)
                                 }
                             } label: {
-                                Image(systemName: viewModel.newChore.assignedRoommates.contains(where: {
+                                Image(systemName: viewModel.newEvent.assignedRoommates.contains(where: {
                                     $0.id == roommate.id
                                 }) ? "trash" : "plus")
                                     .padding()
@@ -144,5 +149,6 @@ struct AddChoreView: View {
 }
 
 #Preview {
-    AddChoreView(roommates: [Roommate.Example1, Roommate.Example2])
+    AddEventView(roommates: [Roommate.Example1, Roommate.Example2])
 }
+

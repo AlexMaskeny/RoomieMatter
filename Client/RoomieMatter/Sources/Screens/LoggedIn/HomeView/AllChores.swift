@@ -18,7 +18,7 @@ struct SingleChoreView: View {
             Text(chore.name)
                 .font(.title2)
                 .bold()
-                .foregroundStyle(.blue)
+                .foregroundStyle(.roomieMatter)
             if Calendar.current.isDateInToday(Date(timeIntervalSince1970: chore.date)){
                 Text("Today")
                     .font(.subheadline)
