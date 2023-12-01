@@ -127,7 +127,8 @@ const getChores = functions.https.onCall(async (data, context) => {
  * if frequency == Once, endRecurrenceDate is ignored
  * example date: "2023-12-01"
  * 
- * sample return value: {success: true}
+ * returns {success: true, eventId: "..."} on success
+ * throws error on failure
 */
 const addChore = functions.https.onCall(async (data, context) => {
   if (!context.auth) {
@@ -223,11 +224,19 @@ const addChore = functions.https.onCall(async (data, context) => {
     eventInput.attendees = attendees;
   }
 
-  const res = await calendar.events.insert({
-    calendarId: choresCalendarId,
-    resource: eventInput,
-  });
-
+  let res = {}
+  try{
+    res = await calendar.events.insert({
+      calendarId: choresCalendarId,
+      resource: eventInput,
+    });
+  } catch (error) {
+    functions.logger.error('Error adding event:', error.message);
+    throw new functions.https.HttpsError(
+      "Error adding event:", error.message
+    );
+  }
+  
   functions.logger.log(res?.data ?? "Failurreeee!");
   functions.logger.log(res);
   const event = res.data;
@@ -238,8 +247,7 @@ const addChore = functions.https.onCall(async (data, context) => {
   }
   functions.logger.log('Added event:');
   functions.logger.log(event);
-
-  return {success: true};
+  return {success: true, eventId: event.id};
 });
 
 // this function is not done yet
@@ -313,19 +321,13 @@ const deleteChoreInstance = functions.https.onCall(async (data, context) => {
   return {success: true};
 });
 
-// this function is not done yet
-/* REQUIRES: token, eventName, startDate, endDate, description, frequency, assignedRoommates
+/* REQUIRES: token, eventId
  * MODIFIES: RoomieMatter Chore calendar
  * EFFECTS: delete all instances of a chore on RoomieMatter Chore calendar
  * 
- * sample return value: 
- * [{
-    assignees = ('lteresa@umich.edu');
-    frequency = WEEKLY;
-    startDate = "2023-11-30";
-    summary = "Take Out Trash";
-    },...]
-*/
+ * returns {success: true} on success
+ * throws error on failure
+ */
 const deleteChore = functions.https.onCall(async (data, context) => {
   if (!context.auth) {
     throw new functions.https.HttpsError(
@@ -340,46 +342,26 @@ const deleteChore = functions.https.onCall(async (data, context) => {
   oAuth2Client.setCredentials({ access_token: token });
   const calendar = google.calendar({ version: "v3", auth: oAuth2Client });
 
-  // TODO: figure out how to have date for start and end
-  const eventInput = {
-    'summary': 'Dishes',
-    'description': 'An event that recurrs daily',
-    'start': {
-      'date': "2023-12-1",
-    },
-    'end': {
-      'date': "2023-12-7",
-    },
-    'recurrence': [
-      'RRULE:FREQ=DAILY'
-    ],
-    'attendees': [
-      {'email': 'lteresa@umich.edu'},
-      // {'email': 'sbrin@example.com'},
-    ],
-    // 'reminders': {
-    //   'useDefault': False,
-    //   'overrides': [
-    //     {'method': 'email', 'minutes': 24 * 60},
-    //     {'method': 'popup', 'minutes': 10},
-    //   ],
-    // },
-  };
-
-  const res = await calendar.events.insert({
-    calendarId: choresCalendarId,
-    resource: eventInput,
-  });
-
-  functions.logger.log(res?.data ?? "Failurreeee!");
-  functions.logger.log(res);
-  const event = res.data;
-  if (!event || event.length === 0) {
-    functions.logger.log('Failed to add event');
-    return;
+  if (!data.eventId) {
+    throw new functions.https.HttpsError(
+      "invalid input: missing eventId"
+    );
   }
-  functions.logger.log('Added event:');
-  functions.logger.log(event);
+
+  try {
+    const res = await calendar.events.delete({
+      calendarId: choresCalendarId,
+      eventId: data.eventId,
+    });
+    
+    functions.logger.log(res);
+    functions.logger.log('Successfully deleted event');
+  } catch (error) {
+    functions.logger.error('Error deleting event:', error.message);
+    throw new functions.https.HttpsError(
+      "Error deleting event:", error.message
+    );
+  }
 
   return {success: true};
 });
