@@ -418,6 +418,7 @@ const getChats = functions.https.onCall(async (data, context) => {
   }
   const roomId = data.roomId;
   const maxTimestamp = data.maxTimestamp;
+  const minTimestamp = data.minTimestamp;
   if (!roomId) {
     throw new functions.https.HttpsError(
       "invalid-argument",
@@ -425,71 +426,90 @@ const getChats = functions.https.onCall(async (data, context) => {
     );
   }
   const room = db.collection("rooms").doc(roomId);
-  const rawHistory = await db
-    .collection("chats")
-    .where("room", "==", room)
-    .where("createdAt", "<", maxTimestamp ? new Date(maxTimestamp) : new Date())
-    .orderBy("createdAt", "desc")
-    .limit(20)
-    .get();
-  const plainHistoryData = rawHistory.docs.map((doc) => doc.data()).reverse();
+  const olderRawHistory = maxTimestamp
+    ? await db
+        .collection("chats")
+        .where("room", "==", room)
+        .where("createdAt", "<", new Date(maxTimestamp))
+        .orderBy("createdAt", "desc")
+        .limit(20)
+        .get()
+    : { docs: [] };
+  const olderPlainHistoryData = olderRawHistory.docs
+    .map((doc) => doc.data())
+    .reverse();
 
-  let userRefs = [];
-  plainHistoryData.forEach((chat) => {
-    if (["roommate", "user"].includes(chat.role)) {
-      if (!userRefs.find((userRef) => userRef.id === chat.user?.id)) {
-        userRefs.push(chat.user);
+  const newerRawHistory = minTimestamp
+    ? await db
+        .collection("chats")
+        .where("room", "==", room)
+        .where("createdAt", ">", new Date(minTimestamp))
+        .orderBy("createdAt", "asc")
+        .get()
+    : { docs: [] };
+  const newerPlainHistoryData = newerRawHistory.docs.map((doc) => doc.data());
+
+  const makeHistory = async (plainHistoryData) => {
+    let userRefs = [];
+    plainHistoryData.forEach((chat) => {
+      if (["roommate", "user"].includes(chat.role)) {
+        if (!userRefs.find((userRef) => userRef.id === chat.user?.id)) {
+          userRefs.push(chat.user);
+        }
+      }
+    });
+    let users = new Map();
+    for (let i = 0; i < userRefs.length; i++) {
+      const userRef = userRefs[i];
+      const userSnapshot = await userRef.get();
+      if (userSnapshot.exists) {
+        const userData = userSnapshot.data();
+        users.set(userRef.id, userData);
       }
     }
-  });
-  let users = new Map();
-  for (let i = 0; i < userRefs.length; i++) {
-    const userRef = userRefs[i];
-    const userSnapshot = await userRef.get();
-    if (userSnapshot.exists) {
-      const userData = userSnapshot.data();
-      users.set(userRef.id, userData);
-    }
-  }
 
-  const history = plainHistoryData.reduce((acc, chat) => {
-    const generalParams = {
-      content: chat.content ?? "",
-      createdAt: chat.createdAt?.toDate()?.toISOString() ?? "",
-      role: chat.role ?? "",
-    };
+    return plainHistoryData.reduce((acc, chat) => {
+      const generalParams = {
+        content: chat.content ?? "",
+        createdAt: chat.createdAt?.toDate()?.toISOString() ?? "",
+        role: chat.role ?? "",
+      };
 
-    switch (chat.role) {
-      case "assistant":
-        return [
-          ...acc,
-          {
-            ...generalParams,
-            profilePicture:
-              "https://umich.edu/includes/panels/gallery/images/block-m-maize.png",
-          },
-        ];
-      case "roommate":
-      case "user": {
-        const userData = users.get(chat.user.id);
-        if (userData) {
+      switch (chat.role) {
+        case "assistant":
           return [
             ...acc,
             {
               ...generalParams,
-              userId: userData.uuid,
-              displayName: userData.displayName,
-              profilePicture: userData.photoUrl,
+              profilePicture:
+                "https://umich.edu/includes/panels/gallery/images/block-m-maize.png",
             },
           ];
+        case "roommate":
+        case "user": {
+          const userData = users.get(chat.user.id);
+          if (userData) {
+            return [
+              ...acc,
+              {
+                ...generalParams,
+                userId: userData.uuid,
+                displayName: userData.displayName,
+                profilePicture: userData.photoUrl,
+              },
+            ];
+          }
+          return acc;
         }
-        return acc;
+        default:
+          return acc;
       }
-      default:
-        return acc;
-    }
-  }, []);
-  return { history };
+    }, []);
+  };
+  return {
+    olderHistory: await makeHistory(olderPlainHistoryData),
+    newerHistory: await makeHistory(newerPlainHistoryData),
+  };
 });
 
 module.exports = { sendChat, getChats };
