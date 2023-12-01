@@ -35,7 +35,7 @@ final class ChatStore {
                     let code = FunctionsErrorCode(rawValue: error.code)
                     let message = error.localizedDescription
                     let details = error.userInfo[FunctionsErrorDetailsKey]
-                    print("Error: \(message)")
+                    print("Error: \(String(describing: code)) \(message) \(String(describing: details))")
                 }
                 // Handle the error
             }
@@ -54,10 +54,14 @@ final class ChatStore {
         }
     }
     
-    func getChats() {
-        print("getting chats")
+    func getChats(onAppear: Bool = false) {
+        print("getChats running")
+        if !self.chats.isEmpty && onAppear {
+            return
+        }
         let params = [
-            "roomId": authViewModel.room_id
+            "roomId": authViewModel.room_id,
+            "maxTimestamp": self.chats.isEmpty ? "" : ChatStore.dateFormatter.string(from: self.chats[0].timestamp!)
         ]
         Functions.functions().httpsCallable("getChats").call(params) { (result, error) in
             if let error = error as NSError? {
@@ -65,7 +69,7 @@ final class ChatStore {
                     let code = FunctionsErrorCode(rawValue: error.code)
                     let message = error.localizedDescription
                     let details = error.userInfo[FunctionsErrorDetailsKey]
-                    print("Error: \(message)")
+                    print("Error: \(String(describing: code)) \(message) \(String(describing: details))")
                 }
                 // Handle the error
             }
@@ -73,8 +77,7 @@ final class ChatStore {
             if let data = result?.data as? [String: Any] {
                 // Deserialize the 'history' key into an array of dictionaries
                 if let historyArray = data["history"] as? [[String: Any]] {
-                    // Clear chat data
-                    self.chats.removeAll()
+                    var fetchedChats: [Chat] = []
                     // Iterate over each chat dictionary in the history array
                     for chatDict in historyArray {
                         // Extract values and append a new Chat object
@@ -84,7 +87,7 @@ final class ChatStore {
                            let isoString = chatDict["createdAt"] as? String,
                            let timestamp = ChatStore.dateFormatter.date(from: isoString) {
                             if role == "assistant" {
-                                self.chats.append(
+                                fetchedChats.append(
                                     Chat(
                                         username: "HouseKeeper",
                                         message: message,
@@ -94,7 +97,7 @@ final class ChatStore {
                             }
                             else {
                                 if let username = chatDict["displayName"] as? String{
-                                    self.chats.append(
+                                    fetchedChats.append(
                                         Chat(
                                             username: username,
                                             message: message,
@@ -105,6 +108,7 @@ final class ChatStore {
                             }
                         }
                     }
+                    self.chats = fetchedChats + self.chats
                 }
             } else {
                 print("Error getting chats")

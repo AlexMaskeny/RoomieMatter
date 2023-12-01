@@ -417,6 +417,7 @@ const getChats = functions.https.onCall(async (data, context) => {
     );
   }
   const roomId = data.roomId;
+  const maxTimestamp = data.maxTimestamp;
   if (!roomId) {
     throw new functions.https.HttpsError(
       "invalid-argument",
@@ -427,9 +428,11 @@ const getChats = functions.https.onCall(async (data, context) => {
   const rawHistory = await db
     .collection("chats")
     .where("room", "==", room)
-    .orderBy("createdAt", "asc")
+    .where("createdAt", "<", maxTimestamp ? new Date(maxTimestamp) : new Date())
+    .orderBy("createdAt", "desc")
+    .limit(20)
     .get();
-  const plainHistoryData = rawHistory.docs.map((doc) => doc.data());
+  const plainHistoryData = rawHistory.docs.map((doc) => doc.data()).reverse();
 
   let userRefs = [];
   plainHistoryData.forEach((chat) => {
