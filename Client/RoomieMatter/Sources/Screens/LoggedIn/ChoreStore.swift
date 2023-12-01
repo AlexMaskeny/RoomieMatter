@@ -124,7 +124,7 @@ func addChore(name: String, date: Date, description: String, assignedRoommates: 
     return "return something here"
 }
 
-func deleteOneChore(chore_id: String, calendar_id: String) -> String {
+func deleteOneInstanceOfChore(chore_id: String, calendar_id: String) -> String {
 //    let val = GTLR
 //    let query = GTLRCalendarQuery_EventsDelete.query(withCalendarId: calendarId, eventId: eventId)
 //    service?.executeQuery(query, completionHandler: { (_, _, error) in
@@ -137,14 +137,34 @@ func deleteOneChore(chore_id: String, calendar_id: String) -> String {
     return "successfully deleted one chore"
 }
 
-func deleteAllInstancesOfEvent(eventId: String) -> String {
-//    let query = GTLRCalendarQuery_EventsInstancesDelete.query(withCalendarId: calendarId, eventId: eventId)
-//    service?.executeQuery(query, completionHandler: { (_, _, error) in
-//        if let error = error {
-//            print("Error deleting all instances of event: \(error.localizedDescription)")
-//        } else {
-//            print("All instances of event deleted successfully")
-//        }
-//    })
-    return "successfully deleted all chores"
+func deleteChore(eventId: String) -> String {
+    guard let user = GIDSignIn.sharedInstance.currentUser else {
+        print("User not properly signed in")
+        return "error"
+    }
+    let token = user.accessToken.tokenString
+    print(token)
+    
+    /* required arguments: token, eventId
+     * example argument is listed below:
+     */
+    let data = ["token": token, "eventId": "to971io3dt6a6360370nrvnaus"]
+    
+    Functions.functions().httpsCallable("deleteChore").call(data) { (result, error) in
+        print("in deleteChore")
+        if let error = error as NSError? {
+            if error.domain == FunctionsErrorDomain {
+                let code = FunctionsErrorCode(rawValue: error.code)
+                let message = error.localizedDescription
+                let details = error.userInfo[FunctionsErrorDetailsKey]
+                print("Error: \(message)")
+            }
+            // Handle the error
+        }
+        if let data = result?.data as? [String: Any] {
+            print(data)
+        }
+    }
+    
+    return "return something here"
 }

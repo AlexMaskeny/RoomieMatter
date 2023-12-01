@@ -40,6 +40,12 @@ struct MainScreen: View {
         }
         
         Button {
+            deleteChore(eventId: "String")
+        } label: {
+            Text("Delete chore")
+        }
+        
+        Button {
             db.collection("test").addDocument(data: [
                 "title": "Test"
             ])
