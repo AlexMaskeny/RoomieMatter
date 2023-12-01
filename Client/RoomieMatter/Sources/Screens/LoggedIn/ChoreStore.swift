@@ -90,10 +90,23 @@ func addChore(name: String, date: Date, description: String, assignedRoommates: 
     let token = user.accessToken.tokenString
     print(token)
     
-    let data = ["token": token, "eventName": "Dishes", "startDate": "2023-12-10", "endDate": "2023-12-15"]
+    /* required arguments: token, eventName, date, frequency
+     * optional arguments: endRecurrenceDate, description, assignedRoommates
+     * (endRecurrenceDate is ignored for frequency == Once)
+     * frequency = {Once, Daily, Weekly, Biweekly, Monthly}
+     *
+     * example for required arguments:
+     * let data: [String: Any] = ["token": token, "eventName": "Dishes", "date": "2023-12-02", "frequency": "Once"]
+     *
+     * example for all arguments is listed below:
+     */
+    
+    let data: [String: Any] = ["token": token, "eventName": "Trash", "date": "2023-12-02", "frequency": "Biweekly",
+                "endRecurrenceDate": "2023-12-30", "description": "gibberish", "assignedRoommates": ["lteresa@umich.edu"]]
+    // is it easier for frontend if we take in UUID instead of email for each user?
     
     Functions.functions().httpsCallable("addChore").call(data) { (result, error) in
-        print("in getChores")
+        print("in addChore")
         if let error = error as NSError? {
             if error.domain == FunctionsErrorDomain {
                 let code = FunctionsErrorCode(rawValue: error.code)
@@ -108,7 +121,7 @@ func addChore(name: String, date: Date, description: String, assignedRoommates: 
         }
     }
     
-    return "successfully added chore"
+    return "return something here"
 }
 
 func deleteOneChore(chore_id: String, calendar_id: String) -> String {

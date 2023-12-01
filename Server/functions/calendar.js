@@ -118,12 +118,14 @@ const getChores = functions.https.onCall(async (data, context) => {
   return { eventsData };
 });
 
-/* REQUIRES: token, eventName, startDate, endDate, description, frequency, assignedRoommates
+/* REQUIRES: token, eventName, date, frequency
+ * OPTIONAL: endRecurrenceDate, description, assignedRoommates
  * MODIFIES: RoomieMatter Chore calendar
  * EFFECTS: add a chore to RoomieMatter Chore calendar
  * 
  * frequency = {Once, Daily, Weekly, Biweekly, Monthly}
- * if frequency == Once, endDate is ignored
+ * if frequency == Once, endRecurrenceDate is ignored
+ * example date: "2023-12-01"
  * 
  * sample return value: {success: true}
 */
@@ -145,10 +147,10 @@ const addChore = functions.https.onCall(async (data, context) => {
   oAuth2Client.setCredentials({ access_token: token });
   const calendar = google.calendar({ version: "v3", auth: oAuth2Client });
 
-  // make sure eventName, startDate, frequency are not empty
-  if (!data.eventName || !data.eventName.trim() || !data.startDate || !data.frequency) {
+  // make sure eventName, date, frequency are not empty
+  if (!data.eventName || !data.eventName.trim() || !data.date || !data.frequency) {
     throw new functions.https.HttpsError(
-      "invalid input: eventName, startDate or frequency is empty"
+      "invalid input: eventName, date or frequency is empty"
     );
   }
   
@@ -157,42 +159,61 @@ const addChore = functions.https.onCall(async (data, context) => {
     'summary': data.eventName,
   };
 
-  // add startDate, endDate, frequency
+  // add date
   eventInput.start = {};
   eventInput.end = {};
-  const date = new Date(data.startDate);
-  const dayOfWeek = date.getDay();
-  const daysOfWeek = ['SU', 'MO', 'TU', 'WE', 'TH', 'FR', 'SA'];
-  if (data.frequency != "Once") {
-    eventInput.start.date = data.startDate;
-    eventInput.end.date = data.startDate;
-  } else {
-    eventInput.start.date = data.startDate;
-    eventInput.end.date = data.endDate;
-    if (data.frequency == "Daily") {
-      eventInput.recurrence = [
-        'RRULE:FREQ=DAILY'
-      ];
-    } else if (data.frequency == "Weekly") {
-      const recurrenceInput = 'RRULE:FREQ=WEEKLY;UNTIL=' + endDate.replace(/-/g, '') + 'BYDAY=' + daysOfWeek[dayOfWeek];
-      eventInput.recurrence = [recurrenceInput];
-    } else if (data.frequency = "Biweekly") {
-      const recurrenceInput = 'RRULE:FREQ=WEEKLY;WKST=MO;UNTIL=' + endDate.replace(/-/g, '') + ';INTERVAL=2;BYDAY=' + daysOfWeek[dayOfWeek];
-      eventInput.recurrence = [recurrenceInput];
-    } else if (data.frequency = "Monthly") {
-      const recurrenceInput = 'RRULE:FREQ=MONTHLY;UNTIL=' + endDate.replace(/-/g, '');
-      eventInput.recurrence = [recurrenceInput];
-    } else {
+  eventInput.start.date = data.date;
+  eventInput.end.date = data.date;
+
+  // returns the day of week of an inputDate
+  function findDayOfWeek(inputDate) {
+    const date = new Date(inputDate);
+    const dayOfWeek = date.getDay();
+    const daysOfWeek = ['SU', 'MO', 'TU', 'WE', 'TH', 'FR', 'SA'];
+    return daysOfWeek[dayOfWeek];
+  }
+  
+  // format endRecurrenceDate if not null
+  function formatEndRecurrenceDate(endRecurrenceDate) {
+    if (!endRecurrenceDate) {
+      return "";
+    }
+
+    return ';UNTIL=' + data.endRecurrenceDate.replace(/-/g, '');
+  }
+
+  // add recurrence if necessary
+  switch (data.frequency) {
+    case 'Once': 
+      break;
+    case 'Daily':
+      const dailyInput = 'RRULE:FREQ=DAILY' + formatEndRecurrenceDate(data.endRecurrenceDate);
+      eventInput.recurrence = [dailyInput];
+      break;
+    case 'Weekly':
+      const weeklyInput = 'RRULE:FREQ=WEEKLY' + formatEndRecurrenceDate(data.endRecurrenceDate) + ';BYDAY=' + findDayOfWeek(data.date);
+      eventInput.recurrence = [weeklyInput];
+      break;
+    case 'Biweekly':
+      const biweeklyInput = 'RRULE:FREQ=WEEKLY;WKST=MO' + formatEndRecurrenceDate(data.endRecurrenceDate) + ';INTERVAL=2;BYDAY=' + findDayOfWeek(data.date);
+      eventInput.recurrence = [biweeklyInput];
+      break;
+    case 'Monthly':
+      const monthlyInput = 'RRULE:FREQ=MONTHLY' + formatEndRecurrenceDate(data.endRecurrenceDate);
+      eventInput.recurrence = [monthlyInput];
+      break;
+    default:
       throw new functions.https.HttpsError(
         "invalid input: frequency can only be strings in {Once, Daily, Weekly, Biweekly, Monthly}"
       );
-    }
   }
   
-  // description, assignedRoommates could be null
+  // add description
   if (data.description) {
     eventInput.description = data.description;
   }
+
+  // add attendees
   if (data.attendees) {
     let attendees = [];
     for (const attendee of data.attendees) {
