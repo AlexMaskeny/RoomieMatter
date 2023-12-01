@@ -23,6 +23,10 @@ final class ChatStore {
 
     private(set) var chats: [Chat] = []
     
+    init() {
+        listenForChats()
+    }
+    
     func sendChat(msg: String) {
         let params = [
             "userId": authViewModel.user_uid,
@@ -37,16 +41,6 @@ final class ChatStore {
                     let details = error.userInfo[FunctionsErrorDetailsKey]
                     print("Error: \(String(describing: code)) \(message) \(String(describing: details))")
                 }
-                // Handle the error
-            }
-            else {
-                self.chats.append(
-                    Chat(
-                        username: self.authViewModel.username,
-                        message: msg,
-                        timestamp: Date.now
-                    )
-                )
             }
             if let data = result?.data as? [String: Any] {
                 print(data)
@@ -54,14 +48,13 @@ final class ChatStore {
         }
     }
     
-    func getChats(onAppear: Bool = false) {
+    func getChats(onAppear: Bool = false, onNew: Bool = false) {
         print("getChats running")
-        if !self.chats.isEmpty && onAppear {
-            return
-        }
+ 
         let params = [
             "roomId": authViewModel.room_id,
-            "maxTimestamp": self.chats.isEmpty ? "" : ChatStore.dateFormatter.string(from: self.chats[0].timestamp!)
+            "maxTimestamp": !self.chats.isEmpty && (onAppear || onNew) ? "" : self.chats.isEmpty ? ChatStore.dateFormatter.string(from: Date.now) : ChatStore.dateFormatter.string(from: self.chats.first!.timestamp!),
+            "minTimestamp": self.chats.isEmpty ? "" :ChatStore.dateFormatter.string(from: self.chats.last!.timestamp!)
         ]
         Functions.functions().httpsCallable("getChats").call(params) { (result, error) in
             if let error = error as NSError? {
@@ -71,48 +64,71 @@ final class ChatStore {
                     let details = error.userInfo[FunctionsErrorDetailsKey]
                     print("Error: \(String(describing: code)) \(message) \(String(describing: details))")
                 }
-                // Handle the error
             }
 
             if let data = result?.data as? [String: Any] {
-                // Deserialize the 'history' key into an array of dictionaries
-                if let historyArray = data["history"] as? [[String: Any]] {
-                    var fetchedChats: [Chat] = []
-                    // Iterate over each chat dictionary in the history array
-                    for chatDict in historyArray {
-                        // Extract values and append a new Chat object
+
+                if let olderHistoryArray = data["olderHistory"] as? [[String: Any]],
+                   let newerHistoryArray = data["newerHistory"] as? [[String: Any]] {
+                   
+                    func parseChatDictionary(_ chatDict: [String: Any]) -> Chat? {
+                        guard let role = chatDict["role"] as? String,
+                              let message = chatDict["content"] as? String,
+                              let isoString = chatDict["createdAt"] as? String,
+                              let timestamp = ChatStore.dateFormatter.date(from: isoString) else {
+                            return nil
+                        }
                         
-                        if let role = chatDict["role"] as? String,
-                           let message = chatDict["content"] as? String,
-                           let isoString = chatDict["createdAt"] as? String,
-                           let timestamp = ChatStore.dateFormatter.date(from: isoString) {
-                            if role == "assistant" {
-                                fetchedChats.append(
-                                    Chat(
-                                        username: "HouseKeeper",
-                                        message: message,
-                                        timestamp: timestamp
-                                    )
-                                )
-                            }
-                            else {
-                                if let username = chatDict["displayName"] as? String{
-                                    fetchedChats.append(
-                                        Chat(
-                                            username: username,
-                                            message: message,
-                                            timestamp: timestamp
-                                        )
-                                    )
-                                }
-                            }
+                        if role == "assistant" {
+                            return Chat(
+                                username: "HouseKeeper",
+                                message: message,
+                                timestamp: timestamp
+                            )
+                        } else if let username = chatDict["displayName"] as? String {
+                            return Chat(
+                                username: username,
+                                message: message,
+                                timestamp: timestamp
+                            )
+                        }
+                        
+                        return nil
+                    }
+                    
+                    var fetchedChats: [Chat] = []
+                    
+                    for chatDict in olderHistoryArray {
+                        if let chat = parseChatDictionary(chatDict) {
+                            fetchedChats.append(chat)
                         }
                     }
-                    self.chats = fetchedChats + self.chats
+                    
+                    fetchedChats += self.chats
+                    
+                    for chatDict in newerHistoryArray {
+                        if let chat = parseChatDictionary(chatDict) {
+                            fetchedChats.append(chat)
+                        }
+                    }
+                    
+                    self.chats = fetchedChats
                 }
             } else {
                 print("Error getting chats")
             }
         }
+    }
+    
+    private func listenForChats() {
+        db.collection("chats")
+          .addSnapshotListener { querySnapshot, error in
+              guard let documents = querySnapshot?.documents else {
+                  print("Error fetching documents: \(error!)")
+                  return
+              }
+              
+              ChatStore.shared.getChats(onNew: true)
+          }
     }
 }
