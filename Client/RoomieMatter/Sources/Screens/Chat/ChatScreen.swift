@@ -11,11 +11,6 @@ struct ChatScreen: View {
     private let store = ChatStore.shared
     @State private var textInput: String = ""
     @State private var authViewModel = AuthenticationViewModel()
-    
-    init() {
-        store.getChats()
-        print("getting chats")
-    }
 
     var body: some View {
         List(store.chats.indices, id: \.self) {
@@ -26,6 +21,10 @@ struct ChatScreen: View {
             .listRowInsets(.init(top: 0, leading: 0, bottom: 5, trailing: 0))
         }
         .listStyle(.plain)
+        .onAppear {
+            store.getChats(onAppear: true)
+            print("getting chats")
+        }
         .refreshable {
             store.getChats()
         }
