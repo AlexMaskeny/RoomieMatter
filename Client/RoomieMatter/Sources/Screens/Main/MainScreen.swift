@@ -30,7 +30,13 @@ struct MainScreen: View {
         Button {
             getChores()
         } label: {
-            Text("Test get chores")
+            Text("Get chores")
+        }
+        
+        Button {
+            print(addChore(name: "name", date: Date(), description: "description", assignedRoommates: "roommate"))
+        } label: {
+            Text("Add chore")
         }
         
         Button {
