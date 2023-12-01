@@ -83,27 +83,31 @@ func getChores() {
 }
 
 func addChore(name: String, date: Date, description: String, assignedRoommates: String) -> String {
-//    let event = GTLRCalendar_Event()
-//    event.summary = summary
-//    event.descriptionProperty = description
-//
-//    let startDateTime = GTLRDateTime(date: startTime)
-//    let endDateTime = GTLRDateTime(date: endTime)
-//
-//    event.start = GTLRCalendar_EventDateTime()
-//    event.start?.dateTime = startDateTime
-//
-//    event.end = GTLRCalendar_EventDateTime()
-//    event.end?.dateTime = endDateTime
-//
-//    let query = GTLRCalendarQuery_EventsInsert.query(withObject: event, calendarId: calendarId)
-//    service?.executeQuery(query, completionHandler: { (_, _, error) in
-//        if let error = error {
-//            print("Error adding event: \(error.localizedDescription)")
-//        } else {
-//            print("Event added successfully")
-//        }
-//    })
+    guard let user = GIDSignIn.sharedInstance.currentUser else {
+        print("User not properly signed in")
+        return "error"
+    }
+    let token = user.accessToken.tokenString
+    print(token)
+    
+    let data = ["token": token, "eventName": "Dishes", "startDate": "2023-12-10", "endDate": "2023-12-15"]
+    
+    Functions.functions().httpsCallable("addChore").call(data) { (result, error) in
+        print("in getChores")
+        if let error = error as NSError? {
+            if error.domain == FunctionsErrorDomain {
+                let code = FunctionsErrorCode(rawValue: error.code)
+                let message = error.localizedDescription
+                let details = error.userInfo[FunctionsErrorDetailsKey]
+                print("Error: \(message)")
+            }
+            // Handle the error
+        }
+        if let data = result?.data as? [String: Any] {
+            print(data)
+        }
+    }
+    
     return "successfully added chore"
 }
 
