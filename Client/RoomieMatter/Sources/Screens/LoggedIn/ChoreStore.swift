@@ -101,7 +101,7 @@ func addChore(name: String, date: Date, description: String, assignedRoommates: 
      * example for all arguments is listed below:
      */
     
-    let data: [String: Any] = ["token": token, "eventName": "Trash", "date": "2023-12-02", "frequency": "Biweekly",
+    let data: [String: Any] = ["token": token, "eventName": "Trash", "date": "2023-12-02", "frequency": "Weekly",
                 "endRecurrenceDate": "2023-12-30", "description": "gibberish", "assignedRoommates": ["lteresa@umich.edu"]]
     // is it easier for frontend if we take in UUID instead of email for each user?
     
@@ -124,17 +124,34 @@ func addChore(name: String, date: Date, description: String, assignedRoommates: 
     return "return something here"
 }
 
-func deleteOneInstanceOfChore(chore_id: String, calendar_id: String) -> String {
-//    let val = GTLR
-//    let query = GTLRCalendarQuery_EventsDelete.query(withCalendarId: calendarId, eventId: eventId)
-//    service?.executeQuery(query, completionHandler: { (_, _, error) in
-//        if let error = error {
-//            print("Error deleting event: \(error.localizedDescription)")
-//        } else {
-//            print("Event deleted successfully")
-//        }
-//    })
-    return "successfully deleted one chore"
+func completeChore(instanceId: String) -> String {
+    guard let user = GIDSignIn.sharedInstance.currentUser else {
+        print("User not properly signed in")
+        return "error"
+    }
+    let token = user.accessToken.tokenString
+    print(token)
+    
+    /* required arguments: token, instanceId*/
+    let data = ["token": token, "instanceId": instanceId]
+    
+    Functions.functions().httpsCallable("completeChore").call(data) { (result, error) in
+        print("in completeChore")
+        if let error = error as NSError? {
+            if error.domain == FunctionsErrorDomain {
+                let code = FunctionsErrorCode(rawValue: error.code)
+                let message = error.localizedDescription
+                let details = error.userInfo[FunctionsErrorDetailsKey]
+                print("Error: \(message)")
+            }
+            // Handle the error
+        }
+        if let data = result?.data as? [String: Any] {
+            print(data)
+        }
+    }
+    
+    return "return something here"
 }
 
 func deleteChore(instanceId: String) -> String {
@@ -145,9 +162,7 @@ func deleteChore(instanceId: String) -> String {
     let token = user.accessToken.tokenString
     print(token)
     
-    /* required arguments: token, instanceId
-     * example argument is listed below:
-     */
+    /* required arguments: token, instanceId*/
     let data = ["token": token, "instanceId": instanceId]
     
     Functions.functions().httpsCallable("deleteChore").call(data) { (result, error) in

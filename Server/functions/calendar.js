@@ -18,6 +18,46 @@ function createOAuth(auth, tokenInput) {
   return google.calendar({ version: "v3", auth: oAuth2Client });
 }
 
+/* REQUIRES: instanceId
+ * RETURNS: eventId
+ */
+async function getEventId(instanceId, calendar) {
+  // if non-recurring event, eventId = instanceId
+  if (!instanceId.includes("_")) {
+    functions.logger.log("Non-recurring event");
+    return instanceId;
+  }
+
+  // recurring event, find eventId
+  functions.logger.log("Recurring event");
+  let res = {};
+  try {
+    res = await calendar.events.get({
+      calendarId: choresCalendarId,
+      eventId: instanceId,
+    });
+  } catch (error) {
+    functions.logger.error('Error getting eventId:', error.message);
+    throw new functions.https.HttpsError(
+      "Error getting eventId:", error.message
+      );
+  }
+
+  functions.logger.log(res);
+  if (!res.data || res.data.length === 0) {
+    functions.logger.log('Invalid instanceId');
+    return {status: false};
+  }
+
+  if (!res.data.recurringEventId) {
+    functions.logger.log('recurringEventId not found');
+    return {status: false};
+  }
+
+  functions.logger.log("eventId = ", res.data.recurringEventId);
+  return res.data.recurringEventId;
+}
+
 // returns details of a chore
 async function getChore(calendar, id) {
   const res = await calendar.events.get({
@@ -91,7 +131,7 @@ const getChores = functions.https.onCall(async (data, context) => {
     calendarId: choresCalendarId,
     timeMin: new Date().toISOString(),
     maxResults: 5,
-    singleEvents: true,
+    singleEvents: false,
     orderBy: "startTime",
   });
 
@@ -101,7 +141,7 @@ const getChores = functions.https.onCall(async (data, context) => {
   const events = res.data.items;
   if (!events || events.length === 0) {
     functions.logger.log('No upcoming events found.');
-    return {success: false};
+    return {status: false};
   }
   functions.logger.log('Upcoming 5 events:');
 
@@ -141,7 +181,7 @@ const getChores = functions.https.onCall(async (data, context) => {
  * if frequency == Once, endRecurrenceDate is ignored
  * example date: "2023-12-01"
  * 
- * returns {success: true, eventId: "..."} on success
+ * returns {status: true, eventId: "..."} on success
  * throws error on failure
 */
 const addChore = functions.https.onCall(async (data, context) => {
@@ -154,7 +194,7 @@ const addChore = functions.https.onCall(async (data, context) => {
 
   if (!data.token) {
     functions.logger.log("Token not found");
-    return {success: false};
+    return {status: false};
   }
   const token = data.token;
   functions.logger.log(token);
@@ -261,52 +301,78 @@ const addChore = functions.https.onCall(async (data, context) => {
   }
   functions.logger.log('Added event:');
   functions.logger.log(event);
-  return {success: true, eventId: event.id};
+  return {status: true, eventId: event.id};
 });
 
 /* REQUIRES: token, instanceId
  * MODIFIES: RoomieMatter Chore calendar
  * EFFECTS: delete one instance of a chore on RoomieMatter Chore calendar
+ * (if chore is non-recurring, entire chore is deleted)
  * 
- * returns {success: true} on success
- * throws error on failure
+ * success: returns {status: true}
+ * failure: returns {status: false} or throws error
  */
-const deleteChoreInstance = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
-    throw new functions.https.HttpsError(
-      "unauthenticated",
-      "RoomieMatter functions can only be called by Authenticated users."
-    );
-  }
-
-  const token = data.token;
-  functions.logger.log(token);
-  const oAuth2Client = new google.auth.OAuth2();
-  oAuth2Client.setCredentials({ access_token: token });
-  const calendar = google.calendar({ version: "v3", auth: oAuth2Client });
+const completeChore = functions.https.onCall(async (data, context) => {
+  const calendar = createOAuth(context.auth, data.token);
 
   if (!data.instanceId) {
     throw new functions.https.HttpsError(
       "invalid input: missing instanceId"
     );
   }
-
+  
+  // get eventId with instanceId
+  let eventId = "";
   try {
-    const res = await calendar.events.delete({
+    eventId = await getEventId(data.instanceId, calendar);
+  } catch (error) {
+    functions.logger.error('Error getting eventId:', error.message);
+    throw new functions.https.HttpsError(
+      "Error getting eventId:", error.message
+    );
+  }
+
+  // delete instance of event with instanceId
+  let res = {};
+  try {
+    res = await calendar.events.delete({
       calendarId: choresCalendarId,
       eventId: data.instanceId,
     });
-    
-    functions.logger.log(res);
-    functions.logger.log('Successfully deleted instance');
   } catch (error) {
     functions.logger.error('Error deleting instance:', error.message);
     throw new functions.https.HttpsError(
       "Error deleting instance:", error.message
     );
   }
+  
+  functions.logger.log(res);
+  functions.logger.log('Successfully deleted instance');
 
-  return {success: true};
+  // if non-recurring event, return
+  if (!data.instanceId.includes("_")) {
+    return {status: true};
+  }
+  
+  // recurring event, return next instanceId
+  try {
+    res = await calendar.events.instances({
+      calendarId: choresCalendarId,
+      eventId: eventId,
+    });
+  } catch (error) {
+    functions.logger.error('Error getting instances:', error.message);
+    throw new functions.https.HttpsError(
+      "Error getting instances:", error.message
+    );
+  }
+
+  if (!res.data.items || res.data.items.length === 0) {
+    functions.logger.log('No next instances found');
+    return {status: true};
+  }
+
+  return {status: true, nextInstanceId: res.data.items[0].id};
 });
 
 
@@ -314,8 +380,8 @@ const deleteChoreInstance = functions.https.onCall(async (data, context) => {
  * MODIFIES: RoomieMatter Chore calendar
  * EFFECTS: delete all instances of a chore on RoomieMatter Chore calendar
  * 
- * success: returns {success: true}
- * failure: returns {success: false} or throws error
+ * success: returns {status: true}
+ * failure: returns {status: false} or throws error
  */
 const deleteChore = functions.https.onCall(async (data, context) => {
   const calendar = createOAuth(context.auth, data.token);
@@ -326,42 +392,19 @@ const deleteChore = functions.https.onCall(async (data, context) => {
     );
   }
 
-  let res = {}
-  let eventId = data.instanceId;
-
-  // if recurring event, get eventId using instanceId
-  if (data.instanceId.includes("_")) {
-    functions.logger.log("Recurring event");
-    try {
-      res = await calendar.events.get({
-        calendarId: choresCalendarId,
-        eventId: data.instanceId,
-      });
-    } catch (error) {
-      functions.logger.error('Error deleting event:', error.message);
-      throw new functions.https.HttpsError(
-        "Error deleting event:", error.message
-        );
-    }
-
-    functions.logger.log(res);
-    if (!res.data || res.data.length === 0) {
-      functions.logger.log('Invalid instanceId');
-      return {success: false};
-    }
-
-    if (!res.data.recurringEventId) {
-      functions.logger.log('recurringEventId not found');
-      return {success: false};
-    }
-
-    eventId = res.data.recurringEventId;
-    functions.logger.log("eventId = ", eventId);
-  } else {
-    functions.logger.log("Non-recurring event, eventId = instanceId = ", eventId);
+  // get eventId with instanceId
+  let eventId = "";
+  try {
+    eventId = await getEventId(data.instanceId, calendar);
+  } catch (error) {
+    functions.logger.error('Error getting eventId:', error.message);
+    throw new functions.https.HttpsError(
+      "Error getting eventId:", error.message
+      );
   }
-
-  // delete chore with eventId
+  
+  // delete event with eventId
+  let res = {};
   try {
     res = await calendar.events.delete({
       calendarId: choresCalendarId,
@@ -376,7 +419,7 @@ const deleteChore = functions.https.onCall(async (data, context) => {
     
   functions.logger.log(res);
   functions.logger.log('Successfully deleted event');
-  return {success: true};
+  return {status: true};
 });
 
-module.exports = { getChores, addChore, deleteChoreInstance, deleteChore };
+module.exports = { getChores, addChore, completeChore, deleteChore };

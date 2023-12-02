@@ -40,6 +40,12 @@ struct MainScreen: View {
         }
         
         Button {
+            completeChore(instanceId: "d84rlmoq7pkhprppnr822vnj98_20231230")
+        } label: {
+            Text("Complete chore")
+        }
+        
+        Button {
             deleteChore(instanceId: "vhn7jk3pd2jhioskseg25smvas")
         } label: {
             Text("Delete chore")
