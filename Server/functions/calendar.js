@@ -147,16 +147,20 @@ async function getChore(calendar, id) {
 /* REQUIRES: token
  * MODIFIES: nothing
  * EFFECTS: returns list of chores from RoomieMatter Chore calendar
- * RETURNS: [instanceId]
+ * RETURNS: status, [instanceId]
  */
 const getChores = functions.https.onCall(async (data, context) => {
   const calendar = createOAuth(context.auth, data.token);
+  functions.logger.log("After authentication");
   const res = await calendar.events.list({
     calendarId: choresCalendarId,
     timeMin: new Date().toISOString(),
+    // maxResults: 10,
     singleEvents: false,
-    orderBy: "startTime",
+    // orderBy: 'startTime',
   });
+
+  functions.logger.log("After getting calling Gcal API");
 
   functions.logger.log(res?.data?.items ?? "Failurreeee!");
   functions.logger.log(res);
@@ -166,33 +170,51 @@ const getChores = functions.https.onCall(async (data, context) => {
     functions.logger.log('No upcoming events found.');
     return {status: false};
   }
-  functions.logger.log('Upcoming 5 events:');
 
-  const eventsData = [];
+  const eventsIds = [];
 
   for (const event of events) {
-    functions.logger.log(event.recurringEventId);
+    functions.logger.log(event.id);
 
-    try {
-      // Call the asynchronous function using await
-      const choreResult = await getChore(calendar, event.recurringEventId);
-      choreResult.date = event.start.date;
+    // if non-recurring event, use eventId as instanceId 
+    if (!event.recurrence || event.recurrence.length === 0) {
+      functions.logger.log('Non-recurring event');
+      eventsIds.push({instanceId: event.id});
+    } 
+    
+    // recurring event, find instanceId
+    else {
+      functions.logger.log('Recurring event');
+      let instanceId = "";
+      try {
+        instanceId = await getInstanceId(event.id, calendar);
+      } catch (error) {
+        functions.logger.error('Error getting instance ID:', error.message);
+        throw new functions.https.HttpsError(
+          "Error getting instance ID:", error.message
+        );
+      }
 
-      // Log the result
-      functions.logger.log(choreResult);
+      if (instanceId == "") {
+        functions.logger.error("Error getting instance ID");
+        throw new functions.https.HttpsError(
+          "Error getting instance ID:", error.message
+          // TODO: more descriptive error message with eventId
+        );
+      }
 
-      // Push the result to the eventsData array
-      eventsData.push(choreResult);
-    } catch (error) {
-      // Handle errors if necessary
-      functions.logger.error(`Error processing event ${event.id}: ${error.message}`);
+      eventsIds.push({instanceId: instanceId});
     }
   }
 
-  functions.logger.log("eventsData:");
-  functions.logger.log(eventsData);
+  functions.logger.log("eventsIds:");
+  functions.logger.log(eventsIds);
 
-  return { eventsData };
+  // return chores using getChore with eventsIds
+
+
+
+  return { status: true, eventsIds };
 });
 
 /* REQUIRES: token, eventName, date, frequency
