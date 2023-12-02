@@ -153,6 +153,51 @@ const stopGPTTyping = (roomId) => {
     });
 };
 
+const formatHistoryForGPT = (plainHistory) => {
+  return plainHistory.reduce((acc, historyMessage) => {
+    let gptMessage = {};
+    switch (historyMessage.role) {
+      case "roommate": {
+        return acc;
+      }
+      case "user":
+        gptMessage = {
+          role: "user",
+          content: `[${
+            historyMessage?.createdAt?.toDate()?.toISOString() ?? ""
+          }] ${historyMessage.content}`,
+        };
+        break;
+      case "assistant-function": {
+        const function_call = historyMessage.function_call ?? {};
+        gptMessage = {
+          role: "assistant",
+          content: "",
+          function_call: {
+            name: function_call.name,
+            arguments: function_call.arguments,
+          },
+        };
+        break;
+      }
+      case "assistant":
+        gptMessage = {
+          role: "assistant",
+          content: historyMessage.content,
+        };
+        break;
+      case "function":
+        gptMessage = {
+          role: "function",
+          name: historyMessage.function.name,
+          content: historyMessage.function.content,
+        };
+        break;
+    }
+    return [...acc, gptMessage];
+  }, []);
+};
+
 const sendChat = functions.https.onCall(async (data, context) => {
   if (!context.auth) {
     throw new functions.https.HttpsError(
@@ -161,251 +206,206 @@ const sendChat = functions.https.onCall(async (data, context) => {
     );
   }
 
+  const token = data.token;
+
+  if (!token) {
+    throw new functions.https.HttpsError(
+      "unauthenticated",
+      "The Google OAuth token is invalid or missing"
+    );
+  }
+
   const userId = data.userId;
   const roomId = data.roomId;
   const content = data.content;
 
-  if (userId && roomId && content) {
-    try {
-      const user = db.collection("users").doc(userId);
-      const room = db.collection("rooms").doc(roomId);
+  if (!userId || !roomId || !content) {
+    throw new functions.https.HttpsError(
+      "invalid-argument",
+      "The sendChat function requires JSON requests to include userId, roomId, and content"
+    );
+  }
 
-      const forGpt = content
-        .toLowerCase()
-        .includes(`@${settings.modelName.toLowerCase()}`);
+  try {
+    const userRef = db.collection("users").doc(userId);
+    const roomRef = db.collection("rooms").doc(roomId);
 
-      const chat = await db.collection("chats").add({
-        room: room,
-        user: user,
-        role: forGpt ? "user" : "roommate",
-        numTokens: 0,
-        content: content,
-        createdAt: admin.firestore.FieldValue.serverTimestamp(),
+    //Detects if the message contains the @<the model's name>. Case insensitive
+    const isForGpt = content
+      .toLowerCase()
+      .includes(`@${settings.modelName.toLowerCase()}`);
+
+    //Insert the chat sent
+    const chat = await db.collection("chats").add({
+      room: roomRef,
+      user: userRef,
+      role: isForGpt ? "user" : "roommate",
+      numTokens: 0,
+      content: content,
+      createdAt: admin.firestore.FieldValue.serverTimestamp(),
+    });
+
+    //If its not going to GPT then we're done
+    if (!isForGpt) {
+      return { success: true, message: "NO_GPT_CALL" };
+    }
+
+    //Make bot appear to be typing
+    db.collection("rooms")
+      .doc(roomId)
+      .update({
+        typing: admin.firestore.FieldValue.arrayUnion("gpt"),
       });
 
-      if (!forGpt) {
-        return { success: true, message: "NO_GPT_CALL" };
-      }
+    //Get the history and format it for GPT.
+    //This history contains the message just sent because we await its insertion
+    const history = await db
+      .collection("chats")
+      .where("room", "==", roomRef)
+      .orderBy("createdAt", "asc")
+      .get();
+    const plainHistory = history.docs.map((doc) => doc.data());
+    const formattedHistory = formatHistoryForGPT(plainHistory);
 
-      db.collection("rooms")
-        .doc(roomId)
-        .update({
-          typing: admin.firestore.FieldValue.arrayUnion("gpt"),
-        });
-
-      const history = await db
-        .collection("chats")
-        .where("room", "==", room)
-        .orderBy("createdAt", "asc")
-        .get();
-      const plainHistoryData = history.docs.map((doc) => doc.data());
-
-      let totalTokens = 0;
-      const formattedHistory = plainHistoryData.reduce(
-        (acc, historyMessage) => {
-          totalTokens += historyMessage.numTokens ?? 0;
-          let gptMessage = {};
-          switch (historyMessage.role) {
-            case "roommate": {
-              return acc;
-            }
-            case "user":
-              gptMessage = {
-                role: "user",
-                content: `[${
-                  historyMessage?.createdAt?.toDate()?.toISOString() ?? ""
-                }] ${historyMessage.content}`,
-              };
-              break;
-            case "assistant-function": {
-              //Less than ideal solution here
-              const function_call = historyMessage.function_call ?? {};
-              gptMessage = {
-                role: "assistant",
-                content: "",
-                function_call: {
-                  name: function_call.name,
-                  arguments: function_call.arguments,
-                },
-              };
-              break;
-            }
-            case "assistant":
-              gptMessage = {
-                role: "assistant",
-                content: historyMessage.content,
-              };
-              break;
-            case "function":
-              gptMessage = {
-                role: "function",
-                name: historyMessage.function.name,
-                content: historyMessage.function.content,
-              };
-              break;
-          }
-          return [...acc, gptMessage];
+    let gptAPIObject = {
+      model: settings.model,
+      temperature: settings.temperature,
+      messages: [
+        {
+          role: "system",
+          content: settings.systemMessage,
         },
-        []
-      );
+        ...formattedHistory,
+      ],
+    };
 
-      // if (totalTokens > 7000) {
-      //   stopGPTTyping(roomId);
-      //   throw new functions.https.HttpsError(
-      //     "internal",
-      //     "History exceeds total limit. Time to add embeddings?"
-      //   );
-      // }
+    const apiFunctions = await getFunctions({
+      userId,
+      roomId,
+      chatId: chat.id,
+      content,
+    });
 
-      let gptAPIObject = {
-        model: settings.model,
-        temperature: settings.temperature,
-        messages: [
-          {
-            role: "system",
-            content: settings.systemMessage,
-          },
-          ...formattedHistory,
-        ],
-      };
-      functions.logger.log(gptAPIObject.messages);
-      const apiFunctions = await getFunctions({
-        userId,
-        roomId,
-        content,
-        chatId: chat.id,
+    if (apiFunctions.length > 0) {
+      //This map just formats the functions to be compatible with GPT's API
+      gptAPIObject.functions = apiFunctions.map((func) => {
+        const formattedFunc = { ...func };
+        delete formattedFunc.func;
+        return formattedFunc;
       });
+    }
 
-      if (apiFunctions.length > 0) {
-        gptAPIObject.functions = apiFunctions.map((func) => {
-          const formattedFunc = { ...func };
-          delete formattedFunc.func;
-          return formattedFunc;
-        });
-      }
-      functions.logger.log(gptAPIObject.functions);
+    const response = await openai.chat.completions.create(gptAPIObject);
+    functions.logger.log(response);
 
-      const response = await openai.chat.completions.create(gptAPIObject);
-
-      functions.logger.log(response);
-
-      if (response) {
-        const prompt_tokens = response.usage?.prompt_tokens;
-        const completion_tokens = response.usage?.completion_tokens;
-
-        const completion = response.choices?.[0]?.message;
-
-        if (completion) {
-          const response_role = completion.function_call
-            ? "assistant-function"
-            : "assistant";
-
-          db.collection("chats").doc(chat.id).update({
-            numTokens: prompt_tokens,
-          });
-
-          await db.collection("chats").add({
-            room: room,
-            role: response_role,
-            numTokens: completion_tokens,
-            content: completion.content,
-            function_call: completion.function_call,
-            createdAt: admin.firestore.FieldValue.serverTimestamp(),
-          });
-
-          let successMessage = "GPT_CALL_NO_FUNCTION";
-
-          if (completion.function_call) {
-            functions.logger.log(completion.function_call);
-            successMessage = "GPT_CALL_FUNCTION";
-
-            const apiFunction = apiFunctions.find(
-              (apiFunc) => apiFunc.name === completion.function_call.name
-            );
-            functions.logger.log(completion.function_call.arguments);
-            const result = await apiFunction.func(
-              JSON.parse(completion.function_call.arguments)
-            );
-            if (result) {
-              const functionChat = await db.collection("chats").add({
-                room: room,
-                role: "function",
-                numTokens: 0,
-                function: {
-                  name: apiFunction.name,
-                  content: result,
-                },
-                createdAt: admin.firestore.FieldValue.serverTimestamp(),
-              });
-              gptAPIObject.messages.push(completion);
-              gptAPIObject.messages.push({
-                role: "function",
-                name: apiFunction.name,
-                content: result,
-              });
-              functions.logger.log(gptAPIObject.messages);
-              const functionResponse = await openai.chat.completions.create(
-                gptAPIObject
-              );
-              functions.logger.log(functionResponse);
-              if (functionResponse) {
-                const functionPromptTokens =
-                  functionResponse.usage?.prompt_tokens;
-                const functionCompletionTokens =
-                  functionResponse.usage?.completion_tokens;
-
-                const functionCompletion =
-                  functionResponse.choices?.[0]?.message;
-                db.collection("chats").doc(functionChat.id).update({
-                  numTokens: functionPromptTokens,
-                });
-                db.collection("chats").add({
-                  room: room,
-                  role: "assistant",
-                  numTokens: functionCompletionTokens,
-                  content: functionCompletion.content,
-                  function_call: "",
-                  createdAt: admin.firestore.FieldValue.serverTimestamp(),
-                });
-              } else {
-                stopGPTTyping(roomId);
-                throw new functions.https.HttpsError(
-                  "internal",
-                  "Error when sending function to GPT"
-                );
-              }
-            } else {
-              stopGPTTyping(roomId);
-              throw new functions.https.HttpsError(
-                "internal",
-                "Error when executing function. Invalid result"
-              );
-            }
-          }
-
-          stopGPTTyping(roomId);
-
-          return { success: true, message: successMessage };
-        }
-      } else {
-        stopGPTTyping(roomId);
-        throw new functions.https.HttpsError(
-          "internal",
-          "Error thrown by OpenAI"
-        );
-      }
-    } catch (error) {
-      functions.logger.log(error);
+    if (!response) {
+      stopGPTTyping(roomId);
       throw new functions.https.HttpsError(
         "internal",
         "Error thrown by OpenAI"
       );
     }
-  } else {
-    throw new functions.https.HttpsError(
-      "invalid-argument",
-      "The sendChat function requires JSON requests to include userId, roomId, and content"
+
+    const prompt_tokens = response.usage?.prompt_tokens;
+    const completion_tokens = response.usage?.completion_tokens;
+
+    const completion = response.choices?.[0]?.message;
+
+    if (!completion) {
+      throw ["Completion object was invalid", completion];
+    }
+
+    //If GPT called a function then we'll store it as an assistant-function
+    const response_role = completion.function_call
+      ? "assistant-function"
+      : "assistant";
+
+    //Store the TOTAL HISTORY TOKENS in the most recent message
+    //(Yes this means the total history. GPT doesn't give message specific counts)
+    //Every chat stored will store the tokens it uses & the whole history before it
+    db.collection("chats").doc(chat.id).update({
+      numTokens: prompt_tokens,
+    });
+
+    await db.collection("chats").add({
+      room: roomRef,
+      role: response_role,
+      numTokens: prompt_tokens + completion_tokens,
+      content: completion.content,
+      function_call: completion.function_call,
+      createdAt: admin.firestore.FieldValue.serverTimestamp(),
+    });
+
+    if (!completion.function_call) {
+      stopGPTTyping(roomId);
+      return { success: true, message: "GPT_CALL_NO_FUNCTION" };
+    }
+
+    const apiFunction = apiFunctions.find(
+      (apiFunc) => apiFunc.name === completion.function_call.name
     );
+
+    //Parse the GPT-returned arguments and execute the appropriate function
+    const rawFunctionResult = await apiFunction.func(
+      JSON.parse(completion.function_call.arguments)
+    );
+
+    if (!rawFunctionResult) {
+      throw "Failure executing GPT-called function locally";
+    }
+
+    //Store the function's response for future GPT calls
+    const functionChat = await db.collection("chats").add({
+      room: roomRef,
+      role: "function",
+      numTokens: 0,
+      function: {
+        name: apiFunction.name,
+        content: rawFunctionResult,
+      },
+      createdAt: admin.firestore.FieldValue.serverTimestamp(),
+    });
+
+    //Add GPT's response and the function response to the history
+    gptAPIObject.messages.push(completion);
+    gptAPIObject.messages.push({
+      role: "function",
+      name: apiFunction.name,
+      content: rawFunctionResult,
+    });
+
+    const readableFunctionResult = await openai.chat.completions.create(
+      gptAPIObject
+    );
+
+    if (!readableFunctionResult) {
+      throw "Failure to convert the raw function response into a human readable format";
+    }
+
+    const functionPromptTokens = readableFunctionResult.usage?.prompt_tokens;
+    const functionCompletionTokens =
+      readableFunctionResult.usage?.completion_tokens;
+
+    const functionCompletion = readableFunctionResult.choices?.[0]?.message;
+
+    db.collection("chats").doc(functionChat.id).update({
+      numTokens: functionPromptTokens,
+    });
+    db.collection("chats").add({
+      room: roomRef,
+      role: "assistant",
+      numTokens: functionPromptTokens + functionCompletionTokens,
+      content: functionCompletion.content,
+      function_call: "",
+      createdAt: admin.firestore.FieldValue.serverTimestamp(),
+    });
+
+    stopGPTTyping(roomId);
+    return { success: true, message: "GPT_CALL_FUNCTION" };
+  } catch (error) {
+    functions.logger.log(error);
+    stopGPTTyping(roomId);
+    throw new functions.https.HttpsError("internal", "Error thrown by OpenAI");
   }
 });
 
