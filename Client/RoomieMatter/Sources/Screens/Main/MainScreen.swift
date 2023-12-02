@@ -40,7 +40,7 @@ struct MainScreen: View {
         }
         
         Button {
-            completeChore(instanceId: "d84rlmoq7pkhprppnr822vnj98_20231230")
+            completeChore(instanceId: "s8um45gtu9dn4f4v1r80h7h69k_20231202")
         } label: {
             Text("Complete chore")
         }

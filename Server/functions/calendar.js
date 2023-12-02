@@ -58,6 +58,48 @@ async function getEventId(instanceId, calendar) {
   return res.data.recurringEventId;
 }
 
+/* REQUIRES: eventId, calendar
+ *           only recurring event
+ * RETURNS: instanceId
+ */
+async function getInstanceId(eventId, calendar) {
+  // if instanceID, throws error
+  if (eventId.includes("_")) {
+    throw new functions.https.HttpsError(
+      "Expects eventId only:", error.message
+    );
+  }
+
+  // find instanceId
+  let res = {};
+  try {
+    res = await calendar.events.instances({
+      calendarId: choresCalendarId,
+      eventId: eventId,
+    });
+  } catch (error) {
+    functions.logger.error('Error getting instances:', error.message);
+    throw new functions.https.HttpsError(
+      "Error getting instances:", error.message
+    );
+  }
+
+  if (!res.data.items || res.data.items.length === 0) {
+    functions.logger.log('No next instances found');
+    return "";
+  }
+
+  return res.data.items[0].id;
+}
+
+/* sample return value: 
+* [{
+   assignees = ('lteresa@umich.edu');
+   frequency = WEEKLY;
+   date = "2023-11-30";
+   summary = "Take Out Trash";
+   },...]
+*/
 // returns details of a chore
 async function getChore(calendar, id) {
   const res = await calendar.events.get({
@@ -105,32 +147,13 @@ async function getChore(calendar, id) {
 /* REQUIRES: token
  * MODIFIES: nothing
  * EFFECTS: returns list of chores from RoomieMatter Chore calendar
- * 
- * sample return value: 
- * [{
-    assignees = ('lteresa@umich.edu');
-    frequency = WEEKLY;
-    date = "2023-11-30";
-    summary = "Take Out Trash";
-    },...]
+ * RETURNS: [instanceId]
  */
 const getChores = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
-    throw new functions.https.HttpsError(
-      "unauthenticated",
-      "RoomieMatter functions can only be called by Authenticated users."
-    );
-  }
-
-  const token = data.token;
-  functions.logger.log(token);
-  const oAuth2Client = new google.auth.OAuth2();
-  oAuth2Client.setCredentials({ access_token: token });
-  const calendar = google.calendar({ version: "v3", auth: oAuth2Client });
+  const calendar = createOAuth(context.auth, data.token);
   const res = await calendar.events.list({
     calendarId: choresCalendarId,
     timeMin: new Date().toISOString(),
-    maxResults: 5,
     singleEvents: false,
     orderBy: "startTime",
   });
@@ -176,31 +199,14 @@ const getChores = functions.https.onCall(async (data, context) => {
  * OPTIONAL: endRecurrenceDate, description, assignedRoommates
  * MODIFIES: RoomieMatter Chore calendar
  * EFFECTS: add a chore to RoomieMatter Chore calendar
+ * RETURNS: status, instanceId
  * 
  * frequency = {Once, Daily, Weekly, Biweekly, Monthly}
  * if frequency == Once, endRecurrenceDate is ignored
  * example date: "2023-12-01"
- * 
- * returns {status: true, eventId: "..."} on success
- * throws error on failure
 */
 const addChore = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
-    throw new functions.https.HttpsError(
-      "unauthenticated",
-      "RoomieMatter functions can only be called by Authenticated users."
-    );
-  }
-
-  if (!data.token) {
-    functions.logger.log("Token not found");
-    return {status: false};
-  }
-  const token = data.token;
-  functions.logger.log(token);
-  const oAuth2Client = new google.auth.OAuth2();
-  oAuth2Client.setCredentials({ access_token: token });
-  const calendar = google.calendar({ version: "v3", auth: oAuth2Client });
+  const calendar = createOAuth(context.auth, data.token);
 
   // make sure eventName, date, frequency are not empty
   if (!data.eventName || !data.eventName.trim() || !data.date || !data.frequency) {
@@ -210,7 +216,7 @@ const addChore = functions.https.onCall(async (data, context) => {
   }
   
   // add eventName
-  const eventInput = {
+  let eventInput = {
     'summary': data.eventName,
   };
 
@@ -301,16 +307,39 @@ const addChore = functions.https.onCall(async (data, context) => {
   }
   functions.logger.log('Added event:');
   functions.logger.log(event);
-  return {status: true, eventId: event.id};
+
+  // if non-recurring, return eventId
+  if (data.frequency == 'Once') {
+    return {status: true, instanceId: event.id};
+  }
+
+  // recurring event, return instanceId of first instance
+  let instanceId = "";
+  try {
+    instanceId = await getInstanceId(event.id, calendar);
+  } catch (error) {
+    functions.logger.error('Error getting instance ID:', error.message);
+    throw new functions.https.HttpsError(
+      "Error getting instance ID:", error.message
+    );
+  }
+
+  if (instanceId == "") {
+    functions.logger.error("Error getting instance ID");
+    throw new functions.https.HttpsError(
+      "Error getting instance ID:", error.message
+    );
+  }
+  
+  return {status: true, instanceId: instanceId};
 });
 
 /* REQUIRES: token, instanceId
  * MODIFIES: RoomieMatter Chore calendar
  * EFFECTS: delete one instance of a chore on RoomieMatter Chore calendar
- * (if chore is non-recurring, entire chore is deleted)
+ * RETURNS: status, (nextInstanceId)
  * 
- * success: returns {status: true}
- * failure: returns {status: false} or throws error
+ * (if chore is non-recurring, entire chore is deleted)
  */
 const completeChore = functions.https.onCall(async (data, context) => {
   const calendar = createOAuth(context.auth, data.token);
@@ -353,13 +382,14 @@ const completeChore = functions.https.onCall(async (data, context) => {
   if (!data.instanceId.includes("_")) {
     return {status: true};
   }
-  
-  // recurring event, return next instanceId
+
   try {
-    res = await calendar.events.instances({
-      calendarId: choresCalendarId,
-      eventId: eventId,
-    });
+    const instanceId = await getInstanceId(eventId, calendar);
+    if (instanceId == "") {
+      return {status: true};
+    } else {
+      return {status: true, nextInstanceId: instanceId};
+    }
   } catch (error) {
     functions.logger.error('Error getting instances:', error.message);
     throw new functions.https.HttpsError(
@@ -367,21 +397,12 @@ const completeChore = functions.https.onCall(async (data, context) => {
     );
   }
 
-  if (!res.data.items || res.data.items.length === 0) {
-    functions.logger.log('No next instances found');
-    return {status: true};
-  }
-
-  return {status: true, nextInstanceId: res.data.items[0].id};
 });
-
 
 /* REQUIRES: token, instanceId
  * MODIFIES: RoomieMatter Chore calendar
  * EFFECTS: delete all instances of a chore on RoomieMatter Chore calendar
- * 
- * success: returns {status: true}
- * failure: returns {status: false} or throws error
+ * RETURNS: status
  */
 const deleteChore = functions.https.onCall(async (data, context) => {
   const calendar = createOAuth(context.auth, data.token);
