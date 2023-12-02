@@ -1,6 +1,8 @@
 const functions = require("firebase-functions");
 const admin = require("firebase-admin");
 const { OpenAI } = require("openai");
+const { google } = require("googleapis");
+const { getChores } = require("./calendar");
 
 //We have to enforce that @Housekeeper cannot be sent in the chat
 //while gpt is typing. Also, only display role type "user" or "assistant" or "roommate"
@@ -40,120 +42,154 @@ const openai = new OpenAI({
 
 //Context here is defined by us. It is special and contains things like userId, roomId, chatId (of the sent chat), etc
 //I'm making all of these async to make it easy to add them in the sendChat function
-const getFunctions = async (context) => {
+async function getFunctions (context) {
   const userRef = db.collection("users").doc(context.userId);
   const roomRef = db.collection("rooms").doc(context.roomId);
-  let apiFunctions = [];
-  /* ============== [ CHANGE STATUS ] ============== */
-  apiFunctions.push({
-    name: "changeStatus",
-    description: "Change the current user's status in the RoomieMatter app",
-    parameters: {
-      type: "object",
-      properties: {
-        status: {
-          type: "string",
-          enum: ["sleeping", "studying", "not home", "home"],
-        },
-      },
-      required: ["status"],
-    },
-    func: async ({ status }) => {
-      functions.logger.log(status);
-      const userRoomSnapshot = await db
-        .collection("user_rooms")
-        .where("room", "==", roomRef)
-        .where("user", "==", userRef)
-        .get();
-      if (userRoomSnapshot.docs.length > 0) {
-        const userRoomId = userRoomSnapshot.docs[0].id;
-        db.collection("user_rooms").doc(userRoomId).update({
-          status,
-        });
-        return `Successfully changed your status to ${status}`;
-      } else {
-        return "There was a problem changing your status...";
-      }
-    },
-  });
 
-  /* ============== [ GET STATUS ] ============== */
-  const userRooms = await db
-    .collection("user_rooms")
-    .where("room", "==", roomRef)
-    .get();
-  const plainUserRooms = userRooms.docs.map((doc) => doc.data());
-  let displayNameToUser = {};
-  for (let i = 0; i < plainUserRooms.length; i++) {
-    const userRoom = plainUserRooms[i];
-    const userSnapshot = await userRoom.user.get();
-    const user = userSnapshot.data();
-    const userAndStatus = {
-      ...user,
-      status: userRoom.status ?? "",
-    };
-    displayNameToUser[userAndStatus.displayName] = userAndStatus;
-    if (userAndStatus.uuid === context.userId) {
-      displayNameToUser.currentUser = { ...userAndStatus };
-    }
+  //We will push each function to the array. This allows us to 
+  //execute any commands we require to form the function
+  let apiFunctions = [];
+
+  /* ============== [ CHANGE STATUS ] ============== */
+  {
+    apiFunctions.push({
+      name: "changeStatus",
+      description: "Change the current user's status in the RoomieMatter app",
+      parameters: {
+        type: "object",
+        properties: {
+          status: {
+            type: "string",
+            enum: ["sleeping", "studying", "not home", "home"],
+          },
+        },
+        required: ["status"],
+      },
+      func: async ({ status }) => {
+        const userRoomSnapshot = await db
+          .collection("user_rooms")
+          .where("room", "==", roomRef)
+          .where("user", "==", userRef)
+          .get();
+        if (userRoomSnapshot.docs.length > 0) {
+          const userRoomId = userRoomSnapshot.docs[0].id;
+          db.collection("user_rooms").doc(userRoomId).update({
+            status,
+          });
+          return `Successfully changed your status to ${status}`;
+        } else {
+          return "There was a problem changing your status...";
+        }
+      },
+    });
   }
 
-  apiFunctions.push({
-    name: "getStatus",
-    description:
-      "Get's the current user's status or another member of the house's status. " +
-      "If the current user wants their own status, use the property 'currentUser'. " +
-      "If the current user wants all of statuses, use the property 'all'. " +
-      "If you need to see who's in the house, use the 'all' property as well " +
-      "and just ignore their statuses. You can do the same with 'currentUser'.",
-    parameters: {
-      type: "object",
-      properties: {
-        displayName: {
-          type: "string",
-          enum: [...Object.keys(displayNameToUser), "currentUser", "all"],
-        },
-      },
-      required: ["displayName"],
-    },
-    func: async ({ displayName }) => {
-      switch (displayName) {
-        case "all":
-          return Object.entries(displayNameToUser).reduce(
-            (acc, [displayName, user]) => {
-              if (displayName === "currentUser") {
-                return acc;
-              } else {
-                return (
-                  acc +
-                  `${displayName}'s current status is ${
-                    user.status ?? "No Status"
-                  }. `
-                );
-              }
-            },
-            ""
-          );
-        case "currentUser":
-          return `Your current status is ${displayNameToUser.currentUser.status}.`;
-        default:
-          return `${displayName}'s current status is ${displayNameToUser[displayName].status}`;
+  /* ============== [ GET STATUS ] ============== */
+  {
+    const userRooms = await db
+      .collection("user_rooms")
+      .where("room", "==", roomRef)
+      .get();
+  
+    const plainUserRooms = userRooms.docs.map((doc) => doc.data());
+  
+    //This just defines a map of user display names to some information
+    //about them (in this case, their status). The user sending this 
+    //chat is stored as "currentUser" because they might not refer
+    //to themselves in 3rd person
+    let displayNameToUser = {};
+    for (let i = 0; i < plainUserRooms.length; i++) {
+      const userRoom = plainUserRooms[i];
+      const userSnapshot = await userRoom.user.get();
+      const user = userSnapshot.data();
+      const userAndStatus = {
+        ...user,
+        status: userRoom.status ?? "",
+      };
+      displayNameToUser[userAndStatus.displayName] = userAndStatus;
+      if (userAndStatus.uuid === context.userId) {
+        displayNameToUser.currentUser = { ...userAndStatus };
       }
-    },
-  });
+    }
+  
+    apiFunctions.push({
+      name: "getStatus",
+      description:
+        "Get's the current user's status or another member of the house's status. " +
+        "If the current user wants their own status, use the property 'currentUser'. " +
+        "If the current user wants all of statuses, use the property 'all'. " +
+        "If you need to see who's in the house, use the 'all' property as well " +
+        "and just ignore their statuses. You can do the same with 'currentUser'.",
+      parameters: {
+        type: "object",
+        properties: {
+          displayName: {
+            type: "string",
+            enum: [...Object.keys(displayNameToUser), "currentUser", "all"],
+          },
+        },
+        required: ["displayName"],
+      },
+      func: async ({ displayName }) => {
+        switch (displayName) {
+          case "all":
+            return Object.entries(displayNameToUser).reduce(
+              (acc, [displayName, user]) => {
+                if (displayName === "currentUser") {
+                  return acc;
+                } else {
+                  return (
+                    acc +
+                    `${displayName}'s current status is ${
+                      user.status ?? "No Status"
+                    }. `
+                  );
+                }
+              },
+              ""
+            );
+          case "currentUser":
+            return `Your current status is ${displayNameToUser.currentUser.status}.`;
+          default:
+            return `${displayName}'s current status is ${displayNameToUser[displayName].status}`;
+        }
+      },
+    });
+  }
+
+  /* ============== [ GET CHORE ] =============*/
+  {
+    const allChores = getChores(context.token);
+      
+    apiFunctions.push({
+      name: "getChore",
+      description:
+        "The current user will ask about some aspect of a chore
+      parameters: {
+        type: "object",
+        properties: {
+          displayName: {
+            type: "string",
+            enum: [...Object.keys(displayNameToUser), "currentUser", "all"],
+          },
+        },
+        required: ["displayName"],
+      },
+      func: async ({ displayName }) => {
+  }
 
   return apiFunctions;
-};
+}
 
-const stopGPTTyping = (roomId) => {
+function stopGPTTyping (roomId)  {
   db.collection("room")
     .doc(roomId)
     .update({
       typing: admin.firestore.FieldValue.arrayRemove("gpt"),
     });
-};
+}
 
-const formatHistoryForGPT = (plainHistory) => {
+function formatHistoryForGPT (plainHistory) {
   return plainHistory.reduce((acc, historyMessage) => {
     let gptMessage = {};
     switch (historyMessage.role) {
@@ -196,7 +232,7 @@ const formatHistoryForGPT = (plainHistory) => {
     }
     return [...acc, gptMessage];
   }, []);
-};
+}
 
 const sendChat = functions.https.onCall(async (data, context) => {
   if (!context.auth) {
@@ -282,13 +318,14 @@ const sendChat = functions.https.onCall(async (data, context) => {
     const apiFunctions = await getFunctions({
       userId,
       roomId,
+      token,
       chatId: chat.id,
       content,
     });
 
     if (apiFunctions.length > 0) {
       //This map just formats the functions to be compatible with GPT's API
-      gptAPIObject.functions = apiFunctions.map((func) => {
+      gptAPIObject.tools = apiFunctions.map((func) => {
         const formattedFunc = { ...func };
         delete formattedFunc.func;
         return formattedFunc;
