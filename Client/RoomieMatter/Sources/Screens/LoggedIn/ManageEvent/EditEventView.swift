@@ -5,9 +5,11 @@ import SwiftUI
 struct EditEventView: View {
     @StateObject var viewModel: EditEventViewModel
     @Environment(\.dismiss) private var dismiss
+    @Binding var delete:Bool
     
-    init(roommates: [Roommate], event: Event){
+    init(roommates: [Roommate], event: Event, showing: Binding<Bool>){
         self._viewModel = StateObject(wrappedValue: EditEventViewModel(roommates: roommates, event: event))
+        self._delete = showing
     }
     
     var body: some View {
@@ -65,6 +67,7 @@ struct EditEventView: View {
                 
                 CustomButton(title: "Delete", backgroundColor: .red){
                     viewModel.deleteEvent()
+                    delete = false
                     dismiss()
                 }
                 
@@ -76,6 +79,7 @@ struct EditEventView: View {
             .toolbar {
                 Button{
                     viewModel.saveEvent()
+                    delete = false
                     dismiss()
                 } label:{
                     Text("Save")
@@ -87,5 +91,5 @@ struct EditEventView: View {
 }
 
 #Preview {
-    EditEventView(roommates: [Roommate.Example1, Roommate.Example2], event: Event.Example1)
+    EditEventView(roommates: [Roommate.Example1, Roommate.Example2], event: Event.Example1, showing: .constant(true))
 }

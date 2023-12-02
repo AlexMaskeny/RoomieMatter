@@ -5,9 +5,11 @@ import SwiftUI
 struct EditChoreView: View {
     @StateObject var viewModel: EditChoreViewModel
     @Environment(\.dismiss) private var dismiss
+    @Binding var delete:Bool
     
-    init(roommates: [Roommate], chore: Chore){
+    init(roommates: [Roommate], chore: Chore, showing: Binding<Bool>){
         self._viewModel = StateObject(wrappedValue: EditChoreViewModel(roommates: roommates, chore: chore))
+        self._delete = showing
     }
     var body: some View {
         ScrollView {
@@ -77,6 +79,7 @@ struct EditChoreView: View {
                 
                 CustomButton(title: "Delete", backgroundColor: .red){
                     viewModel.deleteChore()
+                    delete = false
                     dismiss()
                 }
                 
@@ -99,5 +102,5 @@ struct EditChoreView: View {
 }
 
 #Preview {
-    EditChoreView(roommates: [Roommate.Example1, Roommate.Example2], chore: Chore.Example1)
+    EditChoreView(roommates: [Roommate.Example1, Roommate.Example2], chore: Chore.Example1, showing: .constant(true))
 }

@@ -124,7 +124,8 @@ struct HomeView: View {
                         HStack{
                             ForEach(homeViewViewModel.events){ event in
                                 NavigationLink{
-                                    EditEventView(roommates: homeViewViewModel.roommates, event: event)
+                                    EventInfo(event: event, roommates: homeViewViewModel.roommates)
+                                    //EditEventView(roommates: homeViewViewModel.roommates, event: event)
                                 }label: {
                                     EventView(event: event)
                                         .foregroundStyle(.black)
@@ -162,7 +163,7 @@ struct HomeView: View {
                         HStack{
                             ForEach(homeViewViewModel.myEvents){ event in
                                 NavigationLink{
-                                    EditEventView(roommates: homeViewViewModel.roommates, event: event)
+                                    EventInfo(event: event, roommates: homeViewViewModel.roommates)
                                 }label: {
                                     EventView(event: event)
                                         .foregroundStyle(.black)

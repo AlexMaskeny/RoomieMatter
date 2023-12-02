@@ -3,6 +3,8 @@ import SwiftUI
 struct ExpandedChore: View {
     var chore: Chore
     var roommates: [Roommate]
+    @Environment(\.dismiss) private var dismiss
+    @State private var showing = true
 
     var body: some View {
         GeometryReader { geometry in
@@ -145,9 +147,14 @@ struct ExpandedChore: View {
                 }
                 .padding()
             }
+            .onChange(of: showing, { oldValue, newValue in
+                if newValue == false{
+                    dismiss()
+                }
+            })
             .toolbar{
                 NavigationLink{
-                    EditChoreView(roommates: roommates, chore: chore)
+                    EditChoreView(roommates: roommates, chore: chore, showing: $showing)
                 } label: {
                     Image(systemName: "pencil")
                         .foregroundStyle(.white)
