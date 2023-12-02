@@ -92,6 +92,7 @@ async function getInstanceId(eventId, calendar) {
   return res.data.items[0].id;
 }
 
+/* REQUIRES: token, eventId */
 /* sample return value: 
 * [{
    assignees = ('lteresa@umich.edu');
@@ -100,11 +101,11 @@ async function getInstanceId(eventId, calendar) {
    summary = "Take Out Trash";
    },...]
 */
-// returns details of a chore
-async function getChore(calendar, id) {
+// returns details of a chore: eventName, date, frequency, (description), (assignedRoommates)
+async function getChoreHelper(eventId, calendar) {
   const res = await calendar.events.get({
     calendarId: choresCalendarId,
-    eventId: id
+    eventId: eventId
   });
 
   functions.logger.log(res?.data ?? "Failurreeee! in getChore");
@@ -144,6 +145,50 @@ async function getChore(calendar, id) {
   return eventData;
 }
 
+/* REQUIRES: token, instanceId
+ * MODIFIES: RoomieMatter Chore calendar
+ * EFFECTS: delete all instances of a chore on RoomieMatter Chore calendar
+ * RETURNS: status
+ */
+const getChore = functions.https.onCall(async (data, context) => {
+  const calendar = createOAuth(context.auth, data.token);
+
+  if (!data.instanceId) {
+    throw new functions.https.HttpsError(
+      "invalid input: missing instanceId"
+    );
+  }
+
+  // get eventId with instanceId
+  let eventId = "";
+  try {
+    eventId = await getEventId(data.instanceId, calendar);
+  } catch (error) {
+    functions.logger.error('Error getting eventId:', error.message);
+    throw new functions.https.HttpsError(
+      "Error getting eventId:", error.message
+      );
+  }
+  
+  // delete event with eventId
+  let res = {};
+  try {
+    res = await calendar.events.delete({
+      calendarId: choresCalendarId,
+      eventId: eventId,
+    });
+  } catch (error) {
+    functions.logger.error('Error deleting event:', error.message);
+    throw new functions.https.HttpsError(
+      "Error deleting event:", error.message
+      );
+  }
+    
+  functions.logger.log(res);
+  functions.logger.log('Successfully deleted event');
+  return {status: true};
+});
+
 /* REQUIRES: token
  * MODIFIES: nothing
  * EFFECTS: returns list of chores from RoomieMatter Chore calendar
@@ -151,16 +196,12 @@ async function getChore(calendar, id) {
  */
 const getChores = functions.https.onCall(async (data, context) => {
   const calendar = createOAuth(context.auth, data.token);
-  functions.logger.log("After authentication");
+
   const res = await calendar.events.list({
     calendarId: choresCalendarId,
     timeMin: new Date().toISOString(),
-    // maxResults: 10,
     singleEvents: false,
-    // orderBy: 'startTime',
   });
-
-  functions.logger.log("After getting calling Gcal API");
 
   functions.logger.log(res?.data?.items ?? "Failurreeee!");
   functions.logger.log(res);
@@ -175,6 +216,11 @@ const getChores = functions.https.onCall(async (data, context) => {
 
   for (const event of events) {
     functions.logger.log(event.id);
+
+    // make sure it's a confirmed event
+    if (event.status != 'confirmed') {
+      continue;
+    }
 
     // if non-recurring event, use eventId as instanceId 
     if (!event.recurrence || event.recurrence.length === 0) {
@@ -211,10 +257,30 @@ const getChores = functions.https.onCall(async (data, context) => {
   functions.logger.log(eventsIds);
 
   // return chores using getChore with eventsIds
+  let eventsOutput = [];
+  for (eventId of eventsIds) {
+    let eventOutput;
+    try {
+      eventOutput =  await getChoreHelper(eventId.instanceId, calendar);
+    } catch (error) {
+      functions.logger.error('Error getting chore:', error.message);
+      throw new functions.https.HttpsError(
+        "Error getting chore:", error.message
+      );
+    }
 
+    if (!eventOutput || eventOutput.length == 0) {
+      functions.logger.error("No chore found with eventId");
+        throw new functions.https.HttpsError(
+          "No chore found with eventId:", error.message
+          // TODO: more descriptive error message with eventId
+        );
+    }
 
+    eventsOutput.push(eventOutput);
+  }
 
-  return { status: true, eventsIds };
+  return { status: true, chores: eventsOutput };
 });
 
 /* REQUIRES: token, eventName, date, frequency
