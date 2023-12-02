@@ -137,7 +137,7 @@ func deleteOneInstanceOfChore(chore_id: String, calendar_id: String) -> String {
     return "successfully deleted one chore"
 }
 
-func deleteChore(eventId: String) -> String {
+func deleteChore(instanceId: String) -> String {
     guard let user = GIDSignIn.sharedInstance.currentUser else {
         print("User not properly signed in")
         return "error"
@@ -145,10 +145,10 @@ func deleteChore(eventId: String) -> String {
     let token = user.accessToken.tokenString
     print(token)
     
-    /* required arguments: token, eventId
+    /* required arguments: token, instanceId
      * example argument is listed below:
      */
-    let data = ["token": token, "eventId": "to971io3dt6a6360370nrvnaus"]
+    let data = ["token": token, "instanceId": instanceId]
     
     Functions.functions().httpsCallable("deleteChore").call(data) { (result, error) in
         print("in deleteChore")

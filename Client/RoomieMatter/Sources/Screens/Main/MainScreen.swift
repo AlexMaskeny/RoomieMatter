@@ -40,7 +40,7 @@ struct MainScreen: View {
         }
         
         Button {
-            deleteChore(eventId: "String")
+            deleteChore(instanceId: "vhn7jk3pd2jhioskseg25smvas")
         } label: {
             Text("Delete chore")
         }

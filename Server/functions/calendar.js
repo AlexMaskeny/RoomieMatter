@@ -3,6 +3,21 @@ const { google } = require("googleapis");
 
 choresCalendarId = "c_5df0bf9c096fe8c9bf0a70fc19f1cf28dae8901ff0fcab98989a0445fb052625@group.calendar.google.com"
 
+function createOAuth(auth, tokenInput) {
+  if (!auth) {
+    throw new functions.https.HttpsError(
+      "unauthenticated",
+      "RoomieMatter functions can only be called by Authenticated users."
+    );
+  }
+
+  const token = tokenInput;
+  functions.logger.log(token);
+  const oAuth2Client = new google.auth.OAuth2();
+  oAuth2Client.setCredentials({ access_token: token });
+  return google.calendar({ version: "v3", auth: oAuth2Client });
+}
+
 // returns details of a chore
 async function getChore(calendar, id) {
   const res = await calendar.events.get({
@@ -59,7 +74,6 @@ async function getChore(calendar, id) {
     summary = "Take Out Trash";
     },...]
  */
-// TODO: add description to return value
 const getChores = functions.https.onCall(async (data, context) => {
   if (!context.auth) {
     throw new functions.https.HttpsError(
@@ -87,7 +101,7 @@ const getChores = functions.https.onCall(async (data, context) => {
   const events = res.data.items;
   if (!events || events.length === 0) {
     functions.logger.log('No upcoming events found.');
-    return;
+    return {success: false};
   }
   functions.logger.log('Upcoming 5 events:');
 
@@ -250,19 +264,13 @@ const addChore = functions.https.onCall(async (data, context) => {
   return {success: true, eventId: event.id};
 });
 
-// this function is not done yet
-/* REQUIRES: token, eventName, startDate, endDate, description, frequency, assignedRoommates
+/* REQUIRES: token, instanceId
  * MODIFIES: RoomieMatter Chore calendar
  * EFFECTS: delete one instance of a chore on RoomieMatter Chore calendar
  * 
- * sample return value: 
- * [{
-    assignees = ('lteresa@umich.edu');
-    frequency = WEEKLY;
-    startDate = "2023-11-30";
-    summary = "Take Out Trash";
-    },...]
-*/
+ * returns {success: true} on success
+ * throws error on failure
+ */
 const deleteChoreInstance = functions.https.onCall(async (data, context) => {
   if (!context.auth) {
     throw new functions.https.HttpsError(
@@ -277,92 +285,97 @@ const deleteChoreInstance = functions.https.onCall(async (data, context) => {
   oAuth2Client.setCredentials({ access_token: token });
   const calendar = google.calendar({ version: "v3", auth: oAuth2Client });
 
-  // TODO: figure out how to have date for start and end
-  const eventInput = {
-    'summary': 'Dishes',
-    'description': 'An event that recurrs daily',
-    'start': {
-      'date': "2023-12-1",
-    },
-    'end': {
-      'date': "2023-12-7",
-    },
-    'recurrence': [
-      'RRULE:FREQ=DAILY'
-    ],
-    'attendees': [
-      {'email': 'lteresa@umich.edu'},
-      // {'email': 'sbrin@example.com'},
-    ],
-    // 'reminders': {
-    //   'useDefault': False,
-    //   'overrides': [
-    //     {'method': 'email', 'minutes': 24 * 60},
-    //     {'method': 'popup', 'minutes': 10},
-    //   ],
-    // },
-  };
-
-  const res = await calendar.events.insert({
-    calendarId: choresCalendarId,
-    resource: eventInput,
-  });
-
-  functions.logger.log(res?.data ?? "Failurreeee!");
-  functions.logger.log(res);
-  const event = res.data;
-  if (!event || event.length === 0) {
-    functions.logger.log('Failed to add event');
-    return;
-  }
-  functions.logger.log('Added event:');
-  functions.logger.log(event);
-
-  return {success: true};
-});
-
-/* REQUIRES: token, eventId
- * MODIFIES: RoomieMatter Chore calendar
- * EFFECTS: delete all instances of a chore on RoomieMatter Chore calendar
- * 
- * returns {success: true} on success
- * throws error on failure
- */
-const deleteChore = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+  if (!data.instanceId) {
     throw new functions.https.HttpsError(
-      "unauthenticated",
-      "RoomieMatter functions can only be called by Authenticated users."
-    );
-  }
-
-  const token = data.token;
-  functions.logger.log(token);
-  const oAuth2Client = new google.auth.OAuth2();
-  oAuth2Client.setCredentials({ access_token: token });
-  const calendar = google.calendar({ version: "v3", auth: oAuth2Client });
-
-  if (!data.eventId) {
-    throw new functions.https.HttpsError(
-      "invalid input: missing eventId"
+      "invalid input: missing instanceId"
     );
   }
 
   try {
     const res = await calendar.events.delete({
       calendarId: choresCalendarId,
-      eventId: data.eventId,
+      eventId: data.instanceId,
     });
     
     functions.logger.log(res);
-    functions.logger.log('Successfully deleted event');
+    functions.logger.log('Successfully deleted instance');
+  } catch (error) {
+    functions.logger.error('Error deleting instance:', error.message);
+    throw new functions.https.HttpsError(
+      "Error deleting instance:", error.message
+    );
+  }
+
+  return {success: true};
+});
+
+
+/* REQUIRES: token, instanceId
+ * MODIFIES: RoomieMatter Chore calendar
+ * EFFECTS: delete all instances of a chore on RoomieMatter Chore calendar
+ * 
+ * success: returns {success: true}
+ * failure: returns {success: false} or throws error
+ */
+const deleteChore = functions.https.onCall(async (data, context) => {
+  const calendar = createOAuth(context.auth, data.token);
+
+  if (!data.instanceId) {
+    throw new functions.https.HttpsError(
+      "invalid input: missing instanceId"
+    );
+  }
+
+  let res = {}
+  let eventId = data.instanceId;
+
+  // if recurring event, get eventId using instanceId
+  if (data.instanceId.includes("_")) {
+    functions.logger.log("Recurring event");
+    try {
+      res = await calendar.events.get({
+        calendarId: choresCalendarId,
+        eventId: data.instanceId,
+      });
+    } catch (error) {
+      functions.logger.error('Error deleting event:', error.message);
+      throw new functions.https.HttpsError(
+        "Error deleting event:", error.message
+        );
+    }
+
+    functions.logger.log(res);
+    if (!res.data || res.data.length === 0) {
+      functions.logger.log('Invalid instanceId');
+      return {success: false};
+    }
+
+    if (!res.data.recurringEventId) {
+      functions.logger.log('recurringEventId not found');
+      return {success: false};
+    }
+
+    eventId = res.data.recurringEventId;
+    functions.logger.log("eventId = ", eventId);
+  } else {
+    functions.logger.log("Non-recurring event, eventId = instanceId = ", eventId);
+  }
+
+  // delete chore with eventId
+  try {
+    res = await calendar.events.delete({
+      calendarId: choresCalendarId,
+      eventId: eventId,
+    });
   } catch (error) {
     functions.logger.error('Error deleting event:', error.message);
     throw new functions.https.HttpsError(
       "Error deleting event:", error.message
-    );
+      );
   }
-
+    
+  functions.logger.log(res);
+  functions.logger.log('Successfully deleted event');
   return {success: true};
 });
 
