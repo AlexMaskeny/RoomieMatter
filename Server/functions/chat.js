@@ -40,6 +40,22 @@ const openai = new OpenAI({
   apiKey: "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",
 });
 
+//Takes a date object and turns it into MM/DD/YYYY format
+const americanDateFormatter = (date) => {
+  // Get the month, day, and year from the Date object
+  let month = date.getMonth() + 1; // getMonth() returns 0-11
+  let day = date.getDate();
+  const year = date.getFullYear();
+
+  // Format the month and day to ensure two digits
+  month = month < 10 ? '0' + month : month;
+  day = day < 10 ? '0' + day : day;
+
+  // Concatenate to get the date in MM/DD/YYYY format
+  const formattedDate = month + '/' + day + '/' + year;
+  return formattedDate;
+}
+
 //Context here is defined by us. It is special and contains things like userId, roomId, chatId (of the sent chat), etc
 //I'm making all of these async to make it easy to add them in the sendChat function
 async function getFunctions (context) {
@@ -49,6 +65,34 @@ async function getFunctions (context) {
   //We will push each function to the array. This allows us to 
   //execute any commands we require to form the function
   let apiFunctions = [];
+
+  const userRooms = await db
+  .collection("user_rooms")
+  .where("room", "==", roomRef)
+  .get();
+
+  const plainUserRooms = userRooms.docs.map((doc) => doc.data());
+
+  const now = new Date();
+
+  //This just defines a map of user display names to some information
+  //about them. The user sending this 
+  //chat is stored as "currentUser" because they might not refer
+  //to themselves in 3rd person
+  let displayNameToUser = {};
+  for (let i = 0; i < plainUserRooms.length; i++) {
+    const userRoom = plainUserRooms[i];
+    const userSnapshot = await userRoom.user.get();
+    const user = userSnapshot.data();
+    const userAndStatus = {
+      ...user,
+      status: userRoom.status ?? "",
+    };
+    displayNameToUser[userAndStatus.displayName] = userAndStatus;
+    if (userAndStatus.uuid === context.userId) {
+      displayNameToUser.currentUser = { ...userAndStatus };
+    }
+  }
 
   /* ============== [ CHANGE STATUS ] ============== */
   {
@@ -84,34 +128,8 @@ async function getFunctions (context) {
     });
   }
 
-  /* ============== [ GET STATUS ] ============== */
+  /* ============== [ GET STATUS(S) ] ============== */
   {
-    const userRooms = await db
-      .collection("user_rooms")
-      .where("room", "==", roomRef)
-      .get();
-  
-    const plainUserRooms = userRooms.docs.map((doc) => doc.data());
-  
-    //This just defines a map of user display names to some information
-    //about them (in this case, their status). The user sending this 
-    //chat is stored as "currentUser" because they might not refer
-    //to themselves in 3rd person
-    let displayNameToUser = {};
-    for (let i = 0; i < plainUserRooms.length; i++) {
-      const userRoom = plainUserRooms[i];
-      const userSnapshot = await userRoom.user.get();
-      const user = userSnapshot.data();
-      const userAndStatus = {
-        ...user,
-        status: userRoom.status ?? "",
-      };
-      displayNameToUser[userAndStatus.displayName] = userAndStatus;
-      if (userAndStatus.uuid === context.userId) {
-        displayNameToUser.currentUser = { ...userAndStatus };
-      }
-    }
-  
     apiFunctions.push({
       name: "getStatus",
       description:
@@ -157,25 +175,116 @@ async function getFunctions (context) {
     });
   }
 
-  /* ============== [ GET CHORE ] =============*/
+  /* ============== [ GET CHORE(S) ] =============*/
   {
-    const allChores = getChores(context.token);
-      
+    const allChores = await getChores(context.token);
+  
     apiFunctions.push({
-      name: "getChore",
+      name: "getChores",
       description:
-        "The current user will ask about some aspect of a chore
+        "The user will attempt to identify one or more chores using plain text. The plain text contains at least 1 " +
+        "parameter that can be used to identify a list of chores. This list will be returned and will contain a " + 
+        "eventName parameter for each element. Always include that parameter in your response",
       parameters: {
         type: "object",
         properties: {
-          displayName: {
+          eventName: {
             type: "string",
-            enum: [...Object.keys(displayNameToUser), "currentUser", "all"],
+            description: "The name of the chore",
+            enum: allChores.eventsData.map((chore) => chore.eventName)
+          },
+          date: {
+            type: "string",
+            description: `The chore's date in MM/DD/YYYY format. For relative dates (like 'tomorrow') the current date is ${americanDateFormatter(now)}`
+          },
+          status: {
+            type: "boolean",
+            description: "True if the chore is completed. False if not"
           },
         },
-        required: ["displayName"],
       },
-      func: async ({ displayName }) => {
+      func: async ({ eventName, date, status = false }) => {
+        const matchingChores = allChores.eventsData.filter((chore) => {
+          const eventNameCondition = chore.eventName === eventName;
+
+          const choreDate = new Date(chore.date);
+          const dateCondition = americanDateFormatter(choreDate) === date;
+
+          const statusCondition = chore.status === status;
+
+          return (
+            eventNameCondition || dateCondition || statusCondition
+          ) 
+        });
+
+        const formattedMatchingChores = matchingChores.map((chore) => {
+          const assignedRoommates = Object.entries(displayNameToUser).reduce(([displayName, userInfo], acc) => {
+            if (chore.assignedRoommates.includes(userInfo.uuid)) {
+              return [
+                ...acc,
+                displayName
+              ]
+            } else {
+              return acc;
+            }
+          }, []);
+
+          return {
+            ...chore,
+            assignedRoommates
+          }
+        })
+
+        return JSON.stringify(formattedMatchingChores);
+      }
+    });
+  }
+
+  /* ============== [ ADD CHORE ] =============== */
+  {
+    apiFunctions.push({
+      name: "addChore",
+      description:
+        `Adds a chore. The current date is ${now.toISOString()}`,
+      parameters: {
+        type: "object",
+        properties: {
+          eventName: {
+            type: "string",
+            description: "The name of the chore",
+          },
+          date: {
+            type: "string",
+            description: "The chore's date in ISO format."
+          },
+          frequency: {
+            type: "string",
+            description: "How often the chore repeats",
+            enum: ["DAILY", "BIWEEKLY", "WEEKLY", "MONTHLY"]
+          },
+          endRecurrenceDate: {
+            type: "string",
+            description: "When the recurrence specified by the frequency ends in ISO format"
+          },
+          description: {
+            type: "string",
+            description: "Description of the chore"
+          },
+          assignedRoommates: {
+            type: "array",
+            description: "A list of the display names of the users added to the chore",
+            items: {
+              type: "string",
+              description: "The display name of the assigned roommate"
+            }
+          }
+        },
+        required: ["eventName", "date", "assignedRoommates"]
+      },
+      func: async ({ eventName, date, frequency, endRecurrenceDate, description, assignedRoommates }) => {
+        
+      }
+    })
   }
 
   return apiFunctions;
