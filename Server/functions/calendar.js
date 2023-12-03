@@ -32,7 +32,7 @@ function createOAuth(auth, tokenInput) {
 async function getUuidFromEmail(email) {
   const user = await db.collection("users").where("email", "==", email).get();
 
-  //This is an array because email isn't the primary index (duplicates are allowed)
+  //This is an array because email isn't the primary key (duplicates are allowed)
   const plainUser = user.docs.map((doc) => doc.data());
 
   return plainUser[0].uuid;
@@ -97,10 +97,7 @@ async function getEventId(instanceId, calendar) {
 async function getInstanceId(eventId, calendar) {
   // if instanceID, throws error
   if (eventId.includes("_")) {
-    throw new functions.https.HttpsError(
-      "Expects eventId only:",
-      error.message
-    );
+    throw new functions.https.HttpsError("Expects eventId only");
   }
 
   // find instanceId
@@ -126,34 +123,9 @@ async function getInstanceId(eventId, calendar) {
   return res.data.items[0].id;
 }
 
-/* REQUIRES: token, instanceId
- * RETURNS: chore = {instanceId, eventName, date, frequency, (description), (assignedRoommates)}
- */
-/* sample return value: 
-* [{
-    instanceId = "12345";
-    date = "2023-12-02";
-    description = gibberish;
-    eventName = Trash;
-    frequency = Once;
-    assignees = [
-      "lteresa@umich.edu"
-    ]
-  },...]
-*/
-// returns details of a chore: instanceId, eventName, date, frequency, (description), (assignedRoommates)
-async function getChoreHelper(instanceId, calendar) {
-  const res = await calendar.events.get({
-    calendarId: choresCalendarId,
-    eventId: instanceId,
-  });
-
-  functions.logger.log(res?.data ?? "Failurreeee! in getChore");
-  const event = res.data;
-  functions.logger.log(event);
-
-  if (!event) {
-    functions.logger.log("No event found.");
+// takes in Google's raw event and returns a chore object with fields we need
+async function parseChore(event) {
+  if (!event || event.length == 0) {
     return {};
   }
 
@@ -165,7 +137,7 @@ async function getChoreHelper(instanceId, calendar) {
 
   if (event.recurrence) {
     const startIndex = event.recurrence[0].indexOf("FREQ=") + 5;
-    const endIndex = event.recurrence[0].indexOf(";");
+    let endIndex = event.recurrence[0].indexOf(";");
     if (endIndex == -1) {
       endIndex = event.recurrence[0].length;
     }
@@ -200,7 +172,8 @@ async function getChoreHelper(instanceId, calendar) {
     let assignees = [];
     functions.logger.log(event.attendees);
     for (const attendee of event.attendees) {
-      assignees.push(attendee.email);
+      const uuid = await getUuidFromEmail(attendee.email);
+      assignees.push(uuid);
     }
     eventData.assignedRoommates = assignees;
   }
@@ -208,6 +181,42 @@ async function getChoreHelper(instanceId, calendar) {
   functions.logger.log(eventData);
 
   return eventData;
+}
+
+/* REQUIRES: token, instanceId
+ * RETURNS: chore = {instanceId, eventName, date, frequency, (description), (assignedRoommates)}
+ * assignedRoommates = [uuid]
+ */
+/* sample return value: 
+* [{
+    instanceId = "12345";
+    date = "2023-12-02";
+    description = gibberish;
+    eventName = Trash;
+    frequency = Once;
+    assignees = [
+      "lteresa@umich.edu"
+    ]
+  },...]
+*/
+// returns details of a chore: instanceId, eventName, date, frequency, (description), (assignedRoommates)
+async function getChoreHelper(instanceId, calendar) {
+  const res = await calendar.events.get({
+    calendarId: choresCalendarId,
+    eventId: instanceId,
+  });
+
+  functions.logger.log(res?.data ?? "Failurreeee! in getChore");
+  const event = res.data;
+  functions.logger.log(event);
+
+  if (!event) {
+    functions.logger.log("No event found.");
+    return {};
+  }
+
+  const output = await parseChore(event);
+  return output;
 }
 
 /* REQUIRES: calendarId, eventInput, calendar
@@ -304,7 +313,6 @@ const getChore = functions.https.onCall(async (data, context) => {
  */
 async function getChoresBody(data, context) {
   const calendar = createOAuth(context.auth, data.token);
-  functions.logger.log("Check 2");
 
   const res = await calendar.events.list({
     calendarId: choresCalendarId,
@@ -354,8 +362,7 @@ async function getChoresBody(data, context) {
       if (instanceId == "") {
         functions.logger.error("Error getting instance ID");
         throw new functions.https.HttpsError(
-          "Error getting instance ID:",
-          error.message
+          "Error getting instance ID"
           // TODO: more descriptive error message with eventId
         );
       }
@@ -369,7 +376,7 @@ async function getChoresBody(data, context) {
 
   // return chores using getChore with eventsIds
   let eventsOutput = [];
-  for (eventId of eventsIds) {
+  for (const eventId of eventsIds) {
     let eventOutput;
     try {
       eventOutput = await getChoreHelper(eventId.instanceId, calendar);
@@ -385,8 +392,7 @@ async function getChoresBody(data, context) {
       functions.logger.error("No chore found with eventId");
       throw new functions.https.HttpsError(
         "No chore found with eventId:",
-        error.message
-        // TODO: more descriptive error message with eventId
+        eventId
       );
     }
 
@@ -457,12 +463,13 @@ async function addChoreBody(data, context) {
   switch (data.frequency) {
     case "Once":
       break;
-    case "Daily":
+    case "Daily": {
       const dailyInput =
         "RRULE:FREQ=DAILY" + formatEndRecurrenceDate(data.endRecurrenceDate);
       eventInput.recurrence = [dailyInput];
       break;
-    case "Weekly":
+    }
+    case "Weekly": {
       const weeklyInput =
         "RRULE:FREQ=WEEKLY" +
         formatEndRecurrenceDate(data.endRecurrenceDate) +
@@ -470,7 +477,8 @@ async function addChoreBody(data, context) {
         findDayOfWeek(data.date);
       eventInput.recurrence = [weeklyInput];
       break;
-    case "Biweekly":
+    }
+    case "Biweekly": {
       const biweeklyInput =
         "RRULE:FREQ=WEEKLY;WKST=MO" +
         formatEndRecurrenceDate(data.endRecurrenceDate) +
@@ -478,11 +486,13 @@ async function addChoreBody(data, context) {
         findDayOfWeek(data.date);
       eventInput.recurrence = [biweeklyInput];
       break;
-    case "Monthly":
+    }
+    case "Monthly": {
       const monthlyInput =
         "RRULE:FREQ=MONTHLY" + formatEndRecurrenceDate(data.endRecurrenceDate);
       eventInput.recurrence = [monthlyInput];
       break;
+    }
     default:
       throw new functions.https.HttpsError(
         "invalid input: frequency can only be strings in {Once, Daily, Weekly, Biweekly, Monthly}"
@@ -531,16 +541,96 @@ async function addChoreBody(data, context) {
 
   if (instanceId == "") {
     functions.logger.error("Error getting instance ID");
-    throw new functions.https.HttpsError(
-      "Error getting instance ID:",
-      error.message
-    );
+    throw new functions.https.HttpsError("Error getting instance ID:");
   }
 
   return { status: true, instanceId: instanceId };
 }
 const addChore = functions.https.onCall(async (data, context) => {
   return await addChoreBody(data, context);
+});
+
+async function editChoreBody(data, context) {
+  const calendar = createOAuth(context.auth, data.token);
+
+  if (!data.instanceId) {
+    throw new functions.https.HttpsError("invalid input: missing instanceId");
+  }
+
+  // get eventId with instanceId
+  let eventId = "";
+  try {
+    eventId = await getEventId(data.instanceId, calendar);
+  } catch (error) {
+    functions.logger.error("Error getting eventId:", error.message);
+    throw new functions.https.HttpsError(
+      "Error getting eventId:",
+      error.message
+    );
+  }
+
+  // patch event
+  let input = {
+    calendarId: choresCalendarId,
+    eventId: eventId,
+  };
+
+  if (data.eventName) {
+    input.summary = data.eventName;
+  }
+
+  // requirement: change date and frequency together
+  if ((data.date && !data.frequency) || (!data.date && data.frequency)) {
+    functions.logger.log("Expects both date and frequency if any changes");
+  }
+
+  if (data.date) {
+    eventInput.start = {};
+    eventInput.end = {};
+    eventInput.start.date = data.date;
+    eventInput.end.date = data.date;
+    // TODO: change recurrence rule too
+  }
+
+  // TODO: frequency, endRecurrenceDate
+  // **no end recurrence date
+  // 1) get current chore to get frequency then modify recurrence
+  // 2) require to change both date and frequency together
+
+  if (data.description) {
+    input.summary = data.description;
+  }
+  if (data.assignedRoommates) {
+    let attendees = [];
+    for (const attendee of data.assignedRoommates) {
+      // double check that these are valid emails
+      // TODO: convert UUID to email
+      attendees.push({ email: attendee });
+    }
+    eventInput.attendees = attendees;
+  }
+
+  // call API to patch event
+  let res = {};
+  try {
+    res = await calendar.events.patch(input);
+  } catch (error) {
+    functions.logger.error("Error editing event:", error.message);
+    throw new functions.https.HttpsError("Error editing event:", error.message);
+  }
+
+  functions.logger.log(res);
+  functions.logger.log("Successfully edited event");
+
+  if (!res.data || res.data.length == 0) {
+    return { status: false };
+  }
+
+  const output = await parseChore(res.data);
+  return { status: true, chore: output };
+}
+const editChore = functions.https.onCall(async (data, context) => {
+  return await editChoreBody(data, context);
 });
 
 /* REQUIRES: token, instanceId
@@ -788,6 +878,14 @@ const addEvent = functions.https.onCall(async (data, context) => {
   return await addEventBody(data, context);
 });
 
+async function editEventBody(data, context) {
+  // const calendar = createOAuth(context.auth, data.token);
+  // return {status: true, instanceId: event.id};
+}
+const editEvent = functions.https.onCall(async (data, context) => {
+  return await editEventBody(data, context);
+});
+
 /* REQUIRES: token, eventId
  * MODIFIES: RoomieMatter Event calendar
  * EFFECTS: delete event on RoomieMatter Event calendar
@@ -819,17 +917,21 @@ module.exports = {
   getChore,
   getChores,
   addChore,
+  editChore,
   completeChore,
   deleteChore,
   getEvents,
   addEvent,
+  editEvent,
   deleteEvent,
   getChoreBody,
   getChoresBody,
   addChoreBody,
+  editChoreBody,
   completeChoreBody,
   deleteChoreBody,
   getEventsBody,
   addEventBody,
+  editEventBody,
   deleteEventBody,
 };
