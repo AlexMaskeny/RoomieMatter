@@ -10,7 +10,6 @@ const {
   getEventsBody,
   addEventBody,
   editEventBody,
-  completeEventBody,
   deleteEventBody,
 } = require("./calendar");
 const { capitalizeFirstLetter, americanDateFormatter } = require("./utils");
@@ -453,49 +452,6 @@ async function getFunctions(context) {
   createEditCalendarItem(CALENDAR_ITEM_TYPE.chore); //FUNC: EDIT CHORE
   createEditCalendarItem(CALENDAR_ITEM_TYPE.event); //FUNC: EDIT EVENT
 
-  /* ============== [ HELPER: CREATE COMPLETE CALENDAR ITEM ] ============== */
-  const createCompleteChoreBody = (type) => {
-    const allItems = type === CALENDAR_ITEM_TYPE.chore ? allChores : allEvents;
-
-    apiFunctions.push({
-      name: `complete${capitalizeFirstLetter(type)}`,
-      description: `Marks an existing ${type} as completed`,
-      parameters: {
-        type: "object",
-        properties: {
-          eventName: {
-            type: "string",
-            description: `The ${type} that the user is attempting to mark as completed`,
-            enum: allItems.map((item) => item.eventName),
-          },
-        },
-        required: ["eventName"],
-      },
-      func: async ({ eventName }) => {
-        const completeItemFunction =
-          type === CALENDAR_ITEM_TYPE.event
-            ? completeChoreBody
-            : completeEventBody;
-        const item = allItems.find((item) => item.eventName === eventName);
-        const completeItemData = {
-          instanceId: item.instanceId,
-          token: context.token,
-        };
-        const result = await completeItemFunction(
-          completeItemData,
-          context.context
-        );
-        if (result) {
-          return `Successfully marked the ${eventName} ${type} as completed`;
-        } else {
-          return `Failed to mark the ${eventName} ${type} as completed`;
-        }
-      },
-    });
-  };
-  createCompleteChoreBody(CALENDAR_ITEM_TYPE.chore); //FUNC: COMPLETE CHORE
-  createCompleteChoreBody(CALENDAR_ITEM_TYPE.event); //FUNC: COMPLETE EVENT
-
   /* ============== [ HELPER: CREATE DELETE CALENDAR ITEM ] ============== */
   const createDeleteCalendarItem = (type) => {
     const allItems = type === CALENDAR_ITEM_TYPE.chore ? allChores : allEvents;
@@ -536,6 +492,41 @@ async function getFunctions(context) {
   };
   createDeleteCalendarItem(CALENDAR_ITEM_TYPE.chore); //FUNC: DELETE CHORE
   createDeleteCalendarItem(CALENDAR_ITEM_TYPE.event); //FUNC: DELETE EVENT
+
+  /* ============== [ FUNC: COMPLETE CHORE ] ============== */
+  {
+    apiFunctions.push({
+      name: `completeChores`,
+      description: `Marks an existing chore as completed`,
+      parameters: {
+        type: "object",
+        properties: {
+          eventName: {
+            type: "string",
+            description: `The chore that the user is attempting to mark as completed`,
+            enum: allChores.map((chore) => chore.eventName),
+          },
+        },
+        required: ["eventName"],
+      },
+      func: async ({ eventName }) => {
+        const chore = allChores.find((chore) => chore.eventName === eventName);
+        const completeChoreData = {
+          instanceId: chore.instanceId,
+          token: context.token,
+        };
+        const result = await completeChoreBody(
+          completeChoreData,
+          context.context
+        );
+        if (result) {
+          return `Successfully marked the ${eventName} chore as completed`;
+        } else {
+          return `Failed to mark the ${eventName} chore as completed`;
+        }
+      },
+    });
+  }
 
   return apiFunctions;
 }
