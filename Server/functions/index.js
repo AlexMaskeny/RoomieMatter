@@ -5,12 +5,13 @@ admin.initializeApp();
 
 const { onUserSignUp } = require("./user");
 const { sendChat, getChats } = require("./chat");
-const { getChores, addChore, deleteChoreInstance, deleteChore } = require("./calendar");
+const { getChore, getChores, addChore, completeChore, deleteChore } = require("./calendar");
 
 exports.onUserSignUp = onUserSignUp;
 exports.sendChat = sendChat;
 exports.getChats = getChats;
+exports.getChore = getChore;
 exports.getChores = getChores;
 exports.addChore = addChore;
-exports.deleteChoreInstance = deleteChoreInstance;
+exports.completeChore = completeChore;
 exports.deleteChore = deleteChore;
