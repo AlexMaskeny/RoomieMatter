@@ -58,6 +58,24 @@ struct MainScreen: View {
         }
         
         Button {
+            getEvents()
+        } label: {
+            Text("Get events")
+        }
+        
+        Button {
+            addEvent()
+        } label: {
+            Text("Add event")
+        }
+        
+        Button {
+            deleteEvent()
+        } label: {
+            Text("Delete event")
+        }
+        
+        Button {
             db.collection("test").addDocument(data: [
                 "title": "Test"
             ])

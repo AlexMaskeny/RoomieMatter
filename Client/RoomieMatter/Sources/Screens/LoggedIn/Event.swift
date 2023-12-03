@@ -6,7 +6,8 @@
 //
 
 import Foundation
-import Foundation
+import FirebaseFunctions
+import GoogleSignIn
 
 
  struct Event: Identifiable{
@@ -29,3 +30,79 @@ import Foundation
      }
  }
 
+func getEvents() {
+    guard let user = GIDSignIn.sharedInstance.currentUser else {
+        print("User not properly signed in")
+        return
+    }
+    let token = user.accessToken.tokenString
+    print(token)
+    
+    Functions.functions().httpsCallable("getEvents").call(["token": token]) { (result, error) in
+        print("in getEvents")
+        if let error = error as NSError? {
+            if error.domain == FunctionsErrorDomain {
+                let code = FunctionsErrorCode(rawValue: error.code)
+                let message = error.localizedDescription
+                let details = error.userInfo[FunctionsErrorDetailsKey]
+                print("Error: \(message)")
+            }
+            // Handle the error
+        }
+        if let data = result?.data as? [String: Any] {
+            print(data)
+        }
+    }
+}
+
+func addEvent() {
+    guard let user = GIDSignIn.sharedInstance.currentUser else {
+        print("User not properly signed in")
+        return
+    }
+    let token = user.accessToken.tokenString
+    print(token)
+    
+    let data: [String: Any] = ["token": token, "eventName": "event1", "startDatetime": "2023-12-03T10:00:00-05:00",
+                               "endDatetime": "2023-12-03T10:00:00-05:00", "description": "gibberish", "guests": ["lteresa@umich.edu"]]
+    Functions.functions().httpsCallable("addEvent").call(data) { (result, error) in
+        print("in addEvent")
+        if let error = error as NSError? {
+            if error.domain == FunctionsErrorDomain {
+                let code = FunctionsErrorCode(rawValue: error.code)
+                let message = error.localizedDescription
+                let details = error.userInfo[FunctionsErrorDetailsKey]
+                print("Error: \(message)")
+            }
+            // Handle the error
+        }
+        if let data = result?.data as? [String: Any] {
+            print(data)
+        }
+    }
+}
+
+func deleteEvent() {
+    guard let user = GIDSignIn.sharedInstance.currentUser else {
+        print("User not properly signed in")
+        return
+    }
+    let token = user.accessToken.tokenString
+    print(token)
+    
+    Functions.functions().httpsCallable("deleteEvent").call(["token": token, "eventId": "12345"]) { (result, error) in
+        print("in deleteEvent")
+        if let error = error as NSError? {
+            if error.domain == FunctionsErrorDomain {
+                let code = FunctionsErrorCode(rawValue: error.code)
+                let message = error.localizedDescription
+                let details = error.userInfo[FunctionsErrorDetailsKey]
+                print("Error: \(message)")
+            }
+            // Handle the error
+        }
+        if let data = result?.data as? [String: Any] {
+            print(data)
+        }
+    }
+}
