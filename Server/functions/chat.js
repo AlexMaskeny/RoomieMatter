@@ -2,7 +2,7 @@ const functions = require("firebase-functions");
 const admin = require("firebase-admin");
 const { OpenAI } = require("openai");
 const { google } = require("googleapis");
-const { getChores } = require("./calendar");
+const { getChoresBody, addChoresBody } = require("./calendar");
 
 //We have to enforce that @Housekeeper cannot be sent in the chat
 //while gpt is typing. Also, only display role type "user" or "assistant" or "roommate"
@@ -177,7 +177,7 @@ async function getFunctions (context) {
 
   /* ============== [ GET CHORE(S) ] =============*/
   {
-    const allChores = await getChores(context.token);
+    const allChores = await getChoresBody(context.token);
   
     apiFunctions.push({
       name: "getChores",
@@ -260,7 +260,7 @@ async function getFunctions (context) {
           frequency: {
             type: "string",
             description: "How often the chore repeats",
-            enum: ["DAILY", "BIWEEKLY", "WEEKLY", "MONTHLY"]
+            enum: ["ONCE", "DAILY", "BIWEEKLY", "WEEKLY", "MONTHLY"]
           },
           endRecurrenceDate: {
             type: "string",
@@ -279,9 +279,26 @@ async function getFunctions (context) {
             }
           }
         },
-        required: ["eventName", "date", "assignedRoommates"]
+        required: ["eventName", "date", "frequency"]
       },
       func: async ({ eventName, date, frequency, endRecurrenceDate, description, assignedRoommates }) => {
+        const addChoreObject = {
+          eventName,
+          date,
+          frequency,
+          endRecurrenceDate,
+          description,
+          attendees: assignedRoommates.map((attendee) => {
+            const userInfo = displayNameToUser[attendee];
+            return userInfo.uuid
+          })
+        }
+        const result = await addChoresBody(addChoreObject);
+        if (result) {
+          return "Successfully added a new chore!";
+        } else {
+          return "Failed to add the chore"
+        }
         
       }
     })
