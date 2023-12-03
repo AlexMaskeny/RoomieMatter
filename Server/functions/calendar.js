@@ -126,7 +126,7 @@ async function getInstanceId(eventId, calendar) {
 }
 
 // takes in Google's raw event and returns a chore object with fields we need
-async function parseChore(event) {
+async function parseChore(instanceId, event) {
   if (!event || event.length == 0) {
     return {};
   }
@@ -150,7 +150,7 @@ async function parseChore(event) {
         eventData.frequency = "Daily";
         break;
       case "WEEKLY":
-        if (eventData.frequency.includes("INTERVAL=2")) {
+        if (freq.includes("INTERVAL=2")) {
           eventData.frequency = "Biweekly";
         } else {
           eventData.frequency = "Weekly";
@@ -185,6 +185,75 @@ async function parseChore(event) {
   return eventData;
 }
 
+function parseEvent(event) {
+  let eventData = {
+    eventId: event.id,
+    eventName: event.summary,
+    startDatetime: event.start.dateTime,
+    endDatetime: event.end.dateTime,
+  };
+
+  if (event.description) {
+    eventData.description = event.description;
+  }
+
+  if (event.attendees) {
+    let assignees = [];
+    functions.logger.log(event.attendees);
+    for (const attendee of event.attendees) {
+      const uuid = getUuidFromEmail(attendee.email);
+      assignees.push(uuid);
+    }
+    eventData.guests = assignees;
+  }
+
+  // functions.logger.log(eventData);
+  return eventData;
+}
+
+// returns the day of week of an inputDate
+function findDayOfWeek(inputDate) {
+  const date = new Date(inputDate);
+  const dayOfWeek = date.getDay();
+  const daysOfWeek = ["SU", "MO", "TU", "WE", "TH", "FR", "SA"];
+  return daysOfWeek[dayOfWeek];
+}
+
+// format endRecurrenceDate if not null
+function formatEndRecurrenceDate(endRecurrenceDate) {
+  if (!endRecurrenceDate) {
+    return "";
+  }
+
+  return ";UNTIL=" + endRecurrenceDate.replace(/-/g, "");
+}
+
+// format recurrence string for Gcal event object
+function formatRecurrence(frequency, date, endRecurrenceDate) {
+  switch (frequency) {
+    case "Once":
+      return;
+    case "Daily": {
+      return "RRULE:FREQ=DAILY" + formatEndRecurrenceDate(endRecurrenceDate);
+    }
+    case "Weekly": {
+      return "RRULE:FREQ=WEEKLY" + formatEndRecurrenceDate(endRecurrenceDate) +
+              ";BYDAY=" + findDayOfWeek(date);
+    }
+    case "Biweekly": {
+      return "RRULE:FREQ=WEEKLY;WKST=MO" + formatEndRecurrenceDate(endRecurrenceDate) +
+              ";INTERVAL=2;BYDAY=" + findDayOfWeek(date);
+    }
+    case "Monthly": {
+      return "RRULE:FREQ=MONTHLY" + formatEndRecurrenceDate(endRecurrenceDate);
+    }
+    default:
+      throw new functions.https.HttpsError(
+        "invalid input: frequency can only be strings in {Once, Daily, Weekly, Biweekly, Monthly}"
+      );
+  }
+}
+
 /* REQUIRES: token, instanceId
  * RETURNS: chore = {instanceId, eventName, date, frequency, (description), (assignedRoommates)}
  * assignedRoommates = [uuid]
@@ -216,7 +285,7 @@ async function getChoreHelper(instanceId, calendar) {
     functions.logger.log("No event found.");
     return {};
   }
-  const output = await parseChore(event);
+  const output = await parseChore(instanceId, event);
   return output;
 }
 
@@ -224,6 +293,8 @@ async function getChoreHelper(instanceId, calendar) {
  * RETURNS: event
  */
 async function addHelper(calendarId, eventInput, calendar) {
+  functions.logger.log(eventInput);
+
   let res = {};
   try {
     res = await calendar.events.insert({
@@ -407,7 +478,7 @@ async function getChoresBody(data, context) {
   return { status: true, chores: eventsOutput };
 }
 const getChores = functions.https.onCall(async (data, context) => {
-  return await getChores(data, context);
+  return await getChoresBody(data, context);
 });
 
 /* REQUIRES: token, eventName, date, frequency
@@ -447,62 +518,7 @@ async function addChoreBody(data, context) {
   eventInput.start.date = data.date;
   eventInput.end.date = data.date;
 
-  // returns the day of week of an inputDate
-  function findDayOfWeek(inputDate) {
-    const date = new Date(inputDate);
-    const dayOfWeek = date.getDay();
-    const daysOfWeek = ["SU", "MO", "TU", "WE", "TH", "FR", "SA"];
-    return daysOfWeek[dayOfWeek];
-  }
-
-  // format endRecurrenceDate if not null
-  function formatEndRecurrenceDate(endRecurrenceDate) {
-    if (!endRecurrenceDate) {
-      return "";
-    }
-
-    return ";UNTIL=" + data.endRecurrenceDate.replace(/-/g, "");
-  }
-
-  // add recurrence if necessary
-  switch (data.frequency) {
-    case "Once":
-      break;
-    case "Daily": {
-      const dailyInput =
-        "RRULE:FREQ=DAILY" + formatEndRecurrenceDate(data.endRecurrenceDate);
-      eventInput.recurrence = [dailyInput];
-      break;
-    }
-    case "Weekly": {
-      const weeklyInput =
-        "RRULE:FREQ=WEEKLY" +
-        formatEndRecurrenceDate(data.endRecurrenceDate) +
-        ";BYDAY=" +
-        findDayOfWeek(data.date);
-      eventInput.recurrence = [weeklyInput];
-      break;
-    }
-    case "Biweekly": {
-      const biweeklyInput =
-        "RRULE:FREQ=WEEKLY;WKST=MO" +
-        formatEndRecurrenceDate(data.endRecurrenceDate) +
-        ";INTERVAL=2;BYDAY=" +
-        findDayOfWeek(data.date);
-      eventInput.recurrence = [biweeklyInput];
-      break;
-    }
-    case "Monthly": {
-      const monthlyInput =
-        "RRULE:FREQ=MONTHLY" + formatEndRecurrenceDate(data.endRecurrenceDate);
-      eventInput.recurrence = [monthlyInput];
-      break;
-    }
-    default:
-      throw new functions.https.HttpsError(
-        "invalid input: frequency can only be strings in {Once, Daily, Weekly, Biweekly, Monthly}"
-      );
-  }
+  eventInput.recurrence = formatRecurrence(data.frequency, data.date, data.endRecurrenceDate);
 
   // add description
   if (data.description) {
@@ -513,8 +529,8 @@ async function addChoreBody(data, context) {
   if (data.attendees) {
     let attendees = [];
     for (const attendee of data.attendees) {
-      // double check that these are valid emails
-      attendees.push({ email: attendee });
+      const email = await getEmailFromUuid(attendee);
+      attendees.push({ email: email });
     }
     eventInput.attendees = attendees;
   }
@@ -555,6 +571,15 @@ const addChore = functions.https.onCall(async (data, context) => {
   return await addChoreBody(data, context);
 });
 
+/* REQUIRES: token, instanceId
+ * OPTIONAL: eventName, date, frequency, endRecurrenceDate, description, assignedRoommates
+ * MODIFIES: RoomieMatter Chore calendar
+ * EFFECTS: modifies all instances of a chore on RoomieMatter Chore calendar
+ * RETURNS: status, chore
+ * 
+ * requirement: change date and frequency together
+ */
+
 async function editChoreBody(data, context) {
   const calendar = createOAuth(context.auth, data.token);
 
@@ -589,18 +614,13 @@ async function editChoreBody(data, context) {
     functions.logger.log("Expects both date and frequency if any changes");
   }
 
-  if (data.date) {
-    eventInput.start = {};
-    eventInput.end = {};
-    eventInput.start.date = data.date;
-    eventInput.end.date = data.date;
-    // TODO: change recurrence rule too
+  if (data.date && data.frequency) {
+    input.start = {};
+    input.end = {};
+    input.start.date = data.date;
+    input.end.date = data.date;
+    input.recurrence = formatRecurrence(data.frequency, data.date, data.endRecurrenceDate);
   }
-
-  // TODO: frequency, endRecurrenceDate
-  // **no end recurrence date
-  // 1) get current chore to get frequency then modify recurrence
-  // 2) require to change both date and frequency together
 
   if (data.description) {
     input.summary = data.description;
@@ -608,11 +628,10 @@ async function editChoreBody(data, context) {
   if (data.assignedRoommates) {
     let attendees = [];
     for (const attendee of data.assignedRoommates) {
-      // double check that these are valid emails
-      // TODO: convert UUID to email
-      attendees.push({ email: attendee });
+      const email = await getEmailFromUuid(attendee);
+      attendees.push({ email: email });
     }
-    eventInput.attendees = attendees;
+    input.attendees = attendees;
   }
 
   // call API to patch event
@@ -631,102 +650,11 @@ async function editChoreBody(data, context) {
     return { status: false };
   }
 
-  const output = await parseChore(res.data);
+  const output = await parseChore(data.instanceId, res.data);
   return { status: true, chore: output };
 }
 const editChore = functions.https.onCall(async (data, context) => {
   return await editChoreBody(data, context);
-});
-
-// TODO: edit chore
-/* REQUIRES: token, instanceId
- * OPTIONAL: eventName, date, frequency, endRecurrenceDate, description, assignedRoommates
- * MODIFIES: RoomieMatter Chore calendar
- * EFFECTS: modifies all instances of a chore on RoomieMatter Chore calendar
- * RETURNS: status, chore
- */
-const editChore = functions.https.onCall(async (data, context) => {
-  const calendar = createOAuth(context.auth, data.token);
-
-  if (!data.instanceId) {
-    throw new functions.https.HttpsError(
-      "invalid input: missing instanceId"
-    );
-  }
-
-  // get eventId with instanceId
-  let eventId = "";
-  try {
-    eventId = await getEventId(data.instanceId, calendar);
-  } catch (error) {
-    functions.logger.error('Error getting eventId:', error.message);
-    throw new functions.https.HttpsError(
-      "Error getting eventId:", error.message
-      );
-  }
-
-  // patch event
-  let input = {
-    calendarId: choresCalendarId,
-    eventId: eventId,
-  };
-
-  if (data.eventName) {
-    input.summary = data.eventName;
-  }
-
-  // requirement: change date and frequency together
-  if (data.date && !data.frequency || !data.date && data.frequency) {
-    functions.logger.log("Expects both date and frequency if any changes");
-  }
-
-  if (data.date) {
-    eventInput.start = {};
-    eventInput.end = {};
-    eventInput.start.date = data.date;
-    eventInput.end.date = data.date;
-    // TODO: change recurrence rule too
-  }
-
-  // TODO: frequency, endRecurrenceDate
-  // **no end recurrence date
-  // 1) get current chore to get frequency then modify recurrence
-  // 2) require to change both date and frequency together
-
-
-  if (data.description) {
-    input.summary = data.description;
-  }
-  if (data.assignedRoommates) {
-    let attendees = [];
-    for (const attendee of data.assignedRoommates) {
-      // double check that these are valid emails
-      // TODO: convert UUID to email
-      attendees.push({'email': attendee});
-    }
-    eventInput.attendees = attendees;
-  }
-  
-  // call API to patch event
-  let res = {};
-  try {
-    res = await calendar.events.patch(input);
-  } catch (error) {
-    functions.logger.error('Error editing event:', error.message);
-    throw new functions.https.HttpsError(
-      "Error editing event:", error.message
-    );
-  }
-    
-  functions.logger.log(res);
-  functions.logger.log('Successfully edited event');
-
-  if (!res.data || res.data.length == 0) {
-    return {status: false};
-  }
-
-  const output = await parseChore(res.data);
-  return {status: true, chore: output};
 });
 
 /* REQUIRES: token, instanceId
@@ -850,7 +778,7 @@ async function getEventsBody(data, context) {
   const calendar = createOAuth(context.auth, data.token);
 
   const res = await calendar.events.list({
-    calendarId: choresCalendarId,
+    calendarId: eventsCalendarId,
     timeMin: new Date().toISOString(),
     singleEvents: false,
   });
@@ -862,30 +790,6 @@ async function getEventsBody(data, context) {
   if (!events || events.length === 0) {
     functions.logger.log("No upcoming events found.");
     return { status: false };
-  }
-
-  function parseEvent(event) {
-    let eventData = {
-      eventId: eventId,
-      eventName: event.summary,
-      date: event.start.date,
-    };
-
-    if (event.description) {
-      eventData.description = event.description;
-    }
-
-    if (event.attendees) {
-      let assignees = [];
-      functions.logger.log(event.attendees);
-      for (const attendee of event.attendees) {
-        assignees.push(attendee.email);
-      }
-      eventData.guests = assignees;
-    }
-
-    // functions.logger.log(eventData);
-    return eventData;
   }
 
   let eventsOutput = [];
@@ -920,8 +824,8 @@ const getEvents = functions.https.onCall(async (data, context) => {
 async function addEventBody(data, context) {
   const calendar = createOAuth(context.auth, data.token);
 
-  // make sure eventName, date, frequency are not empty
-  if (!data.eventName || !data.eventName.trim() || !data.date) {
+  // make sure eventName, startDatetime, endDatetime are not empty
+  if (!data.eventName || !data.eventName.trim() || !data.startDatetime || !data.endDatetime) {
     throw new functions.https.HttpsError(
       "invalid input: eventName or date is empty"
     );
@@ -942,9 +846,9 @@ async function addEventBody(data, context) {
     );
   }
 
-  eventInput.start.date = data.startDatetime;
+  eventInput.start.dateTime = data.startDatetime;
   eventInput.start.timeZone = "America/New_York";
-  eventInput.end.date = data.endDatetime;
+  eventInput.end.dateTime = data.endDatetime;
   eventInput.end.timeZone = "America/New_York";
 
   // add description
@@ -956,8 +860,8 @@ async function addEventBody(data, context) {
   if (data.attendees) {
     let attendees = [];
     for (const attendee of data.attendees) {
-      // double check that these are valid emails
-      attendees.push({ email: attendee });
+      const email = await getEmailFromUuid(attendee);
+      attendees.push({ email: email });
     }
     eventInput.attendees = attendees;
   }
@@ -970,15 +874,91 @@ async function addEventBody(data, context) {
     throw new functions.https.HttpsError("Error adding event:", error.message);
   }
 
-  return { status: true, instanceId: event.id };
+  return { status: true, eventId: event.id };
 }
 const addEvent = functions.https.onCall(async (data, context) => {
   return await addEventBody(data, context);
 });
 
+/* REQUIRES: token, eventId
+ * OPTIONAL: eventName, startDatetime, endDatetime, description, guests
+ * MODIFIES: RoomieMatter Event calendar
+ * EFFECTS: modifies an event on RoomieMatter Event calendar
+ * RETURNS: status, event
+ * 
+ * requirement: both startDatetime and endDatetime has to be present if changing one of the fields
+ */
 async function editEventBody(data, context) {
-  // const calendar = createOAuth(context.auth, data.token);
-  // return {status: true, instanceId: event.id};
+  const calendar = createOAuth(context.auth, data.token);
+
+  functions.logger.log(data);
+
+  if (!data.eventId) {
+    throw new functions.https.HttpsError("invalid input: missing eventId");
+  }
+
+  // patch event
+  let input = {
+    calendarId: eventsCalendarId,
+    eventId: data.eventId,
+  };
+
+  if (data.eventName) {
+    input.summary = data.eventName;
+  }
+
+  // requirement: change startDatetime and endDatetime together
+  if ((data.startDatetime && !data.endDatetime) || (!data.startDatetime && data.endDatetime)) {
+    functions.logger.log("Expects both startDatetime and endDatetime if any changes");
+  }
+
+  if (data.startDatetime && data.endDatetime) {
+    // check if valid start and end datetime
+    if (new Date(data.startDatetime) >= new Date(data.endDatetime)) {
+      throw new functions.https.HttpsError(
+        "invalid input: startDateTime not less than endDateTime"
+      );
+    }
+    input.start = {};
+    input.end = {};
+    input.start.dateTime = data.startDatetime;
+    input.start.timeZone = "America/New_York";
+    input.end.dateTime = data.endDatetime;
+    input.end.timeZone = "America/New_York";
+  }
+
+  if (data.description) {
+    input.description = data.description;
+  }
+  if (data.guests) {
+    let attendees = [];
+    for (const attendee of data.guests) {
+      const email = await getEmailFromUuid(attendee);
+      attendees.push({ email: email });
+    }
+    input.attendees = attendees;
+  }
+
+  functions.logger.log(input);
+
+  // call API to patch event
+  let res = {};
+  try {
+    res = await calendar.events.patch(input);
+  } catch (error) {
+    functions.logger.error("Error editing event:", error.message);
+    throw new functions.https.HttpsError("Error editing event:", error.message);
+  }
+
+  functions.logger.log(res);
+  functions.logger.log("Successfully edited event");
+
+  if (!res.data || res.data.length == 0) {
+    return { status: false };
+  }
+
+  const output = await parseEvent(res.data);
+  return { status: true, event: output };
 }
 const editEvent = functions.https.onCall(async (data, context) => {
   return await editEventBody(data, context);
