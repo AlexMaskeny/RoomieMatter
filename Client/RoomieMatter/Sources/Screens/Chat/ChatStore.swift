@@ -8,7 +8,7 @@
 import SwiftUI
 import FirebaseFunctions
 import Observation
-
+import GoogleSignIn
 
 @Observable
 final class ChatStore {
@@ -28,7 +28,14 @@ final class ChatStore {
     }
     
     func sendChat(msg: String) {
+        guard let user = GIDSignIn.sharedInstance.currentUser else {
+            print("User not properly signed in")
+            return
+        }
+        let token = user.accessToken.tokenString
+        
         let params = [
+            "token": token,
             "userId": authViewModel.user_uid,
             "roomId": authViewModel.room_id,
             "content": msg

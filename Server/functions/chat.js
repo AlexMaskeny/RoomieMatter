@@ -420,6 +420,7 @@ const sendChat = functions.https.onCall(async (data, context) => {
       .update({
         typing: admin.firestore.FieldValue.arrayUnion("gpt"),
       });
+    functions.logger.log("Check 1");
 
     //Get the history and format it for GPT.
     //This history contains the message just sent because we await its insertion
@@ -430,6 +431,7 @@ const sendChat = functions.https.onCall(async (data, context) => {
       .get();
     const plainHistory = history.docs.map((doc) => doc.data());
     const formattedHistory = formatHistoryForGPT(plainHistory);
+    functions.logger.log(formattedHistory);
 
     let gptAPIObject = {
       model: settings.model,
@@ -460,6 +462,7 @@ const sendChat = functions.https.onCall(async (data, context) => {
         return formattedFunc;
       });
     }
+    functions.logger.log(gptAPIObject);
 
     const response = await openai.chat.completions.create(gptAPIObject);
     functions.logger.log(response);
