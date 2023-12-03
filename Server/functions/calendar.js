@@ -1,5 +1,8 @@
 const functions = require("firebase-functions");
+const admin = require("firebase-admin");
 const { google } = require("googleapis");
+
+const db = admin.firestore();
 
 choresCalendarId = "c_5df0bf9c096fe8c9bf0a70fc19f1cf28dae8901ff0fcab98989a0445fb052625@group.calendar.google.com";
 eventsCalendarId = "c_13e412c22da53bac13e80008fedb53d172b8ac55ab3d4c838bf5a1b739a66d26@group.calendar.google.com";
@@ -17,6 +20,18 @@ function createOAuth(auth, tokenInput) {
   const oAuth2Client = new google.auth.OAuth2();
   oAuth2Client.setCredentials({ access_token: token });
   return google.calendar({ version: "v3", auth: oAuth2Client });
+}
+
+async function getUuidFromEmail(email) {
+  const user = await db
+  .collection("users")
+  .where("email", "==", email)
+  .get();
+
+  //This is an array because email isn't the primary index (duplicates are allowed)
+  const plainUser = user.docs.map((doc) => doc.data()); 
+
+  return plainUser[0].uuid;
 }
 
 /* REQUIRES: instanceId
@@ -278,7 +293,7 @@ const getChore = functions.https.onCall(async (data, context) => {
  * RETURNS: status, [chore]
  *          chore = {instanceId, eventName, date, frequency, (description), (assignedRoommates)}
  */
-const getChores = functions.https.onCall(async (data, context) => {
+async function getChoresBody (data, context) {
   const calendar = createOAuth(context.auth, data.token);
 
   const res = await calendar.events.list({
@@ -365,6 +380,9 @@ const getChores = functions.https.onCall(async (data, context) => {
   }
 
   return { status: true, chores: eventsOutput };
+}
+const getChores = functions.https.onCall(async (data, context) => {
+  return await getChores(data, context);
 });
 
 /* REQUIRES: token, eventName, date, frequency
@@ -377,7 +395,8 @@ const getChores = functions.https.onCall(async (data, context) => {
  * if frequency == Once, endRecurrenceDate is ignored
  * example date: "2023-12-01"
 */
-const addChore = functions.https.onCall(async (data, context) => {
+
+async function addChoresBody (data, context) {
   const calendar = createOAuth(context.auth, data.token);
 
   // make sure eventName, date, frequency are not empty
@@ -490,6 +509,9 @@ const addChore = functions.https.onCall(async (data, context) => {
   }
   
   return {status: true, instanceId: instanceId};
+}
+const addChore = functions.https.onCall(async (data, context) => {
+  return await addChoresBody(data, context);
 });
 
 /* REQUIRES: token, instanceId
@@ -745,5 +767,5 @@ const deleteEvent = functions.https.onCall(async (data, context) => {
   return {status: true};
 });
 
-module.exports = { getChore, getChores, addChore, completeChore, deleteChore, 
-                    getEvents, addEvent, deleteEvent };
+module.exports = { getChore, getChores, addChore, completeChore, deleteChore, getChoresBody, addChoresBody, 
+                 getEvents, addEvent, deleteEvent};
