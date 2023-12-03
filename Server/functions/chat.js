@@ -1,7 +1,19 @@
 const functions = require("firebase-functions");
 const admin = require("firebase-admin");
 const { OpenAI } = require("openai");
-const { getChoresBody, addChoresBody } = require("./calendar");
+const {
+  getChoresBody,
+  addChoreBody,
+  editChoreBody,
+  completeChoreBody,
+  deleteChoreBody,
+  getEventsBody,
+  addEventBody,
+  editEventBody,
+  completeEventBody,
+  deleteEventBody,
+} = require("./calendar");
+const { capitalizeFirstLetter, americanDateFormatter } = require("./utils");
 
 //We have to enforce that @Housekeeper cannot be sent in the chat
 //while gpt is typing. Also, only display role type "user" or "assistant" or "roommate"
@@ -38,22 +50,6 @@ const db = admin.firestore();
 const openai = new OpenAI({
   apiKey: "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",
 });
-
-//Takes a date object and turns it into MM/DD/YYYY format
-function americanDateFormatter(date) {
-  // Get the month, day, and year from the Date object
-  let month = date.getMonth() + 1; // getMonth() returns 0-11
-  let day = date.getDate();
-  const year = date.getFullYear();
-
-  // Format the month and day to ensure two digits
-  month = month < 10 ? "0" + month : month;
-  day = day < 10 ? "0" + day : day;
-
-  // Concatenate to get the date in MM/DD/YYYY format
-  const formattedDate = month + "/" + day + "/" + year;
-  return formattedDate;
-}
 
 //Context here is defined by us. It is special and contains things like userId, roomId, chatId (of the sent chat), etc
 //I'm making all of these async to make it easy to add them in the sendChat function
@@ -93,7 +89,15 @@ async function getFunctions(context) {
     }
   }
 
-  /* ============== [ CHANGE STATUS ] ============== */
+  //Get all the chores & event.
+  const allChores = (
+    await getChoresBody({ token: context.token }, context.context)
+  ).chores;
+  const allEvents = (
+    await getEventsBody({ token: context.token }, context.context)
+  ).events;
+
+  /* ============== [ FUNC: CHANGE STATUS ] ============== */
   {
     apiFunctions.push({
       name: "changeStatus",
@@ -127,7 +131,7 @@ async function getFunctions(context) {
     });
   }
 
-  /* ============== [ GET STATUS(S) ] ============== */
+  /* ============== [ FUNC: GET STATUS(S) ] ============== */
   {
     apiFunctions.push({
       name: "getStatus",
@@ -174,52 +178,51 @@ async function getFunctions(context) {
     });
   }
 
-  /* ============== [ GET CHORE(S) ] =============*/
-  {
-    const allChores = await getChoresBody(
-      { token: context.token },
-      context.context
-    );
+  const CALENDAR_ITEM_TYPE = { event: "event", chore: "chore" };
+
+  /* ============== [ HELPER: CREATE GET CALENDAR ITEM(S) ] =============*/
+  const createGetCalendarItems = (type) => {
+    const allItems = type === CALENDAR_ITEM_TYPE.chore ? allChores : allEvents;
 
     apiFunctions.push({
-      name: "getChores",
+      name: `get${capitalizeFirstLetter(type)}`,
       description:
-        "The user will attempt to identify one or more chores using plain text. The plain text contains at least 1 " +
-        "parameter that can be used to identify a list of chores. This list will be returned and will contain a " +
+        `The user will attempt to identify one or more ${type}s using plain text. The plain text contains at least 1 ` +
+        `parameter that can be used to identify a list of ${type}s. This list will be returned and will contain a ` +
         "eventName parameter for each element. Always include that parameter in your response",
       parameters: {
         type: "object",
         properties: {
           eventName: {
             type: "string",
-            description: "The name of the chore",
-            enum: allChores.eventsData.map((chore) => chore.eventName),
+            description: `The name of the ${type}`,
+            enum: allItems.map((item) => item.eventName),
           },
           date: {
             type: "string",
-            description: `The chore's date in MM/DD/YYYY format. For relative dates (like 'tomorrow') the current date is ${americanDateFormatter(
+            description: `The ${type}'s date in MM/DD/YYYY format. For relative dates (like 'tomorrow') the current date is ${americanDateFormatter(
               now
             )}`,
           },
           status: {
             type: "boolean",
-            description: "True if the chore is completed. False if not",
+            description: `True if the ${type} chore is completed. False if not`,
           },
         },
       },
       func: async ({ eventName, date, status = false }) => {
-        const matchingChores = allChores.eventsData.filter((chore) => {
-          const eventNameCondition = chore.eventName === eventName;
+        const matchingItems = allItems.eventsData.filter((item) => {
+          const eventNameCondition = item.eventName === eventName;
 
-          const choreDate = new Date(chore.date);
-          const dateCondition = americanDateFormatter(choreDate) === date;
+          const itemDate = new Date(item.date);
+          const dateCondition = americanDateFormatter(itemDate) === date;
 
-          const statusCondition = chore.status === status;
+          const statusCondition = item.status === status;
 
           return eventNameCondition || dateCondition || statusCondition;
         });
 
-        const formattedMatchingChores = matchingChores.map((chore) => {
+        const formattedMatchingItems = matchingItems.map((chore) => {
           const assignedRoommates = Object.entries(displayNameToUser).reduce(
             ([displayName, userInfo], acc) => {
               if (chore.assignedRoommates.includes(userInfo.uuid)) {
@@ -237,31 +240,33 @@ async function getFunctions(context) {
           };
         });
 
-        return JSON.stringify(formattedMatchingChores);
+        return JSON.stringify(formattedMatchingItems);
       },
     });
-  }
+  };
+  createGetCalendarItems(CALENDAR_ITEM_TYPE.chore); //FUNC: GET CHORE(S)
+  createGetCalendarItems(CALENDAR_ITEM_TYPE.event); //FUNC: GET EVENT(S)
 
-  /* ============== [ ADD CHORE ] =============== */
-  {
+  /* ============== [ HELPER: CREATE ADD CALENDAR ITEM ] =============== */
+  const createAddCalendarItem = (type) => {
     apiFunctions.push({
-      name: "addChore",
-      description: `Adds a chore. The current date is ${now.toISOString()}`,
+      name: `add${capitalizeFirstLetter(type)}`,
+      description: `Creates a new ${type}. The current date is ${now.toISOString()}`,
       parameters: {
         type: "object",
         properties: {
           eventName: {
             type: "string",
-            description: "The name of the chore",
+            description: `The name of the ${type}`,
           },
           date: {
             type: "string",
-            description: "The date the chore beings in ISO format.",
+            description: `The date the ${type} beings in ISO format.`,
           },
           frequency: {
             type: "string",
-            description: "How often the chore repeats",
-            enum: ["ONCE", "DAILY", "BIWEEKLY", "WEEKLY", "MONTHLY"],
+            description: `How often the ${type} repeats`,
+            enum: ["Once", "Daily", "Biweekly", "Weekly", "Monthly"],
           },
           endRecurrenceDate: {
             type: "string",
@@ -270,15 +275,16 @@ async function getFunctions(context) {
           },
           description: {
             type: "string",
-            description: "Description of the chore",
+            description: `Description of the ${type}`,
           },
           assignedRoommates: {
             type: "array",
-            description:
-              "A list of the display names of the users added to the chore",
+            description: `A list of the display names of the users added to the ${type}`,
             items: {
               type: "string",
-              description: "The display name of an assigned roommate",
+              description:
+                "The display name of an assigned roommate. The user is 'currentUser'",
+              enum: Object.keys(displayNameToUser),
             },
           },
         },
@@ -292,7 +298,7 @@ async function getFunctions(context) {
         description,
         assignedRoommates,
       }) => {
-        let addChoreData = {
+        let addItemData = {
           eventName,
           date,
           frequency,
@@ -300,27 +306,236 @@ async function getFunctions(context) {
         };
 
         if (endRecurrenceDate) {
-          addChoreData.endRecurrenceDate = endRecurrenceDate;
+          addItemData.endRecurrenceDate = endRecurrenceDate;
         }
         if (description) {
-          addChoreData.description = description;
+          addItemData.description = description;
         }
         if (assignedRoommates) {
-          addChoreData.attendees = assignedRoommates.map((attendee) => {
+          addItemData.attendees = assignedRoommates.map((attendee) => {
             const userInfo = displayNameToUser[attendee];
             return userInfo.uuid;
           });
         }
 
-        const result = await addChoresBody(addChoreData, context.context);
+        const addItemFunction =
+          type === CALENDAR_ITEM_TYPE.event ? addEventBody : addChoreBody;
+        const result = await addItemFunction(addItemData, context.context);
         if (result) {
-          return "Successfully added a new chore!";
+          return `Successfully added a new ${type}!`;
         } else {
-          return "Failed to add the chore";
+          return `Failed to add the ${type}`;
         }
       },
     });
-  }
+  };
+  createAddCalendarItem(CALENDAR_ITEM_TYPE.chore); //FUNC: ADD CHORE
+  createAddCalendarItem(CALENDAR_ITEM_TYPE.event); //FUNC: ADD EVENT
+
+  /* ============== [ HELPER: CREATE EDIT CALENDAR ITEM ] ============== */
+  const createEditCalendarItem = (type) => {
+    const allItems = type === CALENDAR_ITEM_TYPE.chore ? allChores : allEvents;
+
+    apiFunctions.push({
+      name: `edit${capitalizeFirstLetter(type)}`,
+      description: `Edits an existing ${type} with at least 1 parameter. If newDate is specified a newFrequency must also be specified`,
+      parameters: {
+        type: "object",
+        properties: {
+          eventName: {
+            type: "string",
+            description: `The ${type} that the user is attempting to edit`,
+            enum: allItems.map((item) => item.eventName),
+          },
+          newEventName: {
+            type: "string",
+            description: `Specifies an updated title for the ${type}`,
+          },
+          newDate: {
+            type: "string",
+            description: `A new start date of the ${type} in ISO format. For relative dates (like 'tomorrow'), the current date is ${now.toISOString()}`,
+          },
+          newFrequency: {
+            type: "string",
+            description: `A new frequency specifying how often the ${type} repeats`,
+            enum: ["Once", "Daily", "Biweekly", "Weekly", "Monthly"],
+          },
+          description: {
+            type: "string",
+            description: `a new description of the ${type}`,
+          },
+          addedRoommates: {
+            type: "array",
+            description: `A list of the display names of the users added to the ${type}`,
+            items: {
+              type: "string",
+              description:
+                "The display name of an added roommate. The invoking user is 'currentUser'",
+              enum: Object.keys(displayNameToUser),
+            },
+          },
+          removedRoommates: {
+            type: "array",
+            description: `A list of the display names of the users removed from the ${type}`,
+            items: {
+              type: "string",
+              description:
+                "The display name of a removed roommate. The invoking user is 'currentUser'",
+              enum: Object.keys(displayNameToUser),
+            },
+          },
+        },
+        required: ["eventName"],
+      },
+      func: async ({
+        eventName,
+        newEventName,
+        newDate,
+        newFrequency,
+        description,
+        addedRoommates,
+        removedRoommates,
+      }) => {
+        const item = allItems.find((item) => item.eventName === eventName);
+        let editItemData = {
+          instanceId: item.instanceId,
+          token: context.token,
+        };
+
+        if (newEventName) {
+          editItemData.newEventName = newEventName;
+        }
+        if (newDate) {
+          editItemData.newDate = newDate;
+        }
+        if (newFrequency) {
+          editItemData.newFrequency = newFrequency;
+        }
+        if (description) {
+          editItemData.description = newEventName;
+        }
+
+        if (addedRoommates) {
+          editItemData.attendees = [
+            ...item.assignedRoommates,
+            ...addedRoommates.reduce((attendee, acc) => {
+              const userInfo = displayNameToUser[attendee];
+              if (item.assignedRoommates.includes(userInfo.uuid)) {
+                return acc;
+              } else {
+                return [...acc, userInfo.uuid];
+              }
+            }, []),
+          ];
+        }
+
+        if (removedRoommates) {
+          const removedRoommatesUuids = removedRoommates.map((attendee) => {
+            const userInfo = displayNameToUser[attendee];
+            return userInfo.uuid;
+          });
+          editItemData.attendees = item.assignedRoommates.filter(
+            (attendeeUuid) => !removedRoommatesUuids.includes(attendeeUuid)
+          );
+        }
+
+        const editItemFunction =
+          type === CALENDAR_ITEM_TYPE.event ? editEventBody : editChoreBody;
+        const result = await editItemFunction(editItemData, context.context);
+        if (result) {
+          return `Successfully edited the ${eventName} ${type}!`;
+        } else {
+          return `Failed to edit the ${eventName} ${type}`;
+        }
+      },
+    });
+  };
+  createEditCalendarItem(CALENDAR_ITEM_TYPE.chore); //FUNC: EDIT CHORE
+  createEditCalendarItem(CALENDAR_ITEM_TYPE.event); //FUNC: EDIT EVENT
+
+  /* ============== [ HELPER: CREATE COMPLETE CALENDAR ITEM ] ============== */
+  const createCompleteChoreBody = (type) => {
+    const allItems = type === CALENDAR_ITEM_TYPE.chore ? allChores : allEvents;
+
+    apiFunctions.push({
+      name: `complete${capitalizeFirstLetter(type)}`,
+      description: `Marks an existing ${type} as completed`,
+      parameters: {
+        type: "object",
+        properties: {
+          eventName: {
+            type: "string",
+            description: `The ${type} that the user is attempting to mark as completed`,
+            enum: allItems.map((item) => item.eventName),
+          },
+        },
+        required: ["eventName"],
+      },
+      func: async ({ eventName }) => {
+        const completeItemFunction =
+          type === CALENDAR_ITEM_TYPE.event
+            ? completeChoreBody
+            : completeEventBody;
+        const item = allItems.find((item) => item.eventName === eventName);
+        const completeItemData = {
+          instanceId: item.instanceId,
+          token: context.token,
+        };
+        const result = await completeItemFunction(
+          completeItemData,
+          context.context
+        );
+        if (result) {
+          return `Successfully marked the ${eventName} ${type} as completed`;
+        } else {
+          return `Failed to mark the ${eventName} ${type} as completed`;
+        }
+      },
+    });
+  };
+  createCompleteChoreBody(CALENDAR_ITEM_TYPE.chore); //FUNC: COMPLETE CHORE
+  createCompleteChoreBody(CALENDAR_ITEM_TYPE.event); //FUNC: COMPLETE EVENT
+
+  /* ============== [ HELPER: CREATE DELETE CALENDAR ITEM ] ============== */
+  const createDeleteCalendarItem = (type) => {
+    const allItems = type === CALENDAR_ITEM_TYPE.chore ? allChores : allEvents;
+
+    apiFunctions.push({
+      name: `delete${capitalizeFirstLetter(type)}`,
+      description: `Deletes an existing ${type}`,
+      parameters: {
+        type: "object",
+        properties: {
+          eventName: {
+            type: "string",
+            description: `The ${type} that the user is attempting to delete`,
+            enum: allItems.map((item) => item.eventName),
+          },
+        },
+        required: ["eventName"],
+      },
+      func: async ({ eventName }) => {
+        const deleteItemFunction =
+          type === CALENDAR_ITEM_TYPE.event ? deleteChoreBody : deleteEventBody;
+        const item = allItems.find((item) => item.eventName === eventName);
+        const deleteItemData = {
+          instanceId: item.instanceId,
+          token: context.token,
+        };
+        const result = await deleteItemFunction(
+          deleteItemData,
+          context.context
+        );
+        if (result) {
+          return `Successfully deleted the ${eventName} ${type}`;
+        } else {
+          return `Failed to delete the ${eventName} ${type}`;
+        }
+      },
+    });
+  };
+  createDeleteCalendarItem(CALENDAR_ITEM_TYPE.chore); //FUNC: DELETE CHORE
+  createDeleteCalendarItem(CALENDAR_ITEM_TYPE.event); //FUNC: DELETE EVENT
 
   return apiFunctions;
 }

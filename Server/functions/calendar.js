@@ -805,7 +805,7 @@ async function getEventsBody(data, context) {
 
   functions.logger.log(eventsOutput);
 
-  return { status: true, chores: eventsOutput };
+  return { status: true, events: eventsOutput };
 }
 const getEvents = functions.https.onCall(async (data, context) => {
   return await getEventsBody(data, context);
