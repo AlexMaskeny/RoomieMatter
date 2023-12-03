@@ -684,10 +684,7 @@ const sendChat = functions.https.onCall(async (data, context) => {
 
     if (!response) {
       stopGPTTyping(roomId);
-      throw new functions.https.HttpsError(
-        "internal",
-        "Error thrown by OpenAI"
-      );
+      throw "Error thrown by OpenAI";
     }
 
     const prompt_tokens = response.usage?.prompt_tokens;
@@ -716,7 +713,7 @@ const sendChat = functions.https.onCall(async (data, context) => {
       role: response_role,
       numTokens: prompt_tokens + completion_tokens,
       content: completion.content,
-      function_call: completion.function_call,
+      function_call: completion.function_call ?? "",
       createdAt: admin.firestore.FieldValue.serverTimestamp(),
     });
 
@@ -789,7 +786,10 @@ const sendChat = functions.https.onCall(async (data, context) => {
   } catch (error) {
     functions.logger.log(error);
     stopGPTTyping(roomId);
-    throw new functions.https.HttpsError("internal", "Error thrown by OpenAI");
+    throw new functions.https.HttpsError(
+      "internal",
+      "Error when calling OpenAI"
+    );
   }
 });
 
