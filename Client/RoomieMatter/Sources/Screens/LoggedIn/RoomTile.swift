@@ -13,12 +13,12 @@ struct TileView: View {
     var roomName: String
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
+            Text(roomName)
+                .font(.title)
+                .fontWeight(.bold)
+                .padding(.horizontal, 16)
             HStack() {
                 VStack() {
-                    Text(roomName)
-                        .font(.title)
-                        .fontWeight(.bold)
-                        .padding(.horizontal, 16)
                     HStack {
                         Text("Created by")
                             .italic()

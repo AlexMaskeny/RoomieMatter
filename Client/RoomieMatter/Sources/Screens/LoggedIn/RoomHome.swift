@@ -35,8 +35,13 @@ struct RoomHome: View {
             // Current rooms tiles
             ScrollView {
                 // Include your TileView here for each room
-                TileView(creatorName: "Anish Sundaram", roomName: "1316 Geddes")
-                    .padding(.vertical, 8)
+                HStack {
+                    Spacer()
+                    TileView(creatorName: "Anish Sundaram", roomName: "1316 Geddes")
+                        .padding(.vertical, 8)
+                    Spacer()
+                }
+                
                 
                 // Add more TileView instances for each room
                 
