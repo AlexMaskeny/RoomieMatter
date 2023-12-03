@@ -10,6 +10,8 @@ const choresCalendarId =
 const eventsCalendarId =
   "c_13e412c22da53bac13e80008fedb53d172b8ac55ab3d4c838bf5a1b739a66d26@group.calendar.google.com";
 
+/* HELPER FUNCTIONS */
+
 function createOAuth(auth, tokenInput) {
   if (!auth) {
     throw new functions.https.HttpsError(
@@ -214,7 +216,6 @@ async function getChoreHelper(instanceId, calendar) {
     functions.logger.log("No event found.");
     return {};
   }
-
   const output = await parseChore(event);
   return output;
 }
@@ -276,11 +277,14 @@ async function deleteHelper(calendarId, eventId, calendar) {
   return;
 }
 
+/* CHORES FUNCTIONS */
+
 /* REQUIRES: token, instanceId
  * MODIFIES: nothing
  * EFFECTS: returns details of a chore instance on RoomieMatter Chore calendar
  * RETURNS: status, chore
  *          chore = {instanceId, eventName, date, frequency, (description), (assignedRoommates)}
+ *          assignedRoommates = [uuid]
  */
 async function getChoreBody(data, context) {
   const calendar = createOAuth(context.auth, data.token);
@@ -310,6 +314,7 @@ const getChore = functions.https.onCall(async (data, context) => {
  * EFFECTS: returns list of chores from RoomieMatter Chore calendar
  * RETURNS: status, [chore]
  *          chore = {instanceId, eventName, date, frequency, (description), (assignedRoommates)}
+ *          assignedRoommates = [uuid]
  */
 async function getChoresBody(data, context) {
   const calendar = createOAuth(context.auth, data.token);
@@ -633,6 +638,97 @@ const editChore = functions.https.onCall(async (data, context) => {
   return await editChoreBody(data, context);
 });
 
+// TODO: edit chore
+/* REQUIRES: token, instanceId
+ * OPTIONAL: eventName, date, frequency, endRecurrenceDate, description, assignedRoommates
+ * MODIFIES: RoomieMatter Chore calendar
+ * EFFECTS: modifies all instances of a chore on RoomieMatter Chore calendar
+ * RETURNS: status, chore
+ */
+const editChore = functions.https.onCall(async (data, context) => {
+  const calendar = createOAuth(context.auth, data.token);
+
+  if (!data.instanceId) {
+    throw new functions.https.HttpsError(
+      "invalid input: missing instanceId"
+    );
+  }
+
+  // get eventId with instanceId
+  let eventId = "";
+  try {
+    eventId = await getEventId(data.instanceId, calendar);
+  } catch (error) {
+    functions.logger.error('Error getting eventId:', error.message);
+    throw new functions.https.HttpsError(
+      "Error getting eventId:", error.message
+      );
+  }
+
+  // patch event
+  let input = {
+    calendarId: choresCalendarId,
+    eventId: eventId,
+  };
+
+  if (data.eventName) {
+    input.summary = data.eventName;
+  }
+
+  // requirement: change date and frequency together
+  if (data.date && !data.frequency || !data.date && data.frequency) {
+    functions.logger.log("Expects both date and frequency if any changes");
+  }
+
+  if (data.date) {
+    eventInput.start = {};
+    eventInput.end = {};
+    eventInput.start.date = data.date;
+    eventInput.end.date = data.date;
+    // TODO: change recurrence rule too
+  }
+
+  // TODO: frequency, endRecurrenceDate
+  // **no end recurrence date
+  // 1) get current chore to get frequency then modify recurrence
+  // 2) require to change both date and frequency together
+
+
+  if (data.description) {
+    input.summary = data.description;
+  }
+  if (data.assignedRoommates) {
+    let attendees = [];
+    for (const attendee of data.assignedRoommates) {
+      // double check that these are valid emails
+      // TODO: convert UUID to email
+      attendees.push({'email': attendee});
+    }
+    eventInput.attendees = attendees;
+  }
+  
+  // call API to patch event
+  let res = {};
+  try {
+    res = await calendar.events.patch(input);
+  } catch (error) {
+    functions.logger.error('Error editing event:', error.message);
+    throw new functions.https.HttpsError(
+      "Error editing event:", error.message
+    );
+  }
+    
+  functions.logger.log(res);
+  functions.logger.log('Successfully edited event');
+
+  if (!res.data || res.data.length == 0) {
+    return {status: false};
+  }
+
+  const output = await parseChore(res.data);
+  return {status: true, chore: output};
+});
+
 /* REQUIRES: token, instanceId
  * MODIFIES: RoomieMatter Chore calendar
  * EFFECTS: delete one instance of a chore on RoomieMatter Chore calendar
@@ -741,6 +837,8 @@ async function deleteChoreBody(data, context) {
 const deleteChore = functions.https.onCall(async (data, context) => {
   return await deleteChoreBody(data, context);
 });
+
+/* EVENTS FUNCTIONS */
 
 /* REQUIRES: token
  * MODIFIES: nothing
