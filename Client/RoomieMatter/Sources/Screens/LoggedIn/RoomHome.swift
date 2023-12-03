@@ -24,7 +24,7 @@ struct RoomHome: View {
                     .padding(.trailing, 16)
             }
             .padding()
-            .background(Color.blue)
+            .background(Color.roomieMatter)
             
             // Your Rooms label
             Text("Your Rooms")
@@ -53,7 +53,7 @@ struct RoomHome: View {
                     .font(.headline)
                     .foregroundColor(.white)
                     .padding()
-                    .background(RoundedRectangle(cornerRadius: 10).fill(Color.blue))
+                    .background(RoundedRectangle(cornerRadius: 10).fill(Color.roomieMatter))
             }
             .padding()
         }
