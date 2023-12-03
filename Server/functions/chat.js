@@ -41,7 +41,7 @@ const openai = new OpenAI({
 });
 
 //Takes a date object and turns it into MM/DD/YYYY format
-const americanDateFormatter = (date) => {
+function americanDateFormatter (date) {
   // Get the month, day, and year from the Date object
   let month = date.getMonth() + 1; // getMonth() returns 0-11
   let day = date.getDate();
@@ -177,7 +177,7 @@ async function getFunctions (context) {
 
   /* ============== [ GET CHORE(S) ] =============*/
   {
-    const allChores = await getChoresBody(context.token);
+    const allChores = await getChoresBody({token: context.token}, context.context);
   
     apiFunctions.push({
       name: "getChores",
@@ -255,7 +255,7 @@ async function getFunctions (context) {
           },
           date: {
             type: "string",
-            description: "The chore's date in ISO format."
+            description: "The date the chore beings in ISO format."
           },
           frequency: {
             type: "string",
@@ -264,7 +264,7 @@ async function getFunctions (context) {
           },
           endRecurrenceDate: {
             type: "string",
-            description: "When the recurrence specified by the frequency ends in ISO format"
+            description: "Date stating when the recurrence specified by the frequency ends in ISO format"
           },
           description: {
             type: "string",
@@ -275,25 +275,34 @@ async function getFunctions (context) {
             description: "A list of the display names of the users added to the chore",
             items: {
               type: "string",
-              description: "The display name of the assigned roommate"
+              description: "The display name of an assigned roommate"
             }
           }
         },
         required: ["eventName", "date", "frequency"]
       },
       func: async ({ eventName, date, frequency, endRecurrenceDate, description, assignedRoommates }) => {
-        const addChoreObject = {
+        let addChoreData = {
           eventName,
           date,
           frequency,
-          endRecurrenceDate,
-          description,
-          attendees: assignedRoommates.map((attendee) => {
+          token: context.token
+        }
+
+        if (endRecurrenceDate) {
+          addChoreData.endRecurrenceDate = endRecurrenceDate
+        }
+        if (description) {
+          addChoreData.description = description
+        }
+        if (assignedRoommates) {
+          addChoreData.attendees = assignedRoommates.map((attendee) => {
             const userInfo = displayNameToUser[attendee];
             return userInfo.uuid
           })
         }
-        const result = await addChoresBody(addChoreObject);
+
+        const result = await addChoresBody(addChoreData, context.context);
         if (result) {
           return "Successfully added a new chore!";
         } else {
@@ -361,19 +370,12 @@ function formatHistoryForGPT (plainHistory) {
 }
 
 const sendChat = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+  const token = data?.token;
+
+  if (!context.auth || !token) {
     throw new functions.https.HttpsError(
       "unauthenticated",
       "RoomieMatter functions can only be called by Authenticated users."
-    );
-  }
-
-  const token = data.token;
-
-  if (!token) {
-    throw new functions.https.HttpsError(
-      "unauthenticated",
-      "The Google OAuth token is invalid or missing"
     );
   }
 
@@ -445,13 +447,14 @@ const sendChat = functions.https.onCall(async (data, context) => {
       userId,
       roomId,
       token,
-      chatId: chat.id,
       content,
+      context,
+      chatId: chat.id,
     });
 
     if (apiFunctions.length > 0) {
       //This map just formats the functions to be compatible with GPT's API
-      gptAPIObject.tools = apiFunctions.map((func) => {
+      gptAPIObject.functions = apiFunctions.map((func) => {
         const formattedFunc = { ...func };
         delete formattedFunc.func;
         return formattedFunc;
