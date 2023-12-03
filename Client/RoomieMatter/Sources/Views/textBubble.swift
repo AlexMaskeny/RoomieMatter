@@ -26,25 +26,19 @@ struct TextBubble: View {
             }
 
             VStack(alignment: position == .left ? .leading : .trailing) {
-                if let username = chat.username {
-                    Text(username)
-                        .font(.system(size: 10))
-                        .foregroundColor(.gray)
-                }
+                Text(chat.username)
+                    .font(.system(size: 10))
+                    .foregroundColor(.gray)
 
-                if let timestamp = chat.timestamp {
-                    Text(dateFormatter.string(from: timestamp))
-                        .font(.system(size: 10))
-                        .foregroundColor(.gray)
-                }
+                Text(dateFormatter.string(from: chat.timestamp))
+                    .font(.system(size: 10))
+                    .foregroundColor(.gray)
 
-                if let message = chat.message {
-                    Text(message)
-                        .padding(10)
-                        .foregroundColor(.white)
-                        .background(position == .left ? Color.blue : Color.green)
-                        .cornerRadius(15)
-                }
+                Text(chat.message)
+                    .padding(10)
+                    .foregroundColor(.white)
+                    .background(position == .left ? Color.blue : Color.green)
+                    .cornerRadius(15)
             }
             .frame(maxWidth: .infinity, alignment: position == .left ? .leading : .trailing)
 
@@ -57,18 +51,18 @@ struct TextBubble: View {
 }
 
 // Preview for SwiftUI Canvas
-struct TextBubble_Previews: PreviewProvider {
-    static var previews: some View {
-        VStack {
-            TextBubble(
-                chat: Chat(username: "Alexander David Maskeny", message: "Hi David", timestamp: Date()),
-                position: .left
-            )
-            TextBubble(
-                chat: Chat(username: "David Wang", message: "Hi Alex", timestamp: Date()),
-                position: .right
-            )
-        }
-        .padding()
-    }
-}
+//struct TextBubble_Previews: PreviewProvider {
+//    static var previews: some View {
+//        VStack {
+//            TextBubble(
+//                chat: Chat(username: "Alexander David Maskeny", message: "Hi David", timestamp: Date()),
+//                position: .left
+//            )
+//            TextBubble(
+//                chat: Chat(username: "David Wang", message: "Hi Alex", timestamp: Date()),
+//                position: .right
+//            )
+//        }
+//        .padding()
+//    }
+//}

@@ -12,7 +12,7 @@ import FirebaseFirestore
 struct CalendarView: View {
     @State private var selectedDate = Date()
     @State private var events: [Event]
-    private var authViewModel = AuthenticationViewModel()
+    private var authViewModel = AuthenticationViewModel.shared
     
     init(events: [Event] = []) {
         _events = State(initialValue: events)

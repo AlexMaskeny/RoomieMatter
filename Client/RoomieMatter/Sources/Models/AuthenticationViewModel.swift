@@ -12,12 +12,14 @@ import FirebaseAuth
 import FirebaseFirestore
 
 
-@Observable final class AuthenticationViewModel {
+@Observable
+final class AuthenticationViewModel {
     var username: String?
     var user_uid: String?
     var roomname: String?
     var room_id: String?
     private var db = Firestore.firestore()
+    static let shared = AuthenticationViewModel()
     
     init() {
         fetchUser()
