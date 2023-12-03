@@ -1,7 +1,6 @@
 const functions = require("firebase-functions");
 const admin = require("firebase-admin");
 const { OpenAI } = require("openai");
-const { google } = require("googleapis");
 const { getChoresBody, addChoresBody } = require("./calendar");
 
 //We have to enforce that @Housekeeper cannot be sent in the chat
@@ -41,42 +40,42 @@ const openai = new OpenAI({
 });
 
 //Takes a date object and turns it into MM/DD/YYYY format
-function americanDateFormatter (date) {
+function americanDateFormatter(date) {
   // Get the month, day, and year from the Date object
   let month = date.getMonth() + 1; // getMonth() returns 0-11
   let day = date.getDate();
   const year = date.getFullYear();
 
   // Format the month and day to ensure two digits
-  month = month < 10 ? '0' + month : month;
-  day = day < 10 ? '0' + day : day;
+  month = month < 10 ? "0" + month : month;
+  day = day < 10 ? "0" + day : day;
 
   // Concatenate to get the date in MM/DD/YYYY format
-  const formattedDate = month + '/' + day + '/' + year;
+  const formattedDate = month + "/" + day + "/" + year;
   return formattedDate;
 }
 
 //Context here is defined by us. It is special and contains things like userId, roomId, chatId (of the sent chat), etc
 //I'm making all of these async to make it easy to add them in the sendChat function
-async function getFunctions (context) {
+async function getFunctions(context) {
   const userRef = db.collection("users").doc(context.userId);
   const roomRef = db.collection("rooms").doc(context.roomId);
 
-  //We will push each function to the array. This allows us to 
+  //We will push each function to the array. This allows us to
   //execute any commands we require to form the function
   let apiFunctions = [];
 
   const userRooms = await db
-  .collection("user_rooms")
-  .where("room", "==", roomRef)
-  .get();
+    .collection("user_rooms")
+    .where("room", "==", roomRef)
+    .get();
 
   const plainUserRooms = userRooms.docs.map((doc) => doc.data());
 
   const now = new Date();
 
   //This just defines a map of user display names to some information
-  //about them. The user sending this 
+  //about them. The user sending this
   //chat is stored as "currentUser" because they might not refer
   //to themselves in 3rd person
   let displayNameToUser = {};
@@ -177,13 +176,16 @@ async function getFunctions (context) {
 
   /* ============== [ GET CHORE(S) ] =============*/
   {
-    const allChores = await getChoresBody({token: context.token}, context.context);
-  
+    const allChores = await getChoresBody(
+      { token: context.token },
+      context.context
+    );
+
     apiFunctions.push({
       name: "getChores",
       description:
         "The user will attempt to identify one or more chores using plain text. The plain text contains at least 1 " +
-        "parameter that can be used to identify a list of chores. This list will be returned and will contain a " + 
+        "parameter that can be used to identify a list of chores. This list will be returned and will contain a " +
         "eventName parameter for each element. Always include that parameter in your response",
       parameters: {
         type: "object",
@@ -191,15 +193,17 @@ async function getFunctions (context) {
           eventName: {
             type: "string",
             description: "The name of the chore",
-            enum: allChores.eventsData.map((chore) => chore.eventName)
+            enum: allChores.eventsData.map((chore) => chore.eventName),
           },
           date: {
             type: "string",
-            description: `The chore's date in MM/DD/YYYY format. For relative dates (like 'tomorrow') the current date is ${americanDateFormatter(now)}`
+            description: `The chore's date in MM/DD/YYYY format. For relative dates (like 'tomorrow') the current date is ${americanDateFormatter(
+              now
+            )}`,
           },
           status: {
             type: "boolean",
-            description: "True if the chore is completed. False if not"
+            description: "True if the chore is completed. False if not",
           },
         },
       },
@@ -212,31 +216,29 @@ async function getFunctions (context) {
 
           const statusCondition = chore.status === status;
 
-          return (
-            eventNameCondition || dateCondition || statusCondition
-          ) 
+          return eventNameCondition || dateCondition || statusCondition;
         });
 
         const formattedMatchingChores = matchingChores.map((chore) => {
-          const assignedRoommates = Object.entries(displayNameToUser).reduce(([displayName, userInfo], acc) => {
-            if (chore.assignedRoommates.includes(userInfo.uuid)) {
-              return [
-                ...acc,
-                displayName
-              ]
-            } else {
-              return acc;
-            }
-          }, []);
+          const assignedRoommates = Object.entries(displayNameToUser).reduce(
+            ([displayName, userInfo], acc) => {
+              if (chore.assignedRoommates.includes(userInfo.uuid)) {
+                return [...acc, displayName];
+              } else {
+                return acc;
+              }
+            },
+            []
+          );
 
           return {
             ...chore,
-            assignedRoommates
-          }
-        })
+            assignedRoommates,
+          };
+        });
 
         return JSON.stringify(formattedMatchingChores);
-      }
+      },
     });
   }
 
@@ -244,8 +246,7 @@ async function getFunctions (context) {
   {
     apiFunctions.push({
       name: "addChore",
-      description:
-        `Adds a chore. The current date is ${now.toISOString()}`,
+      description: `Adds a chore. The current date is ${now.toISOString()}`,
       parameters: {
         type: "object",
         properties: {
@@ -255,68 +256,76 @@ async function getFunctions (context) {
           },
           date: {
             type: "string",
-            description: "The date the chore beings in ISO format."
+            description: "The date the chore beings in ISO format.",
           },
           frequency: {
             type: "string",
             description: "How often the chore repeats",
-            enum: ["ONCE", "DAILY", "BIWEEKLY", "WEEKLY", "MONTHLY"]
+            enum: ["ONCE", "DAILY", "BIWEEKLY", "WEEKLY", "MONTHLY"],
           },
           endRecurrenceDate: {
             type: "string",
-            description: "Date stating when the recurrence specified by the frequency ends in ISO format"
+            description:
+              "Date stating when the recurrence specified by the frequency ends in ISO format",
           },
           description: {
             type: "string",
-            description: "Description of the chore"
+            description: "Description of the chore",
           },
           assignedRoommates: {
             type: "array",
-            description: "A list of the display names of the users added to the chore",
+            description:
+              "A list of the display names of the users added to the chore",
             items: {
               type: "string",
-              description: "The display name of an assigned roommate"
-            }
-          }
+              description: "The display name of an assigned roommate",
+            },
+          },
         },
-        required: ["eventName", "date", "frequency"]
+        required: ["eventName", "date", "frequency"],
       },
-      func: async ({ eventName, date, frequency, endRecurrenceDate, description, assignedRoommates }) => {
+      func: async ({
+        eventName,
+        date,
+        frequency,
+        endRecurrenceDate,
+        description,
+        assignedRoommates,
+      }) => {
         let addChoreData = {
           eventName,
           date,
           frequency,
-          token: context.token
-        }
+          token: context.token,
+        };
 
         if (endRecurrenceDate) {
-          addChoreData.endRecurrenceDate = endRecurrenceDate
+          addChoreData.endRecurrenceDate = endRecurrenceDate;
         }
         if (description) {
-          addChoreData.description = description
+          addChoreData.description = description;
         }
         if (assignedRoommates) {
           addChoreData.attendees = assignedRoommates.map((attendee) => {
             const userInfo = displayNameToUser[attendee];
-            return userInfo.uuid
-          })
+            return userInfo.uuid;
+          });
         }
 
         const result = await addChoresBody(addChoreData, context.context);
         if (result) {
           return "Successfully added a new chore!";
         } else {
-          return "Failed to add the chore"
+          return "Failed to add the chore";
         }
-        
-      }
-    })
+      },
+    });
   }
 
   return apiFunctions;
 }
 
-function stopGPTTyping (roomId)  {
+function stopGPTTyping(roomId) {
   db.collection("room")
     .doc(roomId)
     .update({
@@ -324,7 +333,7 @@ function stopGPTTyping (roomId)  {
     });
 }
 
-function formatHistoryForGPT (plainHistory) {
+function formatHistoryForGPT(plainHistory) {
   return plainHistory.reduce((acc, historyMessage) => {
     let gptMessage = {};
     switch (historyMessage.role) {
