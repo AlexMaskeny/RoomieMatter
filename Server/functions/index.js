@@ -5,7 +5,18 @@ admin.initializeApp();
 
 const { onUserSignUp } = require("./user");
 const { sendChat, getChats } = require("./chat");
-const { getChore, getChores, addChore, editChore, completeChore, deleteChore, getEvents, addEvent, deleteEvent } = require("./calendar");
+const {
+  getChore,
+  getChores,
+  addChore,
+  editChore,
+  completeChore,
+  deleteChore,
+  getEvents,
+  addEvent,
+  editEvent,
+  deleteEvent,
+} = require("./calendar");
 
 exports.onUserSignUp = onUserSignUp;
 exports.sendChat = sendChat;
@@ -20,3 +31,4 @@ exports.getEvents = getEvents;
 exports.addEvent = addEvent;
 exports.editEvent = editEvent;
 exports.deleteEvent = deleteEvent;
+

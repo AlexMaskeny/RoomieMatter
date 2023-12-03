@@ -1,11 +1,14 @@
 const functions = require("firebase-functions");
 const admin = require("firebase-admin");
 const { google } = require("googleapis");
+const { UserDimensions } = require("firebase-functions/v1/analytics");
 
 const db = admin.firestore();
 
-choresCalendarId = "c_5df0bf9c096fe8c9bf0a70fc19f1cf28dae8901ff0fcab98989a0445fb052625@group.calendar.google.com";
-eventsCalendarId = "c_13e412c22da53bac13e80008fedb53d172b8ac55ab3d4c838bf5a1b739a66d26@group.calendar.google.com";
+const choresCalendarId =
+  "c_5df0bf9c096fe8c9bf0a70fc19f1cf28dae8901ff0fcab98989a0445fb052625@group.calendar.google.com";
+const eventsCalendarId =
+  "c_13e412c22da53bac13e80008fedb53d172b8ac55ab3d4c838bf5a1b739a66d26@group.calendar.google.com";
 
 /* HELPER FUNCTIONS */
 
@@ -24,16 +27,28 @@ function createOAuth(auth, tokenInput) {
   return google.calendar({ version: "v3", auth: oAuth2Client });
 }
 
+/*
+  REQUIRES: a string 'email'
+  RETURNS: a string 'uuid'
+*/
 async function getUuidFromEmail(email) {
-  const user = await db
-  .collection("users")
-  .where("email", "==", email)
-  .get();
+  const user = await db.collection("users").where("email", "==", email).get();
 
-  //This is an array because email isn't the primary index (duplicates are allowed)
-  const plainUser = user.docs.map((doc) => doc.data()); 
+  //This is an array because email isn't the primary key (duplicates are allowed)
+  const plainUser = user.docs.map((doc) => doc.data());
 
   return plainUser[0].uuid;
+}
+
+/*
+  REQUIRES: a string 'uuid'
+  RETURNS: a string 'email'
+*/
+async function getEmailFromUuid(uuid) {
+  //Uuid is a seperate param, but we also make the primary key the uuid
+  const user = await db.collection("users").doc(uuid).get();
+
+  return await user.data().email;
 }
 
 /* REQUIRES: instanceId
@@ -55,21 +70,22 @@ async function getEventId(instanceId, calendar) {
       eventId: instanceId,
     });
   } catch (error) {
-    functions.logger.error('Error getting eventId:', error.message);
+    functions.logger.error("Error getting eventId:", error.message);
     throw new functions.https.HttpsError(
-      "Error getting eventId:", error.message
-      );
+      "Error getting eventId:",
+      error.message
+    );
   }
 
   functions.logger.log(res);
   if (!res.data || res.data.length === 0) {
-    functions.logger.log('Invalid instanceId');
-    return {status: false};
+    functions.logger.log("Invalid instanceId");
+    return { status: false };
   }
 
   if (!res.data.recurringEventId) {
-    functions.logger.log('recurringEventId not found');
-    return {status: false};
+    functions.logger.log("recurringEventId not found");
+    return { status: false };
   }
 
   functions.logger.log("eventId = ", res.data.recurringEventId);
@@ -83,9 +99,7 @@ async function getEventId(instanceId, calendar) {
 async function getInstanceId(eventId, calendar) {
   // if instanceID, throws error
   if (eventId.includes("_")) {
-    throw new functions.https.HttpsError(
-      "Expects eventId only:", error.message
-    );
+    throw new functions.https.HttpsError("Expects eventId only");
   }
 
   // find instanceId
@@ -96,14 +110,15 @@ async function getInstanceId(eventId, calendar) {
       eventId: eventId,
     });
   } catch (error) {
-    functions.logger.error('Error getting instances:', error.message);
+    functions.logger.error("Error getting instances:", error.message);
     throw new functions.https.HttpsError(
-      "Error getting instances:", error.message
+      "Error getting instances:",
+      error.message
     );
   }
 
   if (!res.data.items || res.data.items.length === 0) {
-    functions.logger.log('No next instances found');
+    functions.logger.log("No next instances found");
     return "";
   }
 
@@ -117,39 +132,36 @@ async function parseChore(event) {
   }
 
   let eventData = {
-    instanceId: instanceId, 
+    instanceId: instanceId,
     eventName: event.summary,
     date: event.start.date,
   };
 
   if (event.recurrence) {
     const startIndex = event.recurrence[0].indexOf("FREQ=") + 5;
-    const endIndex = event.recurrence[0].indexOf(";");
+    let endIndex = event.recurrence[0].indexOf(";");
     if (endIndex == -1) {
-        endIndex = event.recurrence[0].length;
+      endIndex = event.recurrence[0].length;
     }
-    const freq = event.recurrence[0].substring(startIndex, endIndex)
+    const freq = event.recurrence[0].substring(startIndex, endIndex);
 
     switch (freq) {
-      case 'DAILY':
+      case "DAILY":
         eventData.frequency = "Daily";
         break;
-      case 'WEEKLY':
+      case "WEEKLY":
         if (eventData.frequency.includes("INTERVAL=2")) {
           eventData.frequency = "Biweekly";
         } else {
           eventData.frequency = "Weekly";
         }
         break;
-      case 'MONTHLY':
+      case "MONTHLY":
         eventData.frequency = "Monthly";
         break;
       default:
-        throw new functions.https.HttpsError(
-          "error converting frequency"
-        );
+        throw new functions.https.HttpsError("error converting frequency");
     }
-
   } else {
     eventData.frequency = "Once";
   }
@@ -173,7 +185,7 @@ async function parseChore(event) {
   return eventData;
 }
 
-/* REQUIRES: token, instanceId 
+/* REQUIRES: token, instanceId
  * RETURNS: chore = {instanceId, eventName, date, frequency, (description), (assignedRoommates)}
  * assignedRoommates = [uuid]
  */
@@ -193,7 +205,7 @@ async function parseChore(event) {
 async function getChoreHelper(instanceId, calendar) {
   const res = await calendar.events.get({
     calendarId: choresCalendarId,
-    eventId: instanceId
+    eventId: instanceId,
   });
 
   functions.logger.log(res?.data ?? "Failurreeee! in getChore");
@@ -201,10 +213,9 @@ async function getChoreHelper(instanceId, calendar) {
   functions.logger.log(event);
 
   if (!event) {
-    functions.logger.log('No event found.');
+    functions.logger.log("No event found.");
     return {};
   }
-  
   const output = await parseChore(event);
   return output;
 }
@@ -213,28 +224,24 @@ async function getChoreHelper(instanceId, calendar) {
  * RETURNS: event
  */
 async function addHelper(calendarId, eventInput, calendar) {
-  let res = {}
-  try{
+  let res = {};
+  try {
     res = await calendar.events.insert({
       calendarId: calendarId,
       resource: eventInput,
     });
   } catch (error) {
-    functions.logger.error('Error adding event:', error.message);
-    throw new functions.https.HttpsError(
-      "Error adding event:", error.message
-    );
+    functions.logger.error("Error adding event:", error.message);
+    throw new functions.https.HttpsError("Error adding event:", error.message);
   }
-  
+
   functions.logger.log(res?.data ?? "Failurreeee!");
   functions.logger.log(res);
   const event = res.data;
   if (!event || event.length === 0) {
-    throw new functions.https.HttpsError(
-      "Failed to add event"
-    );
+    throw new functions.https.HttpsError("Failed to add event");
   }
-  functions.logger.log('Added event:');
+  functions.logger.log("Added event:");
   functions.logger.log(event);
 
   return event;
@@ -246,11 +253,9 @@ async function addHelper(calendarId, eventInput, calendar) {
  */
 async function deleteHelper(calendarId, eventId, calendar) {
   if (!eventId) {
-    throw new functions.https.HttpsError(
-      "invalid input: missing eventId"
-    );
+    throw new functions.https.HttpsError("invalid input: missing eventId");
   }
-  
+
   // delete event with eventId
   let res = {};
   try {
@@ -259,14 +264,15 @@ async function deleteHelper(calendarId, eventId, calendar) {
       eventId: eventId,
     });
   } catch (error) {
-    functions.logger.error('Error deleting event:', error.message);
+    functions.logger.error("Error deleting event:", error.message);
     throw new functions.https.HttpsError(
-      "Error deleting event:", error.message
+      "Error deleting event:",
+      error.message
     );
   }
-    
+
   functions.logger.log(res);
-  functions.logger.log('Successfully deleted event');
+  functions.logger.log("Successfully deleted event");
 
   return;
 }
@@ -280,28 +286,27 @@ async function deleteHelper(calendarId, eventId, calendar) {
  *          chore = {instanceId, eventName, date, frequency, (description), (assignedRoommates)}
  *          assignedRoommates = [uuid]
  */
-const getChore = functions.https.onCall(async (data, context) => {
+async function getChoreBody(data, context) {
   const calendar = createOAuth(context.auth, data.token);
 
   if (!data.instanceId || data.instanceId.length == 0) {
-    throw new functions.https.HttpsError(
-      "invalid input: instanceId is empty"
-    );
+    throw new functions.https.HttpsError("invalid input: instanceId is empty");
   }
 
   let res = {};
-  try{
+  try {
     res = await getChoreHelper(data.instanceId, calendar);
   } catch (error) {
-    functions.logger.error('Error getting event:', error.message);
-    throw new functions.https.HttpsError(
-      "Error getting event:", error.message
-    );
+    functions.logger.error("Error getting event:", error.message);
+    throw new functions.https.HttpsError("Error getting event:", error.message);
   }
 
   functions.logger.log(res);
-  functions.logger.log('Successfully deleted event');
-  return {status: true, chore: res};
+  functions.logger.log("Successfully deleted event");
+  return { status: true, chore: res };
+}
+const getChore = functions.https.onCall(async (data, context) => {
+  return await getChoreBody(data, context);
 });
 
 /* REQUIRES: token
@@ -311,7 +316,7 @@ const getChore = functions.https.onCall(async (data, context) => {
  *          chore = {instanceId, eventName, date, frequency, (description), (assignedRoommates)}
  *          assignedRoommates = [uuid]
  */
-async function getChoresBody (data, context) {
+async function getChoresBody(data, context) {
   const calendar = createOAuth(context.auth, data.token);
 
   const res = await calendar.events.list({
@@ -325,8 +330,8 @@ async function getChoresBody (data, context) {
 
   const events = res.data.items;
   if (!events || events.length === 0) {
-    functions.logger.log('No upcoming events found.');
-    return {status: false};
+    functions.logger.log("No upcoming events found.");
+    return { status: false };
   }
 
   const eventsIds = [];
@@ -335,38 +340,39 @@ async function getChoresBody (data, context) {
     functions.logger.log(event.id);
 
     // make sure it's a confirmed event
-    if (event.status != 'confirmed') {
+    if (event.status != "confirmed") {
       continue;
     }
 
-    // if non-recurring event, use eventId as instanceId 
+    // if non-recurring event, use eventId as instanceId
     if (!event.recurrence || event.recurrence.length === 0) {
-      functions.logger.log('Non-recurring event');
-      eventsIds.push({instanceId: event.id});
-    } 
-    
+      functions.logger.log("Non-recurring event");
+      eventsIds.push({ instanceId: event.id });
+    }
+
     // recurring event, find instanceId
     else {
-      functions.logger.log('Recurring event');
+      functions.logger.log("Recurring event");
       let instanceId = "";
       try {
         instanceId = await getInstanceId(event.id, calendar);
       } catch (error) {
-        functions.logger.error('Error getting instance ID:', error.message);
+        functions.logger.error("Error getting instance ID:", error.message);
         throw new functions.https.HttpsError(
-          "Error getting instance ID:", error.message
+          "Error getting instance ID:",
+          error.message
         );
       }
 
       if (instanceId == "") {
         functions.logger.error("Error getting instance ID");
         throw new functions.https.HttpsError(
-          "Error getting instance ID:", error.message
+          "Error getting instance ID"
           // TODO: more descriptive error message with eventId
         );
       }
 
-      eventsIds.push({instanceId: instanceId});
+      eventsIds.push({ instanceId: instanceId });
     }
   }
 
@@ -375,22 +381,24 @@ async function getChoresBody (data, context) {
 
   // return chores using getChore with eventsIds
   let eventsOutput = [];
-  for (eventId of eventsIds) {
+  for (const eventId of eventsIds) {
     let eventOutput;
     try {
-      eventOutput =  await getChoreHelper(eventId.instanceId, calendar);
+      eventOutput = await getChoreHelper(eventId.instanceId, calendar);
     } catch (error) {
-      functions.logger.error('Error getting chore:', error.message);
+      functions.logger.error("Error getting chore:", error.message);
       throw new functions.https.HttpsError(
-        "Error getting chore:", error.message
+        "Error getting chore:",
+        error.message
       );
     }
 
     if (!eventOutput || eventOutput.length == 0) {
       functions.logger.error("No chore found with eventId");
-        throw new functions.https.HttpsError(
-          "No chore found with eventId:", eventId, error.message
-        );
+      throw new functions.https.HttpsError(
+        "No chore found with eventId:",
+        eventId
+      );
     }
 
     eventsOutput.push(eventOutput);
@@ -407,24 +415,30 @@ const getChores = functions.https.onCall(async (data, context) => {
  * MODIFIES: RoomieMatter Chore calendar
  * EFFECTS: add a chore to RoomieMatter Chore calendar
  * RETURNS: status, instanceId
- * 
+ *
  * frequency = {Once, Daily, Weekly, Biweekly, Monthly}
  * if frequency == Once, endRecurrenceDate is ignored
  * example date: "2023-12-01"
-*/
-async function addChoresBody (data, context) {
+ */
+
+async function addChoreBody(data, context) {
   const calendar = createOAuth(context.auth, data.token);
 
   // make sure eventName, date, frequency are not empty
-  if (!data.eventName || !data.eventName.trim() || !data.date || !data.frequency) {
+  if (
+    !data.eventName ||
+    !data.eventName.trim() ||
+    !data.date ||
+    !data.frequency
+  ) {
     throw new functions.https.HttpsError(
       "invalid input: eventName, date or frequency is empty"
     );
   }
-  
+
   // add eventName
   let eventInput = {
-    'summary': data.eventName,
+    summary: data.eventName,
   };
 
   // add date
@@ -437,45 +451,59 @@ async function addChoresBody (data, context) {
   function findDayOfWeek(inputDate) {
     const date = new Date(inputDate);
     const dayOfWeek = date.getDay();
-    const daysOfWeek = ['SU', 'MO', 'TU', 'WE', 'TH', 'FR', 'SA'];
+    const daysOfWeek = ["SU", "MO", "TU", "WE", "TH", "FR", "SA"];
     return daysOfWeek[dayOfWeek];
   }
-  
+
   // format endRecurrenceDate if not null
   function formatEndRecurrenceDate(endRecurrenceDate) {
     if (!endRecurrenceDate) {
       return "";
     }
 
-    return ';UNTIL=' + data.endRecurrenceDate.replace(/-/g, '');
+    return ";UNTIL=" + data.endRecurrenceDate.replace(/-/g, "");
   }
 
   // add recurrence if necessary
   switch (data.frequency) {
-    case 'Once': 
+    case "Once":
       break;
-    case 'Daily':
-      const dailyInput = 'RRULE:FREQ=DAILY' + formatEndRecurrenceDate(data.endRecurrenceDate);
+    case "Daily": {
+      const dailyInput =
+        "RRULE:FREQ=DAILY" + formatEndRecurrenceDate(data.endRecurrenceDate);
       eventInput.recurrence = [dailyInput];
       break;
-    case 'Weekly':
-      const weeklyInput = 'RRULE:FREQ=WEEKLY' + formatEndRecurrenceDate(data.endRecurrenceDate) + ';BYDAY=' + findDayOfWeek(data.date);
+    }
+    case "Weekly": {
+      const weeklyInput =
+        "RRULE:FREQ=WEEKLY" +
+        formatEndRecurrenceDate(data.endRecurrenceDate) +
+        ";BYDAY=" +
+        findDayOfWeek(data.date);
       eventInput.recurrence = [weeklyInput];
       break;
-    case 'Biweekly':
-      const biweeklyInput = 'RRULE:FREQ=WEEKLY;WKST=MO' + formatEndRecurrenceDate(data.endRecurrenceDate) + ';INTERVAL=2;BYDAY=' + findDayOfWeek(data.date);
+    }
+    case "Biweekly": {
+      const biweeklyInput =
+        "RRULE:FREQ=WEEKLY;WKST=MO" +
+        formatEndRecurrenceDate(data.endRecurrenceDate) +
+        ";INTERVAL=2;BYDAY=" +
+        findDayOfWeek(data.date);
       eventInput.recurrence = [biweeklyInput];
       break;
-    case 'Monthly':
-      const monthlyInput = 'RRULE:FREQ=MONTHLY' + formatEndRecurrenceDate(data.endRecurrenceDate);
+    }
+    case "Monthly": {
+      const monthlyInput =
+        "RRULE:FREQ=MONTHLY" + formatEndRecurrenceDate(data.endRecurrenceDate);
       eventInput.recurrence = [monthlyInput];
       break;
+    }
     default:
       throw new functions.https.HttpsError(
         "invalid input: frequency can only be strings in {Once, Daily, Weekly, Biweekly, Monthly}"
       );
   }
-  
+
   // add description
   if (data.description) {
     eventInput.description = data.description;
@@ -486,24 +514,22 @@ async function addChoresBody (data, context) {
     let attendees = [];
     for (const attendee of data.attendees) {
       // double check that these are valid emails
-      attendees.push({'email': attendee});
+      attendees.push({ email: attendee });
     }
     eventInput.attendees = attendees;
   }
 
-  let event = {}
-  try{
+  let event = {};
+  try {
     event = await addHelper(choresCalendarId, eventInput, calendar);
   } catch (error) {
-    functions.logger.error('Error adding chore:', error.message);
-    throw new functions.https.HttpsError(
-      "Error adding chore:", error.message
-    );
+    functions.logger.error("Error adding chore:", error.message);
+    throw new functions.https.HttpsError("Error adding chore:", error.message);
   }
 
   // if non-recurring, return eventId
-  if (data.frequency == 'Once') {
-    return {status: true, instanceId: event.id};
+  if (data.frequency == "Once") {
+    return { status: true, instanceId: event.id };
   }
 
   // recurring event, return instanceId of first instance
@@ -511,23 +537,105 @@ async function addChoresBody (data, context) {
   try {
     instanceId = await getInstanceId(event.id, calendar);
   } catch (error) {
-    functions.logger.error('Error getting instance ID:', error.message);
+    functions.logger.error("Error getting instance ID:", error.message);
     throw new functions.https.HttpsError(
-      "Error getting instance ID:", error.message
+      "Error getting instance ID:",
+      error.message
     );
   }
 
   if (instanceId == "") {
     functions.logger.error("Error getting instance ID");
-    throw new functions.https.HttpsError(
-      "Error getting instance ID:", error.message
-    );
+    throw new functions.https.HttpsError("Error getting instance ID:");
   }
-  
-  return {status: true, instanceId: instanceId};
+
+  return { status: true, instanceId: instanceId };
 }
 const addChore = functions.https.onCall(async (data, context) => {
-  return await addChoresBody(data, context);
+  return await addChoreBody(data, context);
+});
+
+async function editChoreBody(data, context) {
+  const calendar = createOAuth(context.auth, data.token);
+
+  if (!data.instanceId) {
+    throw new functions.https.HttpsError("invalid input: missing instanceId");
+  }
+
+  // get eventId with instanceId
+  let eventId = "";
+  try {
+    eventId = await getEventId(data.instanceId, calendar);
+  } catch (error) {
+    functions.logger.error("Error getting eventId:", error.message);
+    throw new functions.https.HttpsError(
+      "Error getting eventId:",
+      error.message
+    );
+  }
+
+  // patch event
+  let input = {
+    calendarId: choresCalendarId,
+    eventId: eventId,
+  };
+
+  if (data.eventName) {
+    input.summary = data.eventName;
+  }
+
+  // requirement: change date and frequency together
+  if ((data.date && !data.frequency) || (!data.date && data.frequency)) {
+    functions.logger.log("Expects both date and frequency if any changes");
+  }
+
+  if (data.date) {
+    eventInput.start = {};
+    eventInput.end = {};
+    eventInput.start.date = data.date;
+    eventInput.end.date = data.date;
+    // TODO: change recurrence rule too
+  }
+
+  // TODO: frequency, endRecurrenceDate
+  // **no end recurrence date
+  // 1) get current chore to get frequency then modify recurrence
+  // 2) require to change both date and frequency together
+
+  if (data.description) {
+    input.summary = data.description;
+  }
+  if (data.assignedRoommates) {
+    let attendees = [];
+    for (const attendee of data.assignedRoommates) {
+      // double check that these are valid emails
+      // TODO: convert UUID to email
+      attendees.push({ email: attendee });
+    }
+    eventInput.attendees = attendees;
+  }
+
+  // call API to patch event
+  let res = {};
+  try {
+    res = await calendar.events.patch(input);
+  } catch (error) {
+    functions.logger.error("Error editing event:", error.message);
+    throw new functions.https.HttpsError("Error editing event:", error.message);
+  }
+
+  functions.logger.log(res);
+  functions.logger.log("Successfully edited event");
+
+  if (!res.data || res.data.length == 0) {
+    return { status: false };
+  }
+
+  const output = await parseChore(res.data);
+  return { status: true, chore: output };
+}
+const editChore = functions.https.onCall(async (data, context) => {
+  return await editChoreBody(data, context);
 });
 
 // TODO: edit chore
@@ -625,26 +733,25 @@ const editChore = functions.https.onCall(async (data, context) => {
  * MODIFIES: RoomieMatter Chore calendar
  * EFFECTS: delete one instance of a chore on RoomieMatter Chore calendar
  * RETURNS: status, (nextInstanceId)
- * 
+ *
  * (if chore is non-recurring, entire chore is deleted)
  */
-const completeChore = functions.https.onCall(async (data, context) => {
+async function completeChoreBody(data, context) {
   const calendar = createOAuth(context.auth, data.token);
 
   if (!data.instanceId) {
-    throw new functions.https.HttpsError(
-      "invalid input: missing instanceId"
-    );
+    throw new functions.https.HttpsError("invalid input: missing instanceId");
   }
-  
+
   // get eventId with instanceId
   let eventId = "";
   try {
     eventId = await getEventId(data.instanceId, calendar);
   } catch (error) {
-    functions.logger.error('Error getting eventId:', error.message);
+    functions.logger.error("Error getting eventId:", error.message);
     throw new functions.https.HttpsError(
-      "Error getting eventId:", error.message
+      "Error getting eventId:",
+      error.message
     );
   }
 
@@ -656,34 +763,38 @@ const completeChore = functions.https.onCall(async (data, context) => {
       eventId: data.instanceId,
     });
   } catch (error) {
-    functions.logger.error('Error deleting instance:', error.message);
+    functions.logger.error("Error deleting instance:", error.message);
     throw new functions.https.HttpsError(
-      "Error deleting instance:", error.message
+      "Error deleting instance:",
+      error.message
     );
   }
-  
+
   functions.logger.log(res);
-  functions.logger.log('Successfully deleted instance');
+  functions.logger.log("Successfully deleted instance");
 
   // if non-recurring event, return
   if (!data.instanceId.includes("_")) {
-    return {status: true};
+    return { status: true };
   }
 
   try {
     const instanceId = await getInstanceId(eventId, calendar);
     if (instanceId == "") {
-      return {status: true};
+      return { status: true };
     } else {
-      return {status: true, nextInstanceId: instanceId};
+      return { status: true, nextInstanceId: instanceId };
     }
   } catch (error) {
-    functions.logger.error('Error getting instances:', error.message);
+    functions.logger.error("Error getting instances:", error.message);
     throw new functions.https.HttpsError(
-      "Error getting instances:", error.message
+      "Error getting instances:",
+      error.message
     );
   }
-
+}
+const completeChore = functions.https.onCall(async (data, context) => {
+  return await completeChoreBody(data, context);
 });
 
 /* REQUIRES: token, instanceId
@@ -691,13 +802,11 @@ const completeChore = functions.https.onCall(async (data, context) => {
  * EFFECTS: delete all instances of a chore on RoomieMatter Chore calendar
  * RETURNS: status
  */
-const deleteChore = functions.https.onCall(async (data, context) => {
+async function deleteChoreBody(data, context) {
   const calendar = createOAuth(context.auth, data.token);
 
   if (!data.instanceId) {
-    throw new functions.https.HttpsError(
-      "invalid input: missing instanceId"
-    );
+    throw new functions.https.HttpsError("invalid input: missing instanceId");
   }
 
   // get eventId with instanceId
@@ -705,22 +814,28 @@ const deleteChore = functions.https.onCall(async (data, context) => {
   try {
     eventId = await getEventId(data.instanceId, calendar);
   } catch (error) {
-    functions.logger.error('Error getting eventId:', error.message);
+    functions.logger.error("Error getting eventId:", error.message);
     throw new functions.https.HttpsError(
-      "Error getting eventId:", error.message
-      );
+      "Error getting eventId:",
+      error.message
+    );
   }
-  
+
   // delete event with eventId
   try {
     deleteHelper(choresCalendarId, eventId, calendar);
   } catch (error) {
-    functions.logger.error('Error deleting eventId:', eventId, error.message);
+    functions.logger.error("Error deleting eventId:", eventId, error.message);
     throw new functions.https.HttpsError(
-      'Error deleting eventId:', eventId, error.message
+      "Error deleting eventId:",
+      eventId,
+      error.message
     );
   }
-  return {status: true};
+  return { status: true };
+}
+const deleteChore = functions.https.onCall(async (data, context) => {
+  return await deleteChoreBody(data, context);
 });
 
 /* EVENTS FUNCTIONS */
@@ -731,7 +846,7 @@ const deleteChore = functions.https.onCall(async (data, context) => {
  * RETURNS: status, [event]
  *          event = {eventId, eventName, date, (description), (guests)}
  */
-const getEvents = functions.https.onCall(async (data, context) => {
+async function getEventsBody(data, context) {
   const calendar = createOAuth(context.auth, data.token);
 
   const res = await calendar.events.list({
@@ -745,21 +860,21 @@ const getEvents = functions.https.onCall(async (data, context) => {
 
   const events = res.data.items;
   if (!events || events.length === 0) {
-    functions.logger.log('No upcoming events found.');
-    return {status: false};
+    functions.logger.log("No upcoming events found.");
+    return { status: false };
   }
 
   function parseEvent(event) {
     let eventData = {
-      eventId: eventId, 
+      eventId: eventId,
       eventName: event.summary,
       date: event.start.date,
     };
-  
+
     if (event.description) {
       eventData.description = event.description;
     }
-  
+
     if (event.attendees) {
       let assignees = [];
       functions.logger.log(event.attendees);
@@ -768,7 +883,7 @@ const getEvents = functions.https.onCall(async (data, context) => {
       }
       eventData.guests = assignees;
     }
-  
+
     // functions.logger.log(eventData);
     return eventData;
   }
@@ -779,7 +894,7 @@ const getEvents = functions.https.onCall(async (data, context) => {
     functions.logger.log(event.id);
 
     // make sure it's a confirmed event
-    if (event.status != 'confirmed') {
+    if (event.status != "confirmed") {
       continue;
     }
 
@@ -788,7 +903,10 @@ const getEvents = functions.https.onCall(async (data, context) => {
 
   functions.logger.log(eventsOutput);
 
-  return { status: true, chores: eventsOutput };
+  return { status: true, events: eventsOutput };
+}
+const getEvents = functions.https.onCall(async (data, context) => {
+  return await getEventsBody(data, context);
 });
 
 /* REQUIRES: token, eventName, startDatetime, endDatetime
@@ -796,10 +914,10 @@ const getEvents = functions.https.onCall(async (data, context) => {
  * MODIFIES: RoomieMatter Event calendar
  * EFFECTS: add an event to RoomieMatter Events calendar
  * RETURNS: status, eventId
- * 
+ *
  * datetime object example: "2023-12-03T10:00:00-05:00"
  */
-const addEvent= functions.https.onCall(async (data, context) => {
+async function addEventBody(data, context) {
   const calendar = createOAuth(context.auth, data.token);
 
   // make sure eventName, date, frequency are not empty
@@ -808,10 +926,10 @@ const addEvent= functions.https.onCall(async (data, context) => {
       "invalid input: eventName or date is empty"
     );
   }
-  
+
   // add eventName
   let eventInput = {
-    'summary': data.eventName,
+    summary: data.eventName,
   };
 
   // add datetime
@@ -825,10 +943,10 @@ const addEvent= functions.https.onCall(async (data, context) => {
   }
 
   eventInput.start.date = data.startDatetime;
-  eventInput.start.timeZone = 'America/New_York';
+  eventInput.start.timeZone = "America/New_York";
   eventInput.end.date = data.endDatetime;
-  eventInput.end.timeZone = 'America/New_York';
-  
+  eventInput.end.timeZone = "America/New_York";
+
   // add description
   if (data.description) {
     eventInput.description = data.description;
@@ -839,50 +957,79 @@ const addEvent= functions.https.onCall(async (data, context) => {
     let attendees = [];
     for (const attendee of data.attendees) {
       // double check that these are valid emails
-      attendees.push({'email': attendee});
+      attendees.push({ email: attendee });
     }
     eventInput.attendees = attendees;
   }
 
-  let event = {}
-  try{
+  let event = {};
+  try {
     event = await addHelper(eventsCalendarId, eventInput, calendar);
   } catch (error) {
-    functions.logger.error('Error adding event:', error.message);
-    throw new functions.https.HttpsError(
-      "Error adding event:", error.message
-    );
+    functions.logger.error("Error adding event:", error.message);
+    throw new functions.https.HttpsError("Error adding event:", error.message);
   }
 
-  return {status: true, instanceId: event.id};
+  return { status: true, instanceId: event.id };
+}
+const addEvent = functions.https.onCall(async (data, context) => {
+  return await addEventBody(data, context);
 });
 
-const editEvent= functions.https.onCall(async (data, context) => {
+async function editEventBody(data, context) {
   // const calendar = createOAuth(context.auth, data.token);
-
   // return {status: true, instanceId: event.id};
-  return {};
+}
+const editEvent = functions.https.onCall(async (data, context) => {
+  return await editEventBody(data, context);
 });
-
 
 /* REQUIRES: token, eventId
  * MODIFIES: RoomieMatter Event calendar
  * EFFECTS: delete event on RoomieMatter Event calendar
  * RETURNS: status
  */
-const deleteEvent = functions.https.onCall(async (data, context) => {
+async function deleteEventBody(data, context) {
   const calendar = createOAuth(context.auth, data.token);
   try {
     deleteHelper(eventsCalendarId, data.eventId, calendar);
   } catch (error) {
-    functions.logger.error('Error deleting eventId:', data.eventId, error.message);
+    functions.logger.error(
+      "Error deleting eventId:",
+      data.eventId,
+      error.message
+    );
     throw new functions.https.HttpsError(
-      'Error deleting eventId:', data.eventId, error.message
+      "Error deleting eventId:",
+      data.eventId,
+      error.message
     );
   }
-  return {status: true};
+  return { status: true };
+}
+const deleteEvent = functions.https.onCall(async (data, context) => {
+  return await deleteEventBody(data, context);
 });
 
-module.exports = { getChore, getChores, addChore, editChore, completeChore, deleteChore, 
-                   getChoresBody, addChoresBody, 
-                   getEvents, addEvent, editEvent, deleteEvent};
+module.exports = {
+  getChore,
+  getChores,
+  addChore,
+  editChore,
+  completeChore,
+  deleteChore,
+  getEvents,
+  addEvent,
+  editEvent,
+  deleteEvent,
+  getChoreBody,
+  getChoresBody,
+  addChoreBody,
+  editChoreBody,
+  completeChoreBody,
+  deleteChoreBody,
+  getEventsBody,
+  addEventBody,
+  editEventBody,
+  deleteEventBody,
+};
