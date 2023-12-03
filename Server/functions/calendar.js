@@ -92,20 +92,26 @@ async function getInstanceId(eventId, calendar) {
   return res.data.items[0].id;
 }
 
-/* REQUIRES: token, eventId */
+/* REQUIRES: token, instanceId 
+ * RETURNS: chore = {instanceId, eventName, date, frequency, (description), (assignedRoommates)}
+ */
 /* sample return value: 
 * [{
-   assignees = ('lteresa@umich.edu');
-   frequency = WEEKLY;
-   date = "2023-11-30";
-   summary = "Take Out Trash";
-   },...]
+    instanceId = "12345";
+    date = "2023-12-02";
+    description = gibberish;
+    eventName = Trash;
+    frequency = Once;
+    assignees = [
+      "lteresa@umich.edu"
+    ]
+  },...]
 */
-// returns details of a chore: eventName, date, frequency, (description), (assignedRoommates)
-async function getChoreHelper(eventId, calendar) {
+// returns details of a chore: instanceId, eventName, date, frequency, (description), (assignedRoommates)
+async function getChoreHelper(instanceId, calendar) {
   const res = await calendar.events.get({
     calendarId: choresCalendarId,
-    eventId: eventId
+    eventId: instanceId
   });
 
   functions.logger.log(res?.data ?? "Failurreeee! in getChore");
@@ -116,83 +122,98 @@ async function getChoreHelper(eventId, calendar) {
     functions.logger.log('No event found.');
     return {};
   }
+  
+  let eventData = {
+    instanceId: instanceId, 
+    eventName: event.summary,
+    date: event.start.date,
+  };
 
-  let frequency = "";
   if (event.recurrence) {
     const startIndex = event.recurrence[0].indexOf("FREQ=") + 5;
     const endIndex = event.recurrence[0].indexOf(";");
     if (endIndex == -1) {
         endIndex = event.recurrence[0].length;
     }
-    frequency = event.recurrence[0].substring(startIndex, endIndex);
+    const freq = event.recurrence[0].substring(startIndex, endIndex)
+
+    switch (freq) {
+      case 'DAILY':
+        eventData.frequency = "Daily";
+        break;
+      case 'WEEKLY':
+        if (eventData.frequency.includes("INTERVAL=2")) {
+          eventData.frequency = "Biweekly";
+        } else {
+          eventData.frequency = "Weekly";
+        }
+        break;
+      case 'MONTHLY':
+        eventData.frequency = "Monthly";
+        break;
+      default:
+        throw new functions.https.HttpsError(
+          "error converting frequency"
+        );
+    }
+
+  } else {
+    eventData.frequency = "Once";
   }
 
-  let assignees = [];
+  if (event.description) {
+    eventData.description = event.description;
+  }
+
   if (event.attendees) {
+    let assignees = [];
     functions.logger.log(event.attendees);
     for (const attendee of event.attendees) {
       assignees.push(attendee.email);
     }
+    eventData.assignedRoommates = assignees;
   }
 
-  const eventData = {
-    summary: event.summary,
-    frequency: frequency,
-    assignees: assignees
-  };
   functions.logger.log(eventData);
 
   return eventData;
 }
 
 /* REQUIRES: token, instanceId
- * MODIFIES: RoomieMatter Chore calendar
- * EFFECTS: delete all instances of a chore on RoomieMatter Chore calendar
- * RETURNS: status
+ * MODIFIES: nothing
+ * EFFECTS: returns details of a chore instance on RoomieMatter Chore calendar
+ * RETURNS: status, chore
+ *          chore = {instanceId, eventName, date, frequency, (description), (assignedRoommates)}
  */
 const getChore = functions.https.onCall(async (data, context) => {
   const calendar = createOAuth(context.auth, data.token);
 
-  if (!data.instanceId) {
+  if (!data.instanceId || data.instanceId.length == 0) {
     throw new functions.https.HttpsError(
-      "invalid input: missing instanceId"
+      "invalid input: instanceId is empty"
     );
   }
 
-  // get eventId with instanceId
-  let eventId = "";
-  try {
-    eventId = await getEventId(data.instanceId, calendar);
-  } catch (error) {
-    functions.logger.error('Error getting eventId:', error.message);
-    throw new functions.https.HttpsError(
-      "Error getting eventId:", error.message
-      );
-  }
-  
-  // delete event with eventId
   let res = {};
-  try {
-    res = await calendar.events.delete({
-      calendarId: choresCalendarId,
-      eventId: eventId,
-    });
+  try{
+    res = await getChoreHelper(data.instanceId, calendar);
   } catch (error) {
-    functions.logger.error('Error deleting event:', error.message);
+    functions.logger.error('Error getting event:', error.message);
     throw new functions.https.HttpsError(
-      "Error deleting event:", error.message
-      );
+      "Error getting event:", error.message
+    );
   }
-    
+
   functions.logger.log(res);
   functions.logger.log('Successfully deleted event');
-  return {status: true};
+  return {status: true, chore: res};
 });
 
 /* REQUIRES: token
  * MODIFIES: nothing
  * EFFECTS: returns list of chores from RoomieMatter Chore calendar
- * RETURNS: status, [instanceId]
+ * RETURNS: status, [chore]
+ *          chore = {instanceId, eventName, date, frequency, (description), (assignedRoommates)}
  */
 const getChores = functions.https.onCall(async (data, context) => {
   const calendar = createOAuth(context.auth, data.token);
@@ -531,4 +552,4 @@ const deleteChore = functions.https.onCall(async (data, context) => {
   return {status: true};
 });
 
-module.exports = { getChores, addChore, completeChore, deleteChore };
+module.exports = { getChore, getChores, addChore, completeChore, deleteChore };

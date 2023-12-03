@@ -57,6 +57,31 @@ import GoogleSignIn
 //    }
 //}
 
+func getChore(instanceId: String) {
+    guard let user = GIDSignIn.sharedInstance.currentUser else {
+        print("User not properly signed in")
+        return
+    }
+    let token = user.accessToken.tokenString
+    print(token)
+    
+    Functions.functions().httpsCallable("getChore").call(["token": token, "instanceId": instanceId]) { (result, error) in
+        print("in getChore")
+        if let error = error as NSError? {
+            if error.domain == FunctionsErrorDomain {
+                let code = FunctionsErrorCode(rawValue: error.code)
+                let message = error.localizedDescription
+                let details = error.userInfo[FunctionsErrorDetailsKey]
+                print("Error: \(message)")
+            }
+            // Handle the error
+        }
+        if let data = result?.data as? [String: Any] {
+            print(data)
+        }
+    }
+}
+
 func getChores() {
     guard let user = GIDSignIn.sharedInstance.currentUser else {
         print("User not properly signed in")

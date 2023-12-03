@@ -28,6 +28,12 @@ struct MainScreen: View {
         }
         
         Button {
+            getChore(instanceId: "s8um45gtu9dn4f4v1r80h7h69k_20231202")
+        } label: {
+            Text("Get chore")
+        }
+        
+        Button {
             getChores()
         } label: {
             Text("Get chores")
@@ -40,13 +46,13 @@ struct MainScreen: View {
         }
         
         Button {
-            completeChore(instanceId: "s8um45gtu9dn4f4v1r80h7h69k_20231202")
+            completeChore(instanceId: "fpkh4gu4f80j3noorhassgg6g4_20231202")
         } label: {
             Text("Complete chore")
         }
         
         Button {
-            deleteChore(instanceId: "vhn7jk3pd2jhioskseg25smvas")
+            deleteChore(instanceId: "sgu87r22jp0blbemulna09mg2s_20231202")
         } label: {
             Text("Delete chore")
         }
