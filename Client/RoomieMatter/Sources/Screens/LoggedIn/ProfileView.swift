@@ -10,7 +10,7 @@ struct ProfileView: View {
     let roommate: Roommate
     
     @State private var selectedStatus = "At Home"
-        let statusOptions = ["At Home", "Sleeping", "In Class", "Do not disturb", "Studying"]
+        let statusOptions = ["At Home", "Sleeping", "In Class", "Not Home"]
 
     var body: some View {
         GeometryReader { geometry in
@@ -49,7 +49,7 @@ struct ProfileView: View {
                     HStack{
                         Group{
                             Text("User Status:")
-                                .font(.title3)
+                                .font(.title2)
                                 .bold()
                                 .foregroundStyle(.black)
                                 .multilineTextAlignment(.center)
@@ -57,7 +57,7 @@ struct ProfileView: View {
                         
                         Picker(selection: $selectedStatus, label: Text("User Status")) {
                                                 ForEach(statusOptions, id: \.self) {
-                                                    Text($0)
+                                                    Text($0).font(.system(size: 20))
                                                 }
                                             }
                                             .pickerStyle(.menu)
@@ -73,7 +73,7 @@ struct ProfileView: View {
                             .frame(width: 40)
                         
                         Circle()
-                            .frame(width: 20)
+                            .frame(width: 25)
                             .foregroundStyle(roommate.status.color)
                             .overlay(
                                 Circle()
@@ -85,6 +85,16 @@ struct ProfileView: View {
                 .frame(height: geometry.size.height * 0.3)
 
                 Spacer()
+                    .frame(height: 300)
+                Button{
+                                    // Add leave room action here
+                                }label: {
+                                    Text("Leave Room").padding(8)
+                                        .font(.system(size: 25))
+                                    
+                                }.buttonStyle(.borderedProminent)
+                    .frame(width: UIScreen.main.bounds.width / 2, height: geometry.size.height * 0.1, alignment: .bottom)
+                                    .padding(.bottom, 10)
 
                 Button{
                     Task {
@@ -96,6 +106,7 @@ struct ProfileView: View {
                     }
                 }label: {
                     Text("Log Out").padding(8)
+                        .font(.system(size: 25))
                 }.buttonStyle(.borderedProminent)
                     .frame(height: geometry.size.height * 0.1, alignment: .bottom)
             }
