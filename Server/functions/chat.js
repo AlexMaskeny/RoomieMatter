@@ -532,7 +532,7 @@ async function getFunctions(context) {
 }
 
 function stopGPTTyping(roomId) {
-  db.collection("room")
+  db.collection("rooms")
     .doc(roomId)
     .update({
       typing: admin.firestore.FieldValue.arrayRemove("gpt"),
