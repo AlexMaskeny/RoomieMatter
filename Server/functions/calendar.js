@@ -1,7 +1,8 @@
 const functions = require("firebase-functions");
 const { google } = require("googleapis");
 
-choresCalendarId = "c_5df0bf9c096fe8c9bf0a70fc19f1cf28dae8901ff0fcab98989a0445fb052625@group.calendar.google.com"
+choresCalendarId = "c_5df0bf9c096fe8c9bf0a70fc19f1cf28dae8901ff0fcab98989a0445fb052625@group.calendar.google.com";
+eventsCalendarId = "c_13e412c22da53bac13e80008fedb53d172b8ac55ab3d4c838bf5a1b739a66d26@group.calendar.google.com";
 
 function createOAuth(auth, tokenInput) {
   if (!auth) {
@@ -177,6 +178,68 @@ async function getChoreHelper(instanceId, calendar) {
   functions.logger.log(eventData);
 
   return eventData;
+}
+
+/* REQUIRES: calendarId, eventInput, calendar
+ * RETURNS: event
+ */
+async function addHelper(calendarId, eventInput, calendar) {
+  let res = {}
+  try{
+    res = await calendar.events.insert({
+      calendarId: calendarId,
+      resource: eventInput,
+    });
+  } catch (error) {
+    functions.logger.error('Error adding event:', error.message);
+    throw new functions.https.HttpsError(
+      "Error adding event:", error.message
+    );
+  }
+  
+  functions.logger.log(res?.data ?? "Failurreeee!");
+  functions.logger.log(res);
+  const event = res.data;
+  if (!event || event.length === 0) {
+    throw new functions.https.HttpsError(
+      "Failed to add event"
+    );
+  }
+  functions.logger.log('Added event:');
+  functions.logger.log(event);
+
+  return event;
+}
+
+/* REQUIRES: calendarId, eventId, calendar
+ * MODIFIES: Google calendar specified by calendarId
+ * RETURNS: status
+ */
+async function deleteHelper(calendarId, eventId, calendar) {
+  if (!eventId) {
+    throw new functions.https.HttpsError(
+      "invalid input: missing eventId"
+    );
+  }
+  
+  // delete event with eventId
+  let res = {};
+  try {
+    res = await calendar.events.delete({
+      calendarId: calendarId,
+      eventId: eventId,
+    });
+  } catch (error) {
+    functions.logger.error('Error deleting event:', error.message);
+    throw new functions.https.HttpsError(
+      "Error deleting event:", error.message
+    );
+  }
+    
+  functions.logger.log(res);
+  functions.logger.log('Successfully deleted event');
+
+  return;
 }
 
 /* REQUIRES: token, instanceId
@@ -393,29 +456,15 @@ const addChore = functions.https.onCall(async (data, context) => {
     eventInput.attendees = attendees;
   }
 
-  let res = {}
+  let event = {}
   try{
-    res = await calendar.events.insert({
-      calendarId: choresCalendarId,
-      resource: eventInput,
-    });
+    event = await addHelper(choresCalendarId, eventInput, calendar);
   } catch (error) {
-    functions.logger.error('Error adding event:', error.message);
+    functions.logger.error('Error adding chore:', error.message);
     throw new functions.https.HttpsError(
-      "Error adding event:", error.message
+      "Error adding chore:", error.message
     );
   }
-  
-  functions.logger.log(res?.data ?? "Failurreeee!");
-  functions.logger.log(res);
-  const event = res.data;
-  if (!event || event.length === 0) {
-    throw new functions.https.HttpsError(
-      "Failed to add event"
-    );
-  }
-  functions.logger.log('Added event:');
-  functions.logger.log(event);
 
   // if non-recurring, return eventId
   if (data.frequency == 'Once') {
@@ -534,22 +583,167 @@ const deleteChore = functions.https.onCall(async (data, context) => {
   }
   
   // delete event with eventId
-  let res = {};
   try {
-    res = await calendar.events.delete({
-      calendarId: choresCalendarId,
-      eventId: eventId,
-    });
+    deleteHelper(choresCalendarId, eventId, calendar);
   } catch (error) {
-    functions.logger.error('Error deleting event:', error.message);
+    functions.logger.error('Error deleting eventId:', eventId, error.message);
     throw new functions.https.HttpsError(
-      "Error deleting event:", error.message
-      );
+      'Error deleting eventId:', eventId, error.message
+    );
   }
-    
-  functions.logger.log(res);
-  functions.logger.log('Successfully deleted event');
   return {status: true};
 });
 
-module.exports = { getChore, getChores, addChore, completeChore, deleteChore };
+/* REQUIRES: token
+ * MODIFIES: nothing
+ * EFFECTS: returns list of events from RoomieMatter Events calendar
+ * RETURNS: status, [event]
+ *          event = {eventId, eventName, date, (description), (guests)}
+ */
+const getEvents = functions.https.onCall(async (data, context) => {
+  const calendar = createOAuth(context.auth, data.token);
+
+  const res = await calendar.events.list({
+    calendarId: choresCalendarId,
+    timeMin: new Date().toISOString(),
+    singleEvents: false,
+  });
+
+  functions.logger.log(res?.data?.items ?? "Failurreeee!");
+  functions.logger.log(res);
+
+  const events = res.data.items;
+  if (!events || events.length === 0) {
+    functions.logger.log('No upcoming events found.');
+    return {status: false};
+  }
+
+  function parseEvent(event) {
+    let eventData = {
+      eventId: eventId, 
+      eventName: event.summary,
+      date: event.start.date,
+    };
+  
+    if (event.description) {
+      eventData.description = event.description;
+    }
+  
+    if (event.attendees) {
+      let assignees = [];
+      functions.logger.log(event.attendees);
+      for (const attendee of event.attendees) {
+        assignees.push(attendee.email);
+      }
+      eventData.guests = assignees;
+    }
+  
+    // functions.logger.log(eventData);
+    return eventData;
+  }
+
+  let eventsOutput = [];
+
+  for (const event of events) {
+    functions.logger.log(event.id);
+
+    // make sure it's a confirmed event
+    if (event.status != 'confirmed') {
+      continue;
+    }
+
+    eventsOutput.push(parseEvent(event));
+  }
+
+  functions.logger.log(eventsOutput);
+
+  return { status: true, chores: eventsOutput };
+});
+
+/* REQUIRES: token, eventName, startDatetime, endDatetime
+ * OPTIONAL: description, guests
+ * MODIFIES: RoomieMatter Event calendar
+ * EFFECTS: add an event to RoomieMatter Events calendar
+ * RETURNS: status, eventId
+ * 
+ * datetime object example: "2023-12-03T10:00:00-05:00"
+ */
+const addEvent= functions.https.onCall(async (data, context) => {
+  const calendar = createOAuth(context.auth, data.token);
+
+  // make sure eventName, date, frequency are not empty
+  if (!data.eventName || !data.eventName.trim() || !data.date) {
+    throw new functions.https.HttpsError(
+      "invalid input: eventName or date is empty"
+    );
+  }
+  
+  // add eventName
+  let eventInput = {
+    'summary': data.eventName,
+  };
+
+  // add datetime
+  eventInput.start = {};
+  eventInput.end = {};
+  // check if valid start and end datetime
+  if (new Date(data.startDatetime) >= new Date(data.endDatetime)) {
+    throw new functions.https.HttpsError(
+      "invalid input: startDateTime not less than endDateTime"
+    );
+  }
+
+  eventInput.start.date = data.startDatetime;
+  eventInput.start.timeZone = 'America/New_York';
+  eventInput.end.date = data.endDatetime;
+  eventInput.end.timeZone = 'America/New_York';
+  
+  // add description
+  if (data.description) {
+    eventInput.description = data.description;
+  }
+
+  // add attendees
+  if (data.attendees) {
+    let attendees = [];
+    for (const attendee of data.attendees) {
+      // double check that these are valid emails
+      attendees.push({'email': attendee});
+    }
+    eventInput.attendees = attendees;
+  }
+
+  let event = {}
+  try{
+    event = await addHelper(eventsCalendarId, eventInput, calendar);
+  } catch (error) {
+    functions.logger.error('Error adding event:', error.message);
+    throw new functions.https.HttpsError(
+      "Error adding event:", error.message
+    );
+  }
+
+  return {status: true, instanceId: event.id};
+});
+
+
+/* REQUIRES: token, eventId
+ * MODIFIES: RoomieMatter Event calendar
+ * EFFECTS: delete event on RoomieMatter Event calendar
+ * RETURNS: status
+ */
+const deleteEvent = functions.https.onCall(async (data, context) => {
+  const calendar = createOAuth(context.auth, data.token);
+  try {
+    deleteHelper(eventsCalendarId, data.eventId, calendar);
+  } catch (error) {
+    functions.logger.error('Error deleting eventId:', data.eventId, error.message);
+    throw new functions.https.HttpsError(
+      'Error deleting eventId:', data.eventId, error.message
+    );
+  }
+  return {status: true};
+});
+
+module.exports = { getChore, getChores, addChore, completeChore, deleteChore, 
+                    getEvents, addEvent, deleteEvent };
