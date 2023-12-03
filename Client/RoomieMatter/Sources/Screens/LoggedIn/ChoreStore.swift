@@ -127,11 +127,52 @@ func addChore(name: String, date: Date, description: String, assignedRoommates: 
      */
     
     let data: [String: Any] = ["token": token, "eventName": "Trash", "date": "2023-12-02", "frequency": "Weekly",
-                "endRecurrenceDate": "2023-12-30", "description": "gibberish", "assignedRoommates": ["lteresa@umich.edu"]]
-    // is it easier for frontend if we take in UUID instead of email for each user?
+                "endRecurrenceDate": "2023-12-30", "description": "gibberish", "assignedRoommates": ["uqWhv6HG6QPqjGyJV2a9FF6R1pm2"]]
+
     
     Functions.functions().httpsCallable("addChore").call(data) { (result, error) in
         print("in addChore")
+        if let error = error as NSError? {
+            if error.domain == FunctionsErrorDomain {
+                let code = FunctionsErrorCode(rawValue: error.code)
+                let message = error.localizedDescription
+                let details = error.userInfo[FunctionsErrorDetailsKey]
+                print("Error: \(message)")
+            }
+            // Handle the error
+        }
+        if let data = result?.data as? [String: Any] {
+            print(data)
+        }
+    }
+    
+    return "return something here"
+}
+
+func editChore(name: String, date: Date, description: String, assignedRoommates: String) -> String {
+    guard let user = GIDSignIn.sharedInstance.currentUser else {
+        print("User not properly signed in")
+        return "error"
+    }
+    let token = user.accessToken.tokenString
+    print(token)
+    
+    /* required arguments: token, eventName, date, frequency
+     * optional arguments: endRecurrenceDate, description, assignedRoommates
+     * (endRecurrenceDate is ignored for frequency == Once)
+     * frequency = {Once, Daily, Weekly, Biweekly, Monthly}
+     *
+     * example for required arguments:
+     * let data: [String: Any] = ["token": token, "eventName": "Dishes", "date": "2023-12-02", "frequency": "Once"]
+     *
+     * example for all arguments is listed below:
+     */
+    
+    let data: [String: Any] = ["token": token, "instanceId": "fpkh4gu4f80j3noorhassgg6g4_20231205", "eventName": "Trash", "date": "2023-12-03", "frequency": "Weekly",
+                "endRecurrenceDate": "2023-12-30", "description": "gibberish", "assignedRoommates": ["uqWhv6HG6QPqjGyJV2a9FF6R1pm2"]]
+    
+    Functions.functions().httpsCallable("editChore").call(data) { (result, error) in
+        print("in editChore")
         if let error = error as NSError? {
             if error.domain == FunctionsErrorDomain {
                 let code = FunctionsErrorCode(rawValue: error.code)

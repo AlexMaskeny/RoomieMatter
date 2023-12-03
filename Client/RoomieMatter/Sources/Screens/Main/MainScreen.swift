@@ -46,15 +46,45 @@ struct MainScreen: View {
         }
         
         Button {
-            completeChore(instanceId: "fpkh4gu4f80j3noorhassgg6g4_20231202")
+            print(editChore(name: "name", date: Date(), description: "description", assignedRoommates: "roommate"))
+        } label: {
+            Text("Edit chore")
+        }
+        
+        Button {
+            completeChore(instanceId: "12us5cup6gtbl2cklmr5ns8mvg_20231202")
         } label: {
             Text("Complete chore")
         }
         
         Button {
-            deleteChore(instanceId: "sgu87r22jp0blbemulna09mg2s_20231202")
+            deleteChore(instanceId: "n0v8v2lhnnrkrka7no8ml8d8bc_20231202")
         } label: {
             Text("Delete chore")
+        }
+        
+        Button {
+            getEvents()
+        } label: {
+            Text("Get events")
+        }
+        
+        Button {
+            addEvent()
+        } label: {
+            Text("Add event")
+        }
+        
+        Button {
+            editEvent()
+        } label: {
+            Text("Edit event")
+        }
+        
+        Button {
+            deleteEvent()
+        } label: {
+            Text("Delete event")
         }
         
         Button {
