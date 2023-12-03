@@ -9,7 +9,7 @@
 /* Begin PBXBuildFile section */
 		21F5B4532AF83C4B008124D0 /* TextBubble.swift in Sources */ = {isa = PBXBuildFile; fileRef = 21F5B4522AF83C4B008124D0 /* TextBubble.swift */; };
 		21F5B4552AF84202008124D0 /* AuthenticationViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 21F5B4542AF84202008124D0 /* AuthenticationViewModel.swift */; };
-		7A269D662B190B31009CEE1F /* RoomHomeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7A269D652B190B31009CEE1F /* RoomHomeView.swift */; };
+		7A269D662B190B31009CEE1F /* CreateRoom.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7A269D652B190B31009CEE1F /* CreateRoom.swift */; };
 		7A93C2872B01663900C2C69A /* MenuView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7A93C2862B01663900C2C69A /* MenuView.swift */; };
 		7A93C2892B01B29500C2C69A /* RoomTile.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7A93C2882B01B29500C2C69A /* RoomTile.swift */; };
 		B21F02202AF01F1A0001E8FB /* CustomModifiers.swift in Sources */ = {isa = PBXBuildFile; fileRef = B21F021F2AF01F1A0001E8FB /* CustomModifiers.swift */; };
@@ -70,7 +70,7 @@
 /* Begin PBXFileReference section */
 		21F5B4522AF83C4B008124D0 /* TextBubble.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TextBubble.swift; sourceTree = "<group>"; };
 		21F5B4542AF84202008124D0 /* AuthenticationViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuthenticationViewModel.swift; sourceTree = "<group>"; };
-		7A269D652B190B31009CEE1F /* RoomHomeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RoomHomeView.swift; sourceTree = "<group>"; };
+		7A269D652B190B31009CEE1F /* CreateRoom.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CreateRoom.swift; sourceTree = "<group>"; };
 		7A93C2862B01663900C2C69A /* MenuView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MenuView.swift; sourceTree = "<group>"; };
 		7A93C2882B01B29500C2C69A /* RoomTile.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RoomTile.swift; sourceTree = "<group>"; };
 		B21F021F2AF01F1A0001E8FB /* CustomModifiers.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CustomModifiers.swift; sourceTree = "<group>"; };
@@ -321,7 +321,7 @@
 				7A93C2862B01663900C2C69A /* MenuView.swift */,
 				F4E320092AFFF9AF00DB34D3 /* ChoreStore.swift */,
 				7A93C2882B01B29500C2C69A /* RoomTile.swift */,
-				7A269D652B190B31009CEE1F /* RoomHomeView.swift */,
+				7A269D652B190B31009CEE1F /* CreateRoom.swift */,
 			);
 			path = LoggedIn;
 			sourceTree = "<group>";
@@ -438,7 +438,7 @@
 				F4E3200D2B0072A100DB34D3 /* ChoreView.swift in Sources */,
 				F8A48F3F2B17F6C700B0638D /* AddChoreViewModel.swift in Sources */,
 				F805C0932B15BFD500F6AA9E /* SyncCalendarView.swift in Sources */,
-				7A269D662B190B31009CEE1F /* RoomHomeView.swift in Sources */,
+				7A269D662B190B31009CEE1F /* CreateRoom.swift in Sources */,
 				EE36BB9E2B165AFB009C5B5C /* EditChoreViewModel.swift in Sources */,
 				EE36BBA42B1661C5009C5B5C /* EditEventViewViewModel.swift in Sources */,
 				B285F4702AF212040096EE9E /* ChatStore.swift in Sources */,
