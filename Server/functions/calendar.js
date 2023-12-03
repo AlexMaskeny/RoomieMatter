@@ -51,6 +51,17 @@ async function getEmailFromUuid(uuid) {
   return await user.data().email;
 }
 
+// TODO: add calendar IDs to database
+async function getCalendarId(roomid, calendarType) {
+  const room = await db.collection("rooms").doc(roomid).get();
+
+  if (calendarType == "chore") {
+    return await room.data().choresCalendarId;
+  } else {
+    return await room.data().eventsCalendarId;
+  }
+}
+
 /* REQUIRES: instanceId
  * RETURNS: eventId
  */
@@ -126,15 +137,19 @@ async function getInstanceId(eventId, calendar) {
 }
 
 // takes in Google's raw event and returns a chore object with fields we need
+// instanceId, eventName, date, author, (frequency, description, assignedRoommates)
 async function parseChore(instanceId, event) {
   if (!event || event.length == 0) {
     return {};
   }
 
+  const creator = getUuidFromEmail(event.creator.email);
+
   let eventData = {
     instanceId: instanceId,
     eventName: event.summary,
     date: event.start.date,
+    author: creator,
   };
 
   if (event.recurrence) {
@@ -174,6 +189,9 @@ async function parseChore(instanceId, event) {
     let assignees = [];
     functions.logger.log(event.attendees);
     for (const attendee of event.attendees) {
+      if (attendee.responseStatus == 'declined') {
+        continue;
+      }
       const uuid = await getUuidFromEmail(attendee.email);
       assignees.push(uuid);
     }
@@ -191,6 +209,7 @@ function parseEvent(event) {
     eventName: event.summary,
     startDatetime: event.start.dateTime,
     endDatetime: event.end.dateTime,
+    author: creator,
   };
 
   if (event.description) {
@@ -270,7 +289,7 @@ function formatRecurrence(frequency, date, endRecurrenceDate) {
     ]
   },...]
 */
-// returns details of a chore: instanceId, eventName, date, frequency, (description), (assignedRoommates)
+// returns details of a chore: instanceId, eventName, date, author, frequency, (description), (assignedRoommates)
 async function getChoreHelper(instanceId, calendar) {
   const res = await calendar.events.get({
     calendarId: choresCalendarId,
@@ -384,7 +403,7 @@ const getChore = functions.https.onCall(async (data, context) => {
  * MODIFIES: nothing
  * EFFECTS: returns list of chores from RoomieMatter Chore calendar
  * RETURNS: status, [chore]
- *          chore = {instanceId, eventName, date, frequency, (description), (assignedRoommates)}
+ *          chore = {instanceId, eventName, date, author, frequency, (description), (assignedRoommates)}
  *          assignedRoommates = [uuid]
  */
 async function getChoresBody(data, context) {
@@ -416,7 +435,7 @@ async function getChoresBody(data, context) {
     }
 
     // if non-recurring event, use eventId as instanceId
-    if (!event.recurrence || event.recurrence.length === 0) {
+    if (!event.id.includes('_')) {
       functions.logger.log("Non-recurring event");
       eventsIds.push({ instanceId: event.id });
     }
@@ -438,8 +457,7 @@ async function getChoresBody(data, context) {
       if (instanceId == "") {
         functions.logger.error("Error getting instance ID");
         throw new functions.https.HttpsError(
-          "Error getting instance ID"
-          // TODO: more descriptive error message with eventId
+          "Error getting instance ID", instanceId
         );
       }
 
@@ -603,10 +621,11 @@ async function editChoreBody(data, context) {
   let input = {
     calendarId: choresCalendarId,
     eventId: eventId,
+    resource: {},
   };
 
   if (data.eventName) {
-    input.summary = data.eventName;
+    input.resource.summary = data.eventName;
   }
 
   // requirement: change date and frequency together
@@ -615,15 +634,15 @@ async function editChoreBody(data, context) {
   }
 
   if (data.date && data.frequency) {
-    input.start = {};
-    input.end = {};
-    input.start.date = data.date;
-    input.end.date = data.date;
-    input.recurrence = formatRecurrence(data.frequency, data.date, data.endRecurrenceDate);
+    input.resource.start = {};
+    input.resource.end = {};
+    input.resource.start.date = data.date;
+    input.resource.end.date = data.date;
+    input.resource.recurrence = formatRecurrence(data.frequency, data.date, data.endRecurrenceDate);
   }
 
   if (data.description) {
-    input.summary = data.description;
+    input.resource.summary = data.description;
   }
   if (data.assignedRoommates) {
     let attendees = [];
@@ -631,7 +650,7 @@ async function editChoreBody(data, context) {
       const email = await getEmailFromUuid(attendee);
       attendees.push({ email: email });
     }
-    input.attendees = attendees;
+    input.resource.attendees = attendees;
   }
 
   // call API to patch event
@@ -772,7 +791,7 @@ const deleteChore = functions.https.onCall(async (data, context) => {
  * MODIFIES: nothing
  * EFFECTS: returns list of events from RoomieMatter Events calendar
  * RETURNS: status, [event]
- *          event = {eventId, eventName, date, (description), (guests)}
+ *          event = {eventId, eventName, date, author, (description), (guests)}
  */
 async function getEventsBody(data, context) {
   const calendar = createOAuth(context.auth, data.token);
@@ -901,10 +920,11 @@ async function editEventBody(data, context) {
   let input = {
     calendarId: eventsCalendarId,
     eventId: data.eventId,
+    resource: {},
   };
 
   if (data.eventName) {
-    input.summary = data.eventName;
+    input.resource.summary = data.eventName;
   }
 
   // requirement: change startDatetime and endDatetime together
@@ -919,16 +939,16 @@ async function editEventBody(data, context) {
         "invalid input: startDateTime not less than endDateTime"
       );
     }
-    input.start = {};
-    input.end = {};
-    input.start.dateTime = data.startDatetime;
-    input.start.timeZone = "America/New_York";
-    input.end.dateTime = data.endDatetime;
-    input.end.timeZone = "America/New_York";
+    input.resource.start = {};
+    input.resource.end = {};
+    input.resource.start.dateTime = data.startDatetime;
+    input.resource.start.timeZone = "America/New_York";
+    input.resource.end.dateTime = data.endDatetime;
+    input.resource.end.timeZone = "America/New_York";
   }
 
   if (data.description) {
-    input.description = data.description;
+    input.resource.description = data.description;
   }
   if (data.guests) {
     let attendees = [];
@@ -936,7 +956,7 @@ async function editEventBody(data, context) {
       const email = await getEmailFromUuid(attendee);
       attendees.push({ email: email });
     }
-    input.attendees = attendees;
+    input.resource.attendees = attendees;
   }
 
   functions.logger.log(input);
