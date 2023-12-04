@@ -52,13 +52,19 @@ final class AuthenticationViewModel {
                 return
             }
             
-            guard userRoomDocSnapshot!.documents.count > 0 else {
+            guard let userRoomDocSnapshot = userRoomDocSnapshot else {
+                print("Error getting room: failed to fetch user")
+                completion?()
+                return
+            }
+
+            guard userRoomDocSnapshot.documents.count > 0 else {
                 print("Error getting room: failed to fetch room for user")
                 completion?()
                 return
             }
             
-            let roomRef = userRoomDocSnapshot!.documents[0].get("room") as! DocumentReference
+            let roomRef = userRoomDocSnapshot.documents[0].get("room") as! DocumentReference
             roomRef.getDocument { (roomSnapshot, error) in
                 guard error == nil else {
                     print("Error getting user: \(error!.localizedDescription)")
