@@ -6,6 +6,8 @@ import SwiftUI
 
 struct LoggedInView: View {
     @StateObject var viewModel = LoggedInViewViewModel()
+    
+
     var body: some View {
         NavigationStack{
             TabView {

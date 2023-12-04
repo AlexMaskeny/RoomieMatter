@@ -26,26 +26,29 @@ struct Content: View {
     @State private var userLoggedIn = (Auth.auth().currentUser != nil)
 
     var body: some View {
-        VStack {
-            if userLoggedIn {
-                NavigationStack {
-//                    MainScreen()
-                    LoggedInView()
-                }
-            } else {
-                AuthScreen()
-            }
-        }.onAppear{
-            //Firebase state change listeneer
-            Auth.auth().addStateDidChangeListener{ auth, user in
-                if (user != nil) {
-                    userLoggedIn = true
-                    silentGoogleSignIn() // New addition
+        NavigationStack{
+            VStack {
+                if userLoggedIn {
+                    NavigationStack {
+//                        MainScreen()
+                        LoggedInView()
+                    }
                 } else {
-                    userLoggedIn = false
+                    AuthScreen()
+                }
+            }.onAppear{
+                //Firebase state change listeneer
+                Auth.auth().addStateDidChangeListener{ auth, user in
+                    if (user != nil) {
+                        userLoggedIn = true
+                        silentGoogleSignIn() // New addition
+                    } else {
+                        userLoggedIn = false
+                    }
                 }
             }
         }
+        
     }
     
     private func silentGoogleSignIn() {

@@ -20,7 +20,7 @@ struct EditEventView: View {
                     .disabled(true)
                     .overlay {
                         Button{
-                            viewModel.showingDatePicker.toggle()
+                            //viewModel.showingDatePicker.toggle()
                         } label: {
                             HStack {
                                 Spacer()
@@ -30,13 +30,13 @@ struct EditEventView: View {
                             }
                         }
                     }
-                if viewModel.showingDatePicker{
-                    DatePicker("Date Picker", selection: $viewModel.date, in: Date.now...)
-                        .datePickerStyle(.graphical)
-                        .onChange(of: viewModel.date) { oldValue, newValue in
-                            viewModel.event.date = newValue.timeIntervalSince1970
-                        }
-                }
+                
+                DatePicker("Date Picker", selection: $viewModel.dateStart, in: Date.now...)
+                    .datePickerStyle(.graphical)
+                DatePicker("Date Picker", selection: $viewModel.dateEnd, in: Date.now...)
+                    .datePickerStyle(.graphical)
+                
+                
                 TextEditorView(text: $viewModel.event.description)
                     .frame(height: 250)
                 

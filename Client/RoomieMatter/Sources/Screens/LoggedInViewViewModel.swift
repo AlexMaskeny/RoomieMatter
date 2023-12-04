@@ -2,24 +2,36 @@ import Firebase
 import FirebaseAuth
 import FirebaseFirestore
 import FirebaseFunctions
+import GoogleSignIn
 import Foundation
 
 @MainActor
 class LoggedInViewViewModel: ObservableObject{
     @Published var user: Roommate
     @Published var chores: [Chore]
+    var myChores: [Chore]{
+        chores.filter { chore in
+            chore.checkContains(roommate: user)
+        }
+    }
     @Published var events: [Event]
+    var myEvents: [Event] {
+        events.filter { event in
+            event.checkContains(roommate: user)
+        }
+    }
+    @Published var roommates: [Roommate]
     @Published var roomName = ""
     var listener: ListenerRegistration?
     
     init(){
+        chores = [Chore]()
+        events = [Event]()
+        roommates = [Roommate]()
+        
         let userID = Auth.auth().currentUser?.uid ?? "uid"
         let displayName = Auth.auth().currentUser?.displayName ?? "unknown"
         let photoURL = Auth.auth().currentUser?.photoURL
-        
-        chores = [Chore]()
-        events = [Event]()
-        
         self.user = Roommate(id: userID, displayName: displayName, photoURL: photoURL, status: .home)
         
         let userRef = db.collection("users").document(userID)
@@ -42,22 +54,65 @@ class LoggedInViewViewModel: ObservableObject{
                 self.user.status = interpretString(status: userStatus)
             }
         }
-        
-        getChores()
+        getChores1()
         getEvents()
+        getRoommates()
+        
+        
+    }
+    
+    func getRoommates(){
+        if Auth.auth().currentUser != nil{
+            let userRef = db.collection("users").document(user.id)
+            db.collection("user_rooms").whereField("user", isEqualTo: userRef).getDocuments { snapshot, error in
+                guard let snapshot = snapshot else { print("Error getting snapshot"); return }
+                guard snapshot.documents.count > 0 else { print("Snapshot count = 0"); return }
+                
+                let roomRef = snapshot.documents[0].get("room") as! DocumentReference
+                
+                db.collection("user_rooms").whereField("room", isEqualTo: roomRef).getDocuments { snapshot1, error in
+                    if let snapshot1 = snapshot1 {
+                        for document in snapshot1.documents{
+                            if userRef == document.data()["user"] as! NSObject{
+                                guard let userStatus = document.data()["status"] as? String else {return}
+                                self.user.status = interpretString(status: userStatus)
+                            } else{
+                                guard let roommateStatus = document.data()["status"] as? String else {return}
+                                let roommateRef = document.data()["user"] as! DocumentReference
+                                roommateRef.getDocument { snapshot2, error in
+                                    if let snapshot2 = snapshot2{
+                                        guard let roommateDisplayName = snapshot2.get("displayName") as? String else {return}
+                                        guard let roommatePhotoURL = snapshot2.get("photoUrl") as? String else {return}
+                                        guard let roommateID = snapshot2.get("uuid") as? String else {return}
+                                        self.roommates.append(Roommate(id: roommateID, displayName: roommateDisplayName, photoURL: URL(string: roommatePhotoURL), status: interpretString(status: roommateStatus)))
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        } else {
+            roommates = [Roommate.Example1, Roommate.Example2, Roommate.Example3, Roommate.Example4]
+        }
+        
     }
     
     func getChores(){
         chores = [Chore.Example1, Chore.Example2]
     }
     
-    func getEvents(){
-        events = [Event.Example1, Event.Example2]
-    }
-    
     func getChores1(){
-        print("In chores")
-        Functions.functions().httpsCallable("testGetChores").call("hello") { (result, error) in
+        chores.removeAll()
+        guard let user = GIDSignIn.sharedInstance.currentUser else {
+            print("User not properly signed in")
+            return
+        }
+        let token = user.accessToken.tokenString
+        
+        
+        Functions.functions().httpsCallable("getChores").call(["token": token]) { (result, error) in
+            
             if let error = error as NSError? {
                 if error.domain == FunctionsErrorDomain {
                     let code = FunctionsErrorCode(rawValue: error.code)
@@ -65,53 +120,112 @@ class LoggedInViewViewModel: ObservableObject{
                     let details = error.userInfo[FunctionsErrorDetailsKey]
                     print("Error: \(message)")
                 }
-                // Handle the error
             }
-            print("In chores1")
-            print(result?.data)
-            if let data = result?.data as? [String: Any] {
-                print("In chores3")
-                print(data)
-            }
-            print("In chores2")
-        }
-    }
-    
-    func testStatus(){
-        print("Test status")
-        let userRef = db.collection("users").document(user.id)
-        
-        db.collection("user_rooms").whereField("user", isEqualTo: userRef).getDocuments { snapshot, error in
-            guard let snapshot = snapshot else { return }
-            guard !snapshot.documents.isEmpty else { return }
-            let roomRef = snapshot.documents[0].documentID
-            print("ROOM Ref? = \(roomRef)")
-            db.collection("user_rooms").document(roomRef).updateData(["status": "TEST"]) { error in
-                print("ERROR \(error?.localizedDescription ?? " ")")
+            guard let result = result else { print("Error unwrapping result"); return }
+            //print(result.data)
+            
+            guard let data = result.data as? [String: Any] else { print("Error unwrapping data"); return }
+            //print(data)
+            //print(data["chores"])
+            //print(type(of: data["chores"]))
+            guard let chores = data["chores"] as? [Any] else { print("Error unwrapping data1"); return }
+            for choreDict in chores {
+                guard let chore = choreDict as? [String:Any] else { print("Error unwrapping data2"); return }
+                //print(chore)
+                var id = chore["instanceId"] as? String ?? UUID().uuidString
+                var name = chore["eventName"] as? String ?? " "
+                var date = chore["date"] as? String ?? " "
+                var freq = chore["frequency"] as? String ?? " "
+                var description = chore["description"] as? String ?? " "
+                var authorID = chore["author"] as? String ?? "uqWhv6HG6QPqjGyJV2a9FF6R1pm2" //CHANGE
+                print("DEBUG assigned roommates \(chore["assignedRoommates"])")
+                var assignedRoommateIDs = chore["assignedRoommates"] as? [String] ?? [] //CHange
+                var assignedRoommates = [Roommate]()
+                for assignedRoommateID in assignedRoommateIDs {
+                    assignedRoommates.append(self.findRoommate(id: assignedRoommateID))
+                }
+                
+                let newChore = Chore(id: id, name: name, date: self.getDate(date: date).timeIntervalSince1970, description: description, author: self.findRoommate(id: authorID), assignedRoommates: assignedRoommates, frequency: interpretFrequency(frequency: freq))
+                
+                self.chores.append(newChore)
             }
             
         }
+        chores.sort { lhs, rhs in
+            lhs.date < rhs.date
+        }
     }
     
-    func testStatus1(){
-        print("Function form")
-        let userRef = db.collection("users").document(user.id)
+    func getEvents(){
+        events = [Event.Example1, Event.Example2]
+    }
+    
+    func getEvents1(){
+        events.removeAll()
+        guard let user = GIDSignIn.sharedInstance.currentUser else {
+            print("User not properly signed in")
+            return
+        }
+        let token = user.accessToken.tokenString
         
-        db.collection("user_rooms").whereField("user", isEqualTo: userRef).getDocuments { snapshot, error in
-            
-            let roomRef = snapshot!.documents[0].get("room") as! DocumentReference
-            
-            db.collection("user_rooms").whereField("room", isEqualTo: roomRef).getDocuments { snapshot1, error in
-                if let snapshot1 = snapshot1{
-                    for document in snapshot1.documents{
-                        if userRef == document.data()["user"] as! NSObject{
-                            guard let userStatus = document.data()["status"] as? String else {return}
-                            self.user.status = interpretString(status: userStatus)
-                            return
-                        }
-                    }
+        Functions.functions().httpsCallable("getEvents").call(["token": token]) { result, error in
+            if let error = error as NSError? {
+                if error.domain == FunctionsErrorDomain {
+                    let code = FunctionsErrorCode(rawValue: error.code)
+                    let message = error.localizedDescription
+                    let details = error.userInfo[FunctionsErrorDetailsKey]
+                    print("Error: \(message)")
                 }
             }
+            guard let result = result else { print("Error unwrapping result"); return }
+            print(result.data)
+            guard let data = result.data as? [String: Any] else { print("Error unwrapping data"); return }
+            
+            guard let events = data["events"] as? [Any] else { print("Error unwrapping data[events"); return }
+            
+            for eventDict in events{
+                guard let event = eventDict as? [String:Any] else { print("Error unwrapping data2"); return }
+                
+                var author = event["author"] as? String ?? ""
+                var description = event["description"] as? String ?? ""
+                var endDatetime = event["endDatetime"] as? String ?? ""
+                var eventId = event["eventId"] as? String ?? UUID().uuidString
+                var eventName = event["eventName"] as? String ?? ""
+                var startDatetime = event["startDatetime"] as? String ?? ""
+                var guestsID = event["guests"] as? [String] ?? []
+                //var guests = [Roommate]()
+                var guests = guestsID.map { ID in
+                    self.findRoommate(id: ID)
+                }
+                let formatter = DateFormatter()
+                formatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ssZ"
+                
+                let newEvent = Event(id: eventId, name: eventName, date: formatter.date(from: startDatetime)?.timeIntervalSince1970 ?? Date().timeIntervalSince1970, dateEnd: formatter.date(from: endDatetime)?.timeIntervalSince1970 ?? Date().timeIntervalSince1970, description: description, author: self.findRoommate(id: author), Guests: guests)
+                
+                self.events.append(newEvent)
+            }
         }
+        events.sort { lhs, rhs in
+            lhs.date < rhs.date
+        }
+    }
+    
+    
+    
+    func getDate(date:String) -> Date{
+        let formatter = DateFormatter()
+        formatter.dateFormat = "y-MM-dd"
+        return formatter.date(from: date) ?? Date()
+    }
+    
+    func findRoommate(id: String) -> Roommate {
+        var bigArr = roommates
+        bigArr.append(user)
+        for roommate in bigArr {
+            if roommate.id == id{
+                return roommate
+            }
+        }
+        return Roommate.Example1
     }
 }

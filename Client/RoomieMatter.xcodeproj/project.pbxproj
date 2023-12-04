@@ -270,9 +270,9 @@
 			isa = PBXGroup;
 			children = (
 				EE36BB9B2B165AE7009C5B5C /* EditChoreView.swift */,
+				EE36BB9D2B165AFB009C5B5C /* EditChoreViewModel.swift */,
 				F8A48F3A2B17F6C700B0638D /* AddChoreView.swift */,
 				F8A48F3B2B17F6C700B0638D /* AddChoreViewModel.swift */,
-				EE36BB9D2B165AFB009C5B5C /* EditChoreViewModel.swift */,
 			);
 			path = ManageChore;
 			sourceTree = "<group>";

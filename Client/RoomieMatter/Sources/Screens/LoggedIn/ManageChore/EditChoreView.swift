@@ -18,24 +18,20 @@ struct EditChoreView: View {
                 InputView(placeholder: "\(Date(timeIntervalSince1970: viewModel.chore.date).formatted(date: .abbreviated, time: .shortened))", text: .constant(""))
                     .disabled(true)
                     .overlay {
-                        Button{
-                            viewModel.showingDatePicker.toggle()
-                        } label: {
-                            HStack {
-                                Spacer()
-                                Image(systemName: "calendar")
-                                    .padding(.trailing)
-                                    .font(.title)
-                            }
+                        HStack {
+                            Spacer()
+                            Image(systemName: "calendar")
+                                .padding(.trailing)
+                                .font(.title)
                         }
                     }
-                if viewModel.showingDatePicker{
-                    DatePicker("Date Picker", selection: $viewModel.date, in: Date.now...)
-                        .datePickerStyle(.graphical)
-                        .onChange(of: viewModel.date) { oldValue, newValue in
-                            viewModel.chore.date = newValue.timeIntervalSince1970
-                        }
-                }
+                
+                DatePicker("Date Picker", selection: $viewModel.date, in: Date.now..., displayedComponents: .date)
+                    .datePickerStyle(.graphical)
+                    .onChange(of: viewModel.date) { oldValue, newValue in
+                        viewModel.chore.date = newValue.timeIntervalSince1970
+                    }
+                
                 InputView(placeholder: "Frequency", text: .constant(""))
                     .disabled(true)
                     .overlay(

@@ -5,15 +5,27 @@ import FirebaseAuth
 import FirebaseFirestore
 
 struct HomeView: View {
-    @StateObject var homeViewViewModel:HomeViewViewModel
+    //@StateObject var homeViewViewModel:HomeViewViewModel
     @EnvironmentObject var loggedInViewViewModel: LoggedInViewViewModel
     
     var body: some View {
         ScrollView {
             VStack(alignment: .leading){
+                Button{
+                    //getEvents()
+                    loggedInViewViewModel.getChores1()
+                } label: {
+                    Text("Get chores")
+                }
+                Button{
+                    //getEvents()
+                    loggedInViewViewModel.getEvents1()
+                } label: {
+                    Text("Get Events")
+                }
                 RoommateStatusView(isSelf: true, roommate: loggedInViewViewModel.user)
                 Divider()
-                ForEach(homeViewViewModel.roommates){ roommate in
+                ForEach(loggedInViewViewModel.roommates){ roommate in
                     RoommateStatusView(isSelf: false, roommate: roommate)
                     Divider()
                 }
@@ -25,7 +37,7 @@ struct HomeView: View {
                             .bold()
                             .padding()
                         NavigationLink {
-                            AddChoreView(roommates: homeViewViewModel.roommates)
+                            AddChoreView(author: loggedInViewViewModel.user, roommates: loggedInViewViewModel.roommates, loggedInViewViewModel: loggedInViewViewModel)
                         } label: {
                             Image(systemName: "plus")
                                 .font(.title)
@@ -38,16 +50,16 @@ struct HomeView: View {
                         }
                         Spacer()
                         NavigationLink("View All") {
-                            AllChores(chores: homeViewViewModel.chores)
+                            AllChores(chores: loggedInViewViewModel.chores)
                         }
                         .padding()
                     }
                     
                     ScrollView(.horizontal){
                         HStack{
-                            ForEach(homeViewViewModel.chores){ chore in
+                            ForEach(loggedInViewViewModel.chores){ chore in
                                 NavigationLink{
-                                    ExpandedChore(chore: chore, roommates: homeViewViewModel.roommates)
+                                    ExpandedChore(chore: chore, roommates: loggedInViewViewModel.roommates)
                                 }label: {
                                     ChoreView(chore: chore)
                                         .foregroundStyle(.black)
@@ -63,7 +75,7 @@ struct HomeView: View {
                             .bold()
                             .padding()
                         NavigationLink {
-                            AddChoreView(roommates: homeViewViewModel.roommates)
+                            AddChoreView(author: loggedInViewViewModel.user, roommates: loggedInViewViewModel.roommates, loggedInViewViewModel: loggedInViewViewModel)
                         } label: {
                             Image(systemName: "plus")
                                 .font(.title)
@@ -76,16 +88,16 @@ struct HomeView: View {
                         }
                         Spacer()
                         NavigationLink("View All") {
-                            AllChores(chores: homeViewViewModel.myChores)
+                            AllChores(chores: loggedInViewViewModel.myChores)
                         }
                         .padding()
                     }
                     
                     ScrollView(.horizontal){
                         HStack{
-                            ForEach(homeViewViewModel.myChores){ chore in
+                            ForEach(loggedInViewViewModel.myChores){ chore in
                                 NavigationLink{
-                                    ExpandedChore(chore: chore, roommates: homeViewViewModel.roommates)
+                                    ExpandedChore(chore: chore, roommates: loggedInViewViewModel.roommates)
                                 }label: {
                                     ChoreView(chore: chore)
                                         .foregroundStyle(.black)
@@ -102,7 +114,7 @@ struct HomeView: View {
                             .bold()
                             .padding()
                         NavigationLink {
-                            Text("Add Event View")
+                            AddEventView(author: loggedInViewViewModel.user, roommates: loggedInViewViewModel.roommates, loggedInViewViewModel: loggedInViewViewModel)
                         } label: {
                             Image(systemName: "plus")
                                 .font(.title)
@@ -122,9 +134,9 @@ struct HomeView: View {
                     
                     ScrollView(.horizontal){
                         HStack{
-                            ForEach(homeViewViewModel.events){ event in
+                            ForEach(loggedInViewViewModel.events){ event in
                                 NavigationLink{
-                                    EventInfo(event: event, roommates: homeViewViewModel.roommates)
+                                    EventInfo(event: event, roommates: loggedInViewViewModel.roommates)
                                     //EditEventView(roommates: homeViewViewModel.roommates, event: event)
                                 }label: {
                                     EventView(event: event)
@@ -141,7 +153,7 @@ struct HomeView: View {
                             .bold()
                             .padding()
                         NavigationLink {
-                            Text("Add Event View")
+                            AddEventView(author: loggedInViewViewModel.user, roommates: loggedInViewViewModel.roommates, loggedInViewViewModel: loggedInViewViewModel)
                         } label: {
                             Image(systemName: "plus")
                                 .font(.title)
@@ -161,9 +173,9 @@ struct HomeView: View {
                     
                     ScrollView(.horizontal){
                         HStack{
-                            ForEach(homeViewViewModel.myEvents){ event in
+                            ForEach(loggedInViewViewModel.myEvents){ event in
                                 NavigationLink{
-                                    EventInfo(event: event, roommates: homeViewViewModel.roommates)
+                                    EventInfo(event: event, roommates: loggedInViewViewModel.roommates)
                                 }label: {
                                     EventView(event: event)
                                         .foregroundStyle(.black)
@@ -173,17 +185,13 @@ struct HomeView: View {
                     }
                     .padding(.horizontal)
                 }
-                
-                
-                
-                
             }
         }
         .padding(.top)
     }
     
     init(chores:[Chore], events:[Event]){
-        self._homeViewViewModel = StateObject(wrappedValue: HomeViewViewModel(chores: chores, events: events))
+//        self._homeViewViewModel = StateObject(wrappedValue: HomeViewViewModel(chores: chores, events: events))
     }
 }
 

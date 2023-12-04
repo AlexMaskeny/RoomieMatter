@@ -9,19 +9,22 @@ import SwiftUI
 
 struct AddEventView: View {
     @StateObject var viewModel: AddEventViewModel
+    @StateObject var loggedInViewViewModel: LoggedInViewViewModel
+    @Environment(\.dismiss) private var dismiss
     
-    init(roommates: [Roommate]){
-        self._viewModel = StateObject(wrappedValue: AddEventViewModel(roommates: roommates))
+    init(author: Roommate, roommates: [Roommate], loggedInViewViewModel: LoggedInViewViewModel){
+        self._loggedInViewViewModel = StateObject(wrappedValue: loggedInViewViewModel)
+        self._viewModel = StateObject(wrappedValue: AddEventViewModel(author: author, roommates: roommates))
     }
     var body: some View {
         ScrollView {
             VStack {
-                InputView(placeholder: "Event Name", text: $viewModel.newEvent.name)
-                InputView(placeholder: "\(Date(timeIntervalSince1970: viewModel.newEvent.date).formatted(date: .abbreviated, time: .shortened))", text: .constant(""))
+                InputView(placeholder: "Event Name", text: $viewModel.name)
+                InputView(placeholder: "\(viewModel.date.formatted(date: .abbreviated, time: .omitted))", text: .constant(""))
                     .disabled(true)
                     .overlay {
                         Button{
-                            viewModel.showingDatePicker.toggle()
+                            //viewModel.showingDatePicker.toggle()
                         } label: {
                             HStack {
                                 Spacer()
@@ -31,27 +34,14 @@ struct AddEventView: View {
                             }
                         }
                     }
-                if viewModel.showingDatePicker{
-                    DatePicker("Date Picker", selection: $viewModel.date, in: Date.now...)
-                        .datePickerStyle(.graphical)
-                        .onChange(of: viewModel.date) { oldValue, newValue in
-                            viewModel.newEvent.date = newValue.timeIntervalSince1970
-                        }
-                }
-//                InputView(placeholder: "Frequency", text: .constant(""))
-//                    .disabled(true)
-//                    .overlay(
-//                        HStack {
-//                            Spacer()
-//                            Picker("Frequency: ", selection: $viewModel.newChore.frequency) {
-//                                ForEach(Event.Frequency.allCases, id: \.self){ freq in
-//                                    Text(freq.asString)
-//                                    
-//                                }
-//                            }
-//                        }
-//                    )
-                TextEditorView(placeholder: "Description", text: $viewModel.newEvent.description)
+                Text("Start Time")
+                DatePicker("Event Start", selection: $viewModel.date, in: Date.now...)
+                    .datePickerStyle(.graphical)
+                Text("End Time")
+                DatePicker("Event End", selection: $viewModel.dateEnd, in: Date.now...)
+                    .datePickerStyle(.graphical)
+                
+                TextEditorView(placeholder: "Description", text: $viewModel.description)
                     .frame(height: 250)
                 InputView(placeholder: "Add Guests", text: .constant(""))
                     .disabled(true)
@@ -81,34 +71,36 @@ struct AddEventView: View {
                         HStack {
                             RoommateStatusView(isSelf: false, roommate: roommate)
                             Button{
-                                if viewModel.newEvent.checkContains(roommate: roommate) {
-                                    viewModel.newEvent.assignedRoommates.removeAll {
+                                if viewModel.checkContains(roommate: roommate) {
+                                    viewModel.guests.removeAll {
                                         $0.id == roommate.id
                                     }
                                 } else{
-                                    viewModel.newEvent.assignedRoommates.append(roommate)
+                                    viewModel.guests.append(roommate)
                                 }
                             } label: {
-                                Image(systemName: viewModel.newEvent.assignedRoommates.contains(where: {
+                                Image(systemName: viewModel.guests.contains(where: {
                                     $0.id == roommate.id
                                 }) ? "trash" : "plus")
-                                    .padding()
-                                    .font(.title)
-                                    .foregroundStyle(.black)
-                        }
+                                .padding()
+                                .font(.title)
+                                .foregroundStyle(.black)
+                            }
                         }
                         Divider()
                     }
                 }
-                TLButton(title: "Save", backgroundColor: .roomieMatter){
-                    
+                CustomButton(title: "Save", backgroundColor: .roomieMatter){
+                    viewModel.saveEvent()
+                    //loggedInViewViewModel.getChores1()
+                    dismiss()
                 }
                 
                 Spacer()
             }
             .padding()
             .toolbarBackground(Color.roomieMatter)
-        .toolbarBackground(.visible, for: .navigationBar)
+            .toolbarBackground(.visible, for: .navigationBar)
         }
     }
     
@@ -148,7 +140,5 @@ struct AddEventView: View {
     }
 }
 
-#Preview {
-    AddEventView(roommates: [Roommate.Example1, Roommate.Example2])
-}
+
 
