@@ -22,6 +22,8 @@ const createRoom = functions.https.onCall(async (data, context) => {
   }
 
   try {
+    const res = await createNewCalendars(data.token);
+
     const userRef = db.collection("users").doc(userId);
 
     const roomRef = await db.collection("rooms").add({
@@ -29,6 +31,8 @@ const createRoom = functions.https.onCall(async (data, context) => {
       owner: userRef,
       createdAt: admin.firestore.FieldValue.serverTimestamp(),
       typing: [],
+      choresCalendarId: res.choresCalendarId, 
+      eventsCalendarId: res.eventsCalendarId,
     });
 
     await db.collection("user_rooms").add({
