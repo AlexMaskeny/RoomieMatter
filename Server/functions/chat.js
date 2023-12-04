@@ -313,7 +313,7 @@ async function getFunctions(context) {
           addItemData.description = description;
         }
         if (assignedRoommates) {
-          addItemData.attendees = assignedRoommates.map((attendee) => {
+          addItemData.assignedRoommates = assignedRoommates.map((attendee) => {
             const userInfo = displayNameToUser[attendee];
             return userInfo.uuid;
           });
@@ -339,7 +339,11 @@ async function getFunctions(context) {
 
     apiFunctions.push({
       name: `edit${capitalizeFirstLetter(type)}`,
-      description: `Edits an existing ${type} with at least 1 parameter. If newDate is specified a newFrequency must also be specified`,
+      description:
+        `Edits an existing ${type} with at least 1 parameter. If one of newFrequency, newEndFrequency, or newDate are specified, they all must be. ` +
+        `For relative dates (like 'tomorrow'), the current date is ${americanDateFormatter(
+          now
+        )}`,
       parameters: {
         type: "object",
         properties: {
@@ -354,13 +358,16 @@ async function getFunctions(context) {
           },
           newDate: {
             type: "string",
-            description: `A new start date of the ${type} in YYYY-MM-DD format. For relative dates (like 'tomorrow'), the current date is ${americanDateFormatter(
-              now
-            )}`,
+            description: `A new start date of the ${type} in YYYY-MM-DD format`,
           },
           newFrequency: {
             type: "string",
             description: `A new frequency specifying how often the ${type} repeats`,
+            enum: ["Once", "Daily", "Biweekly", "Weekly", "Monthly"],
+          },
+          newEndFrequency: {
+            type: "string",
+            description: `Specifies when the repeating stops in YYYY-MM-DD format.`,
             enum: ["Once", "Daily", "Biweekly", "Weekly", "Monthly"],
           },
           description: {
@@ -419,11 +426,11 @@ async function getFunctions(context) {
         }
 
         if (addedRoommates) {
-          editItemData.attendees = [
-            ...item.assignedRoommates,
+          editItemData.assignedRoommates = [
+            ...(item.assignedRoommates ?? []),
             ...addedRoommates.reduce((acc, attendee) => {
               const userInfo = displayNameToUser[attendee];
-              if (item.assignedRoommates.includes(userInfo.uuid)) {
+              if (item.assignedRoommates?.includes(userInfo.uuid)) {
                 return acc;
               } else {
                 return [...acc, userInfo.uuid];
@@ -435,11 +442,12 @@ async function getFunctions(context) {
         if (removedRoommates) {
           const removedRoommatesUuids = removedRoommates.map((attendee) => {
             const userInfo = displayNameToUser[attendee];
-            return userInfo.uuid;
+            return userInfo?.uuid ?? "";
           });
-          editItemData.attendees = item.assignedRoommates.filter(
-            (attendeeUuid) => !removedRoommatesUuids.includes(attendeeUuid)
-          );
+          editItemData.assignedRoommates =
+            item.assignedRoommates?.filter(
+              (attendeeUuid) => !removedRoommatesUuids.includes(attendeeUuid)
+            ) ?? [];
         }
 
         const editItemFunction =
