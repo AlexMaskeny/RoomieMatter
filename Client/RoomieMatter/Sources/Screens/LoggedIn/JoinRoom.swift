@@ -11,21 +11,29 @@ struct JoinRoomView: View {
 
     var body: some View {
         NavigationView {
-            Form {
-                Section(header: Text("Room Information")) {
-                    TextField("Room Token", text: $roomToken)
-                }
+            VStack {
+                Text("Join Room")
+                    .font(.title)
+                    .fontWeight(.bold)
+                    .padding(.top, 50)
+                    .multilineTextAlignment(.center)
                 
-                Button("Join Room") {
-                    joinRoom()
+                Spacer()
+                Form {
+                    Section(header: Text("Room Token")) {
+                        TextField("Room Token", text: $roomToken)
+                    }
+                    
+                    Button("Join Room") {
+                        joinRoom()
+                    }
+                    .disabled(roomToken.isEmpty)
+                    .alert(isPresented: $showingAlert) {
+                        Alert(title: Text("Message"), message: Text(alertMessage), dismissButton: .default(Text("OK")))
+                    }
                 }
-                .disabled(roomToken.isEmpty)
-                .alert(isPresented: $showingAlert) {
-                    Alert(title: Text("Message"), message: Text(alertMessage), dismissButton: .default(Text("OK")))
-                }
+                .fullScreenCover(isPresented: $showLoggedInView, content: LoggedInView.init)
             }
-            .navigationBarTitle("Join a New Room")
-            .fullScreenCover(isPresented: $showLoggedInView, content: LoggedInView.init)
         }
     }
 

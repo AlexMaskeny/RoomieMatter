@@ -26,12 +26,18 @@ const createRoom = functions.https.onCall(async (data, context) => {
 
     const roomRef = await db.collection("rooms").add({
       name: roomName,
-      createdBy: userRef,
+      owner: userRef,
+      createdAt: admin.firestore.FieldValue.serverTimestamp(),
+      typing: [],
     });
 
     await db.collection("user_rooms").add({
       room: roomRef,
       user: userRef,
+      activity: 1,
+      createdAt: admin.firestore.FieldValue.serverTimestamp(),
+      membership_status: "member",
+      status: "home",
     });
 
     return { success: true };
@@ -161,7 +167,7 @@ const joinRoom = functions.https.onCall(async (data, context) => {
       room: roomRef,
       user: userRef,
       activity: 1,
-      createdAt: Date.now(),
+      createdAt: admin.firestore.FieldValue.serverTimestamp(),
       membership_status: "member",
       status: "home",
     });

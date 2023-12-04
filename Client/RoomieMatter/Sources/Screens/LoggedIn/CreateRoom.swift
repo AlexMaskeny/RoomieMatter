@@ -15,36 +15,39 @@ struct CreateRoomView: View {
 
     var body: some View {
         NavigationView {
-            Form {
-                Section(header: Text("Room Name")) {
-                    TextField("Room Name", text: $roomName)
+            VStack {
+                Text("Create Room")
+                    .font(.title)
+                    .fontWeight(.bold)
+                    .padding(.top, 50)
+                    .multilineTextAlignment(.center)
+                Form {
+                    Section(header: Text("Room Name")) {
+                        TextField("Room Name", text: $roomName)
+                    }
+                    Button(action: {
+                        createRoom()
+                    }) {
+                        Text("Create Room")
+                    }
+                    .disabled(roomName.isEmpty)
+                    .alert(isPresented: $showingAlert) {
+                        Alert(title: Text("Message"), message: Text(alertMessage), dismissButton: .default(Text("OK")))
+                    }
                 }
-                Button(action: {
-                    createRoom()
-                }) {
-                    Text("Create Room")
+                .fullScreenCover(isPresented: $showLoggedInView, content: LoggedInView.init)
+                .sheet(isPresented: $showShareSheet) {
+                    ShareSheet(activityItems: ["Join my room: \(roomName) on RoomieMatter!"])
                 }
-                .disabled(roomName.isEmpty)
-                .alert(isPresented: $showingAlert) {
-                    Alert(title: Text("Message"), message: Text(alertMessage), dismissButton: .default(Text("OK")))
-                }
-            }
-            .navigationBarTitle("Create a New Room")
-            .fullScreenCover(isPresented: $showLoggedInView, content: LoggedInView.init)
-            .sheet(isPresented: $showShareSheet) {
-                ShareSheet(activityItems: ["Join my room: \(roomName) on RoomieMatter!"])
             }
         }
     }
     
     private func createRoom() {
-        // Show loading indicator or disable UI here if needed
-
         Functions.functions().httpsCallable("createRoom").call([
             "roomName": roomName,
             "userId": authViewModel.user_uid
         ]) {(result, error) in
-            // Hide loading indicator or enable UI here
 
             if let error = error as NSError? {
                 self.alertMessage = "Error: \(error.localizedDescription)"
