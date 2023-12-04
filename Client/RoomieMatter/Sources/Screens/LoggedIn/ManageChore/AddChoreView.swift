@@ -4,42 +4,36 @@ import SwiftUI
 
 struct AddChoreView: View {
     @StateObject var viewModel: AddChoreViewModel
+    @StateObject var loggedInViewViewModel: LoggedInViewViewModel
     @Environment(\.dismiss) private var dismiss
     
-    init(roommates: [Roommate]){
-        self._viewModel = StateObject(wrappedValue: AddChoreViewModel(roommates: roommates))
+    init(loggedInViewViewModel: LoggedInViewViewModel){
+        self._loggedInViewViewModel = StateObject(wrappedValue: loggedInViewViewModel)
+        self._viewModel = StateObject(wrappedValue: AddChoreViewModel(author: loggedInViewViewModel.user, roommates: loggedInViewViewModel.roommates))
     }
     var body: some View {
         ScrollView {
             VStack {
-                InputView(placeholder: "Chore Name", text: $viewModel.newChore.name)
-                InputView(placeholder: "\(Date(timeIntervalSince1970: viewModel.newChore.date).formatted(date: .abbreviated, time: .shortened))", text: .constant(""))
+                InputView(placeholder: "Chore Name", text: $viewModel.name)
+                InputView(placeholder: "\(viewModel.date.formatted(date: .abbreviated, time: .omitted))", text: .constant(""))
                     .disabled(true)
                     .overlay {
-                        Button{
-                            viewModel.showingDatePicker.toggle()
-                        } label: {
-                            HStack {
-                                Spacer()
-                                Image(systemName: "calendar")
-                                    .padding(.trailing)
-                                    .font(.title)
-                            }
+                        HStack {
+                            Spacer()
+                            Image(systemName: "calendar")
+                                .padding(.trailing)
+                                .font(.title)
+                                .foregroundStyle(.roomieMatter)
                         }
                     }
-                if viewModel.showingDatePicker{
-                    DatePicker("Date Picker", selection: $viewModel.date, in: Date.now...)
-                        .datePickerStyle(.graphical)
-                        .onChange(of: viewModel.date) { oldValue, newValue in
-                            viewModel.newChore.date = newValue.timeIntervalSince1970
-                        }
-                }
+                DatePicker("Chore Date", selection: $viewModel.date, in: Date.now..., displayedComponents: .date)
+                    .datePickerStyle(.graphical)
                 InputView(placeholder: "Frequency", text: .constant(""))
                     .disabled(true)
                     .overlay(
                         HStack {
                             Spacer()
-                            Picker("Frequency: ", selection: $viewModel.newChore.frequency) {
+                            Picker("Frequency: ", selection: $viewModel.frequency) {
                                 ForEach(Chore.Frequency.allCases, id: \.self){ freq in
                                     Text(freq.asString)
                                     
@@ -47,7 +41,7 @@ struct AddChoreView: View {
                             }
                         }
                     )
-                TextEditorView(text: $viewModel.newChore.description)
+                TextEditorView(text: $viewModel.description)
                     .frame(height: 250)
                 InputView(placeholder: "Add Assignees", text: .constant(""))
                     .disabled(true)
@@ -73,19 +67,19 @@ struct AddChoreView: View {
                         }
                     }
                 if viewModel.addAssignees{
-                    ForEach(viewModel.roommates){ roommate in
+                    ForEach(viewModel.possibleAssignees){ roommate in
                         HStack {
                             RoommateStatusView(isSelf: false, roommate: roommate)
                             Button{
-                                if viewModel.newChore.checkContains(roommate: roommate) {
-                                    viewModel.newChore.assignedRoommates.removeAll {
+                                if viewModel.checkContains(roommate: roommate) {
+                                    viewModel.assignedRoommates.removeAll {
                                         $0.id == roommate.id
                                     }
                                 } else{
-                                    viewModel.newChore.assignedRoommates.append(roommate)
+                                    viewModel.assignedRoommates.append(roommate)
                                 }
                             } label: {
-                                Image(systemName: viewModel.newChore.assignedRoommates.contains(where: {
+                                Image(systemName: viewModel.assignedRoommates.contains(where: {
                                     $0.id == roommate.id
                                 }) ? "trash" : "plus")
                                 .padding()
@@ -97,7 +91,22 @@ struct AddChoreView: View {
                     }
                 }
                 CustomButton(title: "Save", backgroundColor: .roomieMatter){
-                    viewModel.saveChore()
+                    if loggedInViewViewModel.user.id == "1"{
+                        let newChore = Chore(id: UUID().uuidString, name: viewModel.name, date: viewModel.date.timeIntervalSince1970, description: viewModel.description, author: viewModel.author, assignedRoommates: viewModel.assignedRoommates, frequency: viewModel.frequency)
+                        loggedInViewViewModel.chores.append(newChore)
+                    } else{
+                        //Dispatch queue?
+                        DispatchQueue.main.async{
+                            print("pre chore saved")
+                            viewModel.saveChore()
+                            print("chore saved1")
+                            // Thread.sleep(forTimeInterval: 1_000)
+                            print("chore saved2")
+                            loggedInViewViewModel.getChores1()
+                            print("got chores")
+                        }
+                    }
+                    
                     dismiss()
                 }
                 
@@ -110,6 +119,4 @@ struct AddChoreView: View {
     }
 }
 
-#Preview {
-    AddChoreView(roommates: [Roommate.Example1, Roommate.Example2])
-}
+

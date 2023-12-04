@@ -9,6 +9,10 @@ import SwiftUI
 
 struct EventInfo: View {
     var event: Event
+    var roommates: [Roommate]
+    @Environment(\.dismiss) private var dismiss
+    @ObservedObject var loggedInViewViewModel: LoggedInViewViewModel
+    @State private var showing = true
 
     var body: some View {
         GeometryReader { geometry in
@@ -151,13 +155,24 @@ struct EventInfo: View {
                 }
                 .padding()
             }
+            .onChange(of: showing, { oldValue, newValue in
+                if newValue == false {
+                    dismiss()
+                }
+            })
+            .toolbar{
+                NavigationLink{
+                    EditEventView(loggedInViewViewModel: loggedInViewViewModel, roommates: roommates, event: event, showing: $showing)
+                } label: {
+                    Image(systemName: "pencil")
+                        .foregroundStyle(.white)
+                }
+            }
+            .toolbarBackground(Color.roomieMatter)
+            .toolbarBackground(.visible, for: .navigationBar)
         }
     }
 }
 
-struct EventInfo_Previews: PreviewProvider {
-    static var previews: some View {
-        EventInfo(event: Event.Example1)
-    }
-}
+
 

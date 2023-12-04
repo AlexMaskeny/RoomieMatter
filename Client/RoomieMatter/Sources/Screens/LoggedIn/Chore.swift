@@ -44,3 +44,18 @@ struct Chore: Identifiable{
         }
     }
 }
+
+func interpretFrequency(frequency: String) -> Chore.Frequency{
+    switch frequency{
+    case "Biweekly":
+            .biweekly
+    case "Daily":
+            .daily
+    case "Weekly":
+            .weekly
+    case "Monthly":
+            .monthly
+    default:
+            .once
+    }
+}

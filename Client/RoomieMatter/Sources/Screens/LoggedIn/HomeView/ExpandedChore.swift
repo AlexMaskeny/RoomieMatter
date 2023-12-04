@@ -5,6 +5,9 @@ import GoogleSignIn
 struct ExpandedChore: View {
     var chore: Chore
     var roommates: [Roommate]
+    @Environment(\.dismiss) private var dismiss
+    @ObservedObject var loggedInViewViewModel: LoggedInViewViewModel
+    @State private var showing = true
 
     var body: some View {
         GeometryReader { geometry in
@@ -164,9 +167,14 @@ struct ExpandedChore: View {
                                 .padding(.horizontal)
                 .padding()
             }
+            .onChange(of: showing, { oldValue, newValue in
+                if newValue == false{
+                    dismiss()
+                }
+            })
             .toolbar{
                 NavigationLink{
-                    EditChoreView(roommates: roommates, chore: chore)
+                    EditChoreView(loggedInViewViewModel: loggedInViewViewModel, chore: chore, showing: $showing)
                 } label: {
                     Image(systemName: "pencil")
                         .foregroundStyle(.white)
@@ -205,8 +213,4 @@ struct ExpandedChore: View {
     }
 }
 
-struct ExpandedChore_Previews: PreviewProvider {
-    static var previews: some View {
-        ExpandedChore(chore: Chore.Example2, roommates: [Roommate.Example1])
-    }
-}
+

@@ -51,7 +51,14 @@ struct AuthScreen: View {
                 }
                 
                 Text(err).foregroundColor(.red).caption()
-                LineText(text: "Try Demo", action: tryDemo)
+                NavigationLink{
+                    LoggedInView()
+                } label: {
+                    Text("Try demo")
+                        .foregroundStyle(.white)
+                    //LineText(text: "Try Demo", action: tryDemo)
+                }
+                
             }
             .padding(.horizontal, Style.screenPadding)
             .padding(.bottom, 100)

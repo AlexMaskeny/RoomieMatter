@@ -5,35 +5,36 @@ import SwiftUI
 struct EditChoreView: View {
     @StateObject var viewModel: EditChoreViewModel
     @Environment(\.dismiss) private var dismiss
+    @ObservedObject var loggedInViewViewModel: LoggedInViewViewModel
+    @Binding var delete:Bool
     
-    init(roommates: [Roommate], chore: Chore){
-        self._viewModel = StateObject(wrappedValue: EditChoreViewModel(roommates: roommates, chore: chore))
+    init(loggedInViewViewModel: LoggedInViewViewModel, chore: Chore, showing: Binding<Bool>){
+        self._viewModel = StateObject(wrappedValue: EditChoreViewModel(roommates: loggedInViewViewModel.roommates, chore: chore, user: loggedInViewViewModel.user))
+        self._delete = showing
+        self._loggedInViewViewModel = ObservedObject(wrappedValue: loggedInViewViewModel)
     }
     var body: some View {
         ScrollView {
             VStack {
                 InputView(placeholder: "Chore Name", text: $viewModel.chore.name)
-                InputView(placeholder: "\(Date(timeIntervalSince1970: viewModel.chore.date).formatted(date: .abbreviated, time: .shortened))", text: .constant(""))
+                InputView(placeholder: "Chore Day: \(Date(timeIntervalSince1970: viewModel.chore.date).formatted(date: .abbreviated, time: .omitted))", text: .constant(""))
                     .disabled(true)
                     .overlay {
-                        Button{
-                            viewModel.showingDatePicker.toggle()
-                        } label: {
-                            HStack {
-                                Spacer()
-                                Image(systemName: "calendar")
-                                    .padding(.trailing)
-                                    .font(.title)
-                            }
+                        HStack {
+                            Spacer()
+                            Image(systemName: "calendar")
+                                .padding(.trailing)
+                                .font(.title)
+                                .foregroundStyle(.roomieMatter)
                         }
                     }
-                if viewModel.showingDatePicker{
-                    DatePicker("Date Picker", selection: $viewModel.date, in: Date.now...)
-                        .datePickerStyle(.graphical)
-                        .onChange(of: viewModel.date) { oldValue, newValue in
-                            viewModel.chore.date = newValue.timeIntervalSince1970
-                        }
-                }
+                
+                DatePicker("Start Time: ", selection: $viewModel.date, in: Date.now..., displayedComponents: .date)
+                    .datePickerStyle(.graphical)
+                    .onChange(of: viewModel.date) { oldValue, newValue in
+                        viewModel.chore.date = newValue.timeIntervalSince1970
+                    }
+                
                 InputView(placeholder: "Frequency", text: .constant(""))
                     .disabled(true)
                     .overlay(
@@ -50,7 +51,7 @@ struct EditChoreView: View {
                 TextEditorView(text: $viewModel.chore.description)
                     .frame(height: 250)
                 
-                ForEach(viewModel.roommates){ roommate in
+                ForEach(viewModel.possibleAssignees){ roommate in
                     HStack {
                         RoommateStatusView(isSelf: false, roommate: roommate)
                         Button{
@@ -76,7 +77,17 @@ struct EditChoreView: View {
                 
                 
                 CustomButton(title: "Delete", backgroundColor: .red){
-                    viewModel.deleteChore()
+                    if loggedInViewViewModel.user.id == "1" {
+                        let idx = loggedInViewViewModel.chores.firstIndex { chore in
+                            chore.id == viewModel.chore.id
+                        }
+                        guard let idx = idx else { return }
+                        loggedInViewViewModel.chores.remove(at: idx)
+                    } else {
+                        viewModel.deleteChore()
+                    }
+                    
+                    delete = false
                     dismiss()
                 }
                 
@@ -87,7 +98,20 @@ struct EditChoreView: View {
             .toolbarBackground(.visible, for: .navigationBar)
             .toolbar {
                 Button{
-                    viewModel.saveChore()
+                    if loggedInViewViewModel.user.id == "1" {
+                        let idx = loggedInViewViewModel.chores.firstIndex { chore in
+                            chore.id == viewModel.chore.id
+                        }
+                        guard let idx = idx else { return }
+                        loggedInViewViewModel.chores[idx].name = viewModel.chore.name
+                        loggedInViewViewModel.chores[idx].date = viewModel.date.timeIntervalSince1970
+                        loggedInViewViewModel.chores[idx].description = viewModel.chore.description
+                        loggedInViewViewModel.chores[idx].assignedRoommates = viewModel.chore.assignedRoommates
+                    } else{
+                        viewModel.saveChore()
+                        delete = false
+                    }
+                    
                     dismiss()
                 } label:{
                     Text("Save")
@@ -98,6 +122,4 @@ struct EditChoreView: View {
     }
 }
 
-#Preview {
-    EditChoreView(roommates: [Roommate.Example1, Roommate.Example2], chore: Chore.Example1)
-}
+

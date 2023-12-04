@@ -13,15 +13,16 @@ func copyToClipboard(text: String) {
 struct LoggedInView: View {
     @StateObject var viewModel = LoggedInViewViewModel()
     @State private var showingAlert = false
+    
     var body: some View {
         NavigationStack{
             TabView {
-                HomeView(chores: viewModel.chores, events: viewModel.events)
+                HomeView(loggedInViewViewModel: viewModel)
                     .tabItem {
                         Image(systemName: "house")
                     }
                 
-                CalendarView()
+                CalendarView(events: viewModel.events)
                     .tabItem {
                         Image(systemName: "calendar")
                     }
@@ -31,7 +32,6 @@ struct LoggedInView: View {
                         Image(systemName: "person.fill")
                     }
             }
-            
             .toolbar{
                 ToolbarItemGroup(placement: .topBarLeading) {
                     Text(viewModel.roomName)
@@ -74,12 +74,12 @@ struct LoggedInView: View {
                         Image(systemName: "ellipsis.message")
                             .foregroundStyle(.white)
                     }
+                    .disabled(viewModel.user.id == "1")
                 }
                 
             }
             .toolbarBackground(Color.roomieMatter)
             .toolbarBackground(.visible, for: .navigationBar)
         }
-        .environmentObject(viewModel)
     }
 }
