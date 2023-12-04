@@ -6,16 +6,43 @@ import FirebaseFirestore
 struct ProfileView: View {
     @State private var isLoggedOut = false
     @State private var err : String = ""
+    let authViewModel = AuthenticationViewModel.shared
     let isSelf: Bool
     let roommate: Roommate
     
-    @State private var selectedStatus = "At Home"
-        let statusOptions = ["At Home", "Sleeping", "In Class", "Not Home"]
+    @State private var selectedStatus: String
+    let statusOptions = ["At Home", "Sleeping", "Studying", "Not Home"]
 
+    init(isSelf: Bool, roommate: Roommate) {
+        self.isSelf = isSelf
+        self.roommate = roommate
+        _selectedStatus = State(initialValue: roommate.status.status)
+    }
+    
+    struct ChangeStatusButton: View {
+        let title: String
+        let backgroundColor: Color
+        let action: () -> Void
+
+        var body: some View {
+            Button(action: action) {
+                ZStack {
+                    RoundedRectangle(cornerRadius: 10)
+                        .foregroundColor(backgroundColor)
+                    Text(title)
+                    .padding(8)
+                    .font(.system(size: 20))
+                    .foregroundColor(.white)
+                }
+            }
+        }
+    }
+    
     var body: some View {
         GeometryReader { geometry in
             VStack {
                 VStack {
+                    Spacer().frame(height: 70)
                     Group{
                         if let image = roommate.image{
                             image
@@ -56,43 +83,50 @@ struct ProfileView: View {
                         }
                         
                         Picker(selection: $selectedStatus, label: Text("User Status")) {
-                                                ForEach(statusOptions, id: \.self) {
-                                                    Text($0).font(.system(size: 20))
-                                                }
-                                            }
-                                            .pickerStyle(.menu)
-
-//                        Group{
-//                            Text(roommate.status.status)
-//                                .font(.title3)
-//                                .foregroundStyle(.gray)
-//                                .multilineTextAlignment(.center)
-//                        }
+                            ForEach(statusOptions, id: \.self) {
+                                Text($0).font(.system(size: 20))
+                            }
+                        }
+                        .pickerStyle(.menu)
+                        .onAppear {
+                            selectedStatus = roommate.status.status
+                        }
+                        
                         
                         Spacer()
                             .frame(width: 40)
                         
                         Circle()
-                            .frame(width: 25)
-                            .foregroundStyle(roommate.status.color)
-                            .overlay(
-                                Circle()
-                                    .stroke()
-                            )
+                                .frame(width: 25, height: min(geometry.size.height * 0.3 - 70, 25)) 
+                                .foregroundStyle(interpretString(status: selectedStatus.lowercased()).color)
+                                .overlay(
+                                    Circle()
+                                        .stroke()
+                                )
                         
                     }
+                    
+                    ChangeStatusButton(title: "Change Status", backgroundColor: .roomieMatter) {
+                        // call editStatus()
+                        print(editStatus(userID: authViewModel.user_uid, roomID: authViewModel.room_id, status: selectedStatus))
+                        print(authViewModel.user_uid,authViewModel.room_id, selectedStatus)
+                    }
                 }
+                
+                
+                
                 .frame(height: geometry.size.height * 0.3)
 
                 Spacer()
                     .frame(height: 300)
+                
                 Button{
                                     // Add leave room action here
-                                }label: {
-                                    Text("Leave Room").padding(8)
-                                        .font(.system(size: 25))
-                                    
-                                }.padding(5)
+                }label: {
+                    Text("Leave Room").padding(8)
+                        .font(.system(size: 25))
+                    
+                }.padding(5)
                     .frame(maxWidth: .infinity)
                     .background(Color.red)
                     .foregroundColor(.white)
