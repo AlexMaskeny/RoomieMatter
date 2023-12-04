@@ -149,9 +149,21 @@ const joinRoom = functions.https.onCall(async (data, context) => {
     const roomRef = db.collection("rooms").doc(roomId);
     const userRef = db.collection("users").doc(userId);
 
+    const room = await roomRef.get();
+    if (!room.exists) {
+      throw new functions.https.HttpsError(
+        "not-found",
+        "Room does not exist"
+      );
+    }
+
     await db.collection("user_rooms").add({
       room: roomRef,
       user: userRef,
+      activity: 1,
+      createdAt: Date.now(),
+      membership_status: "member",
+      status: "home",
     });
 
     return { success: true };

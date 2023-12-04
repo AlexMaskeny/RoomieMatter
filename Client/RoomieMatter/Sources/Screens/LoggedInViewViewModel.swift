@@ -26,7 +26,7 @@ class LoggedInViewViewModel: ObservableObject{
         
         db.collection("user_rooms").whereField("user", isEqualTo: userRef).getDocuments { snapshot, error in
             
-            let roomRef = snapshot!.documents[0].get("room") as! DocumentReference
+            let roomRef = snapshot?.documents[0].get("room") as! DocumentReference
             
             roomRef.getDocument { snapshot1, error in
                 if let roomName = snapshot1?.get("name") as? String {
