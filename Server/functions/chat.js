@@ -199,7 +199,7 @@ async function getFunctions(context) {
     }
   };
   const getMemberField = (type) => {
-    return getMemberField(type)
+    return type === CALENDAR_ITEM_TYPE.chore ? "assignedRoommates" : "guests";
     
   }
 
