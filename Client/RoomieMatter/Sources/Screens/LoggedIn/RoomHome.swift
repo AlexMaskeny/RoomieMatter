@@ -53,7 +53,8 @@ import SwiftUI
 
 
 struct RoomHome: View {
-    @State private var isNextViewActive = false
+    @State private var isJoinViewActive = false
+    @State private var isCreateViewActive = false
     var body: some View {
         
         VStack {
@@ -112,12 +113,12 @@ struct RoomHome: View {
             
             VStack {
                 // Create Room button as a rounded rectangle
-                NavigationLink("", destination: JoinRoomView(), isActive: $isNextViewActive)
+                NavigationLink("", destination: JoinRoomView(), isActive: $isJoinViewActive)
                     .opacity(0)
                     .frame(width: 0, height: 0)
                 Button(action: {
                     // Handle the action for creating a room
-                    isNextViewActive = true
+                    isJoinViewActive = true
                     print("Join Room tapped")
                 }) {
                     Text(" Join Room ")
@@ -126,12 +127,12 @@ struct RoomHome: View {
                         .padding()
                         .background(RoundedRectangle(cornerRadius: 10).fill(Color.roomieMatter))
                 }
-                NavigationLink("", destination: CreateRoomView(), isActive: $isNextViewActive)
+                NavigationLink("", destination: CreateRoomView(), isActive: $isCreateViewActive)
                     .opacity(0)
                     .frame(width: 0, height: 0)
                 Button(action: {
                     // Handle the action for creating a room
-                    isNextViewActive = true
+                    isCreateViewActive = true
                     print("Create Room tapped")
                 }) {
                     Text("Create Room")

@@ -24,13 +24,18 @@ struct RoomieMatterApp: App {
 
 struct Content: View {
     @State private var userLoggedIn = (Auth.auth().currentUser != nil)
-
+    @State private var userInRoom = false
+    let authViewModel = AuthenticationViewModel.shared
+    
     var body: some View {
         VStack {
             if userLoggedIn {
-                NavigationStack {
-//                    MainScreen()
-                    LoggedInView()
+                if userInRoom {
+                    NavigationStack {
+                        LoggedInView()
+                    }
+                } else {
+                    RoomHome()
                 }
             } else {
                 AuthScreen()
@@ -41,6 +46,10 @@ struct Content: View {
                 if (user != nil) {
                     userLoggedIn = true
                     silentGoogleSignIn() // New addition
+                    while authViewModel.user_uid == nil {
+                        sleep(1)
+                    }
+                    userInRoom = authViewModel.room_id != nil
                 } else {
                     userLoggedIn = false
                 }
