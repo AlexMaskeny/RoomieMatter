@@ -26,6 +26,7 @@ final class ChatStore: ObservableObject {
     
     init() {
         listenForChats()
+        authViewModel.refresh()
     }
     
     func sendChat(msg: String) {

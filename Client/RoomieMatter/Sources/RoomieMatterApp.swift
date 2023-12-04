@@ -24,25 +24,44 @@ struct RoomieMatterApp: App {
 
 struct Content: View {
     @State private var userLoggedIn = (Auth.auth().currentUser != nil)
-
+    @State private var userInRoom = false
+    @State private var isLoading = true
+    let authViewModel = AuthenticationViewModel.shared
+    
     var body: some View {
         VStack {
-            if userLoggedIn {
-                NavigationStack {
-//                    MainScreen()
-                    LoggedInView()
+            if isLoading {
+                ProgressView()
+            }
+            else {
+                if userLoggedIn {
+                    if userInRoom {
+                        NavigationStack {
+                            LoggedInView()
+                        }
+                    } else {
+                        NavigationStack {
+                            RoomHome()
+                        }
+                    }
+                } else {
+                    AuthScreen()
                 }
-            } else {
-                AuthScreen()
             }
         }.onAppear{
             //Firebase state change listeneer
             Auth.auth().addStateDidChangeListener{ auth, user in
-                if (user != nil) {
+                if let _ = user {
                     userLoggedIn = true
-                    silentGoogleSignIn() // New addition
+                    silentGoogleSignIn()
+                    authViewModel.fetchRoom(){
+                        userInRoom = authViewModel.room_id != nil
+                        isLoading = false
+                    }
                 } else {
                     userLoggedIn = false
+                    userInRoom = false
+                    isLoading = false
                 }
             }
         }
