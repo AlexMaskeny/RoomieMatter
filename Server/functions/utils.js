@@ -10,12 +10,12 @@ function americanDateFormatter(date) {
   day = day < 10 ? "0" + day : day;
 
   // Concatenate to get the date in MM/DD/YYYY format
-  const formattedDate = month + "/" + day + "/" + year;
+  const formattedDate = year + "-" + month + "-" + day;
   return formattedDate;
 }
 
 function capitalizeFirstLetter(text) {
-  return text[0].toUpperCase() + text.substring(0, text.length);
+  return text[0].toUpperCase() + text.substring(1, text.length);
 }
 
 module.exports = { americanDateFormatter, capitalizeFirstLetter };
