@@ -33,7 +33,7 @@ ROOMIEMATTER ROLES:
 */
 
 const settings = {
-  model: "gpt-4",
+  model: "gpt-3.5-turbo",
   temperature: 0.5,
   apiKey: "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", //This should probably be an env var
   modelName: "Housekeeper",
@@ -187,8 +187,9 @@ async function getFunctions(context) {
       name: `get${capitalizeFirstLetter(type)}`,
       description:
         `The user will attempt to identify one or more ${type}s using plain text. The plain text contains at least 1 ` +
-        `parameter that can be used to identify a list of ${type}s. This list will be returned and will contain a ` +
-        "eventName parameter for each element. Always include that parameter in your response",
+        `parameter that can be used to identify a list of ${type}s. For relative dates (like 'tomorrow') the current date is ${americanDateFormatter(
+          now
+        )}`,
       parameters: {
         type: "object",
         properties: {
@@ -197,35 +198,33 @@ async function getFunctions(context) {
             description: `The name of the ${type}`,
             enum: allItems.map((item) => item.eventName),
           },
-          date: {
+          beginDate: {
             type: "string",
-            description: `The ${type}'s date in YYYY-MM-DD format. For relative dates (like 'tomorrow') the current date is ${americanDateFormatter(
-              now
-            )}`,
+            description: `The start of a date range to look in. YYYY-MM-DD format.`,
           },
-          status: {
-            type: "boolean",
-            description: `True if the ${type} chore is completed. False if not`,
+          endDate: {
+            type: "string",
+            description: `The end of a date range to look in. YYYY-MM-DD format.`,
           },
         },
       },
-      func: async ({ eventName, date, status = false }) => {
-        const matchingItems = allItems.eventsData.filter((item) => {
+      func: async ({ eventName, beginDate, endDate }) => {
+        const matchingItems = allItems.filter((item) => {
           const eventNameCondition = item.eventName === eventName;
 
           const itemDate = new Date(item.date);
-          const dateCondition = americanDateFormatter(itemDate) === date;
+          const begin = new Date(beginDate);
+          const end = new Date(endDate);
+          const dateCondition = itemDate >= begin && itemDate <= end;
 
-          const statusCondition = item.status === status;
-
-          return eventNameCondition || dateCondition || statusCondition;
+          return eventNameCondition || dateCondition;
         });
 
-        const formattedMatchingItems = matchingItems.map((chore) => {
+        const formattedMatchingItems = matchingItems.map((item) => {
           const assignedRoommates = Object.entries(displayNameToUser).reduce(
             (acc, [displayName, userInfo]) => {
-              if (chore.assignedRoommates.includes(userInfo.uuid)) {
-                return [...acc, displayName];
+              if (item.assignedRoommates.includes(userInfo.uuid)) {
+                return [...acc, userInfo.displayName];
               } else {
                 return acc;
               }
@@ -233,10 +232,27 @@ async function getFunctions(context) {
             []
           );
 
-          return {
-            ...chore,
-            assignedRoommates,
-          };
+          let itemSummary = `On ${item.date} there is a ${type} called ${item.eventName}. `;
+          if (item.frequency) {
+            itemSummary += `This ${type} repeats ${item.frequency}. `;
+          }
+          if (assignedRoommates?.length > 0) {
+            itemSummary += `The following roommates are assigned to this ${type}: `;
+            assignedRoommates.forEach((roommate, index) => {
+              if (index === assignedRoommates.length - 1) {
+                itemSummary += `${roommate}.`;
+              } else {
+                itemSummary += `${roommate}, `;
+              }
+            });
+          } else {
+            itemSummary += `No one is assigned to this ${type} yet. `;
+          }
+          if (item.description) {
+            itemSummary += `Description: ${item.description}.`;
+          }
+
+          return itemSummary;
         });
 
         return JSON.stringify(formattedMatchingItems);
