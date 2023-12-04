@@ -506,8 +506,9 @@ async function getFunctions(context) {
         removedRoommates,
       }) => {
         const item = allItems.find((item) => item.eventName === eventName);
+        const id = type === CALENDAR_ITEM_TYPE.chore ? "instanceId" : "eventId";
         let editItemData = {
-          instanceId: item.instanceId,
+          [id]: item[id],
           token: context.token,
           roomId: context.roomId,
         };
@@ -599,8 +600,10 @@ async function getFunctions(context) {
         const deleteItemFunction =
           type === CALENDAR_ITEM_TYPE.event ? deleteEventBody : deleteChoreBody;
         const item = allItems.find((item) => item.eventName === eventName);
+        
+        const id = type === CALENDAR_ITEM_TYPE.chore ? "instanceId" : "eventId";
         const deleteItemData = {
-          instanceId: item.instanceId,
+          [id]: item[id],
           token: context.token,
           roomId: context.roomId,
         };
