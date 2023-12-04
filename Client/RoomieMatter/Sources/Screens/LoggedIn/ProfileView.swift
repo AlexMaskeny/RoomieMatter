@@ -92,9 +92,11 @@ struct ProfileView: View {
                                     Text("Leave Room").padding(8)
                                         .font(.system(size: 25))
                                     
-                                }.buttonStyle(.borderedProminent)
-                    .frame(width: UIScreen.main.bounds.width / 2, height: geometry.size.height * 0.1, alignment: .bottom)
-                                    .padding(.bottom, 10)
+                                }.padding(5)
+                    .frame(maxWidth: .infinity)
+                    .background(Color.red)
+                    .foregroundColor(.white)
+                    .cornerRadius(10)
 
                 Button{
                     Task {
@@ -107,8 +109,11 @@ struct ProfileView: View {
                 }label: {
                     Text("Log Out").padding(8)
                         .font(.system(size: 25))
-                }.buttonStyle(.borderedProminent)
-                    .frame(height: geometry.size.height * 0.1, alignment: .bottom)
+                }.padding(5)
+                    .frame(maxWidth: .infinity)
+                    .background(Color.roomieMatter)
+                    .foregroundColor(.white)
+                    .cornerRadius(10)
             }
             .padding()
             .alert(isPresented: $isLoggedOut) {
