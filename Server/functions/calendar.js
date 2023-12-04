@@ -10,6 +10,100 @@ const db = admin.firestore();
 // const eventsCalendarId =
 //   "c_13e412c22da53bac13e80008fedb53d172b8ac55ab3d4c838bf5a1b739a66d26@group.calendar.google.com";
 
+/* NEW ROOM FUNCTIONS */
+
+/* REQUIRES: token
+ * EFFECTS: creates new chores calendar and events calendar
+ * RETURNS: status, choresCalendarId, eventsCalendarId
+ * 
+ * should we add the calendarIds into the database too? need to take in roomId
+ */
+async function createNewCalendars(token) {
+  // TODO: should we ignore context.auth?
+  // const calendar = createOAuth(context.auth, data.token);
+  const token = tokenInput;
+  functions.logger.log(token);
+  const oAuth2Client = new google.auth.OAuth2();
+  oAuth2Client.setCredentials({ access_token: token });
+  const calendar = google.calendar({ version: "v3", auth: oAuth2Client });
+
+  // create choresCalendarId
+  const choreRes = await calendar.calendars.insert({
+    resource: {
+      summary: "RoomieMatter Chores"
+    }
+  });
+
+  functions.logger.log(choreRes?.data ?? "Failurreeee!");
+  functions.logger.log(choreRes);
+
+  if (!choreRes?.data || choreRes?.data.length == 0) {
+    throw new functions.https.HttpsError("Error creating new chore calendar:", error.message);
+  }
+
+  // create choresCalendarId
+  const eventRes = await calendar.calendars.insert({
+    resource: {
+      summary: "RoomieMatter Events"
+    }
+  });
+
+  functions.logger.log(eventRes?.data ?? "Failurreeee!");
+  functions.logger.log(eventRes);
+
+  if (!eventRes?.data || eventRes?.data.length == 0) {
+    throw new functions.https.HttpsError("Error creating new event calendar:", error.message);
+  }
+
+  // TODO: function takes in roomId and add choresCalendarId and eventsCalendarId to database
+  
+  return { status: true, choresCalendarId: choreRes.data.id,  eventsCalendarId: eventRes.data.id};
+}
+
+/* REQUIRES: token, roomId, userUuid
+ * EFFECTS: add user to existing chores and events calendar
+ * RETURNS: status
+ */
+async function addUserToCalendars(token, roomId, userUuid) {
+  // TODO: should we ignore context.auth?
+  const token = tokenInput;
+  functions.logger.log(token);
+  const oAuth2Client = new google.auth.OAuth2();
+  oAuth2Client.setCredentials({ access_token: token });
+  const calendar = google.calendar({ version: "v3", auth: oAuth2Client });
+  
+  // get calendar IDs
+  const choresCalendarId = await getCalendarId(roomId, "chore");
+  const eventsCalendarId = await getCalendarId(roomId, "event");
+  const calendarIds = [choresCalendarId, eventsCalendarId];
+
+  const newEmail = await getEmailFromUuid(userUuid);
+  
+  for (const calendarId of calendarIds) {
+    const res = await calendar.acl.insert({
+      calendarId,
+      requestBody: {
+        role: 'writer',
+        scope: {
+          type: 'user',
+          value: newEmail,
+        },
+      },
+    });
+
+    if (!res?.data || res?.data.length == 0) {
+      throw new functions.https.HttpsError(
+        "Error adding user to calendar:",
+        error.message
+      );
+    }
+  
+    functions.logger.log(`User ${newEmail} added to calendar with role writer`);
+  }
+
+  return { status: true };
+}
+
 /* HELPER FUNCTIONS */
 
 function createOAuth(auth, tokenInput) {
