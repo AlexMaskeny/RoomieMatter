@@ -266,8 +266,13 @@ async function getFunctions(context) {
             },
             []
           );
-
-          let itemSummary = `On ${item.date} there is a ${type} called ${item.eventName}. `;
+          let itemSummary = "";
+          if (type === CALENDAR_ITEM_TYPE.chore) {
+            itemSummary = `On ${item.date} there is a ${type} called ${item.eventName}. `;
+          } else {
+            itemSummary = `The ${type} called ${item.eventName} is from ${item.startDatetime} to ${item.endDatetime} `;
+          }
+          
           if (item.frequency) {
             itemSummary += `This ${type} repeats ${item.frequency}. `;
           }
