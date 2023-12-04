@@ -22,9 +22,11 @@ const changeStatus = functions.https.onCall(async (data, context) => {
     );
   }
 
+  functions.logger.log(status);
+
   try {
-    const userRef = db.collection("users").get(userId);
-    const roomRef = db.collection("rooms").get(roomId);
+    const userRef = db.collection("users").doc(userId);
+    const roomRef = db.collection("rooms").doc(roomId);
 
     const userRoomSnapshot = await db
       .collection("user_rooms")
@@ -33,6 +35,7 @@ const changeStatus = functions.https.onCall(async (data, context) => {
       .get();
 
     const userRoomId = userRoomSnapshot.docs[0].id;
+    functions.logger.log(userRoomId)
     db.collection("user_rooms").doc(userRoomId).update({
       status,
     });

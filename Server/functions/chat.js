@@ -235,11 +235,18 @@ async function getFunctions(context) {
       func: async ({ eventName, beginDate, endDate }) => {
         const matchingItems = allItems.filter((item) => {
           const eventNameCondition = item.eventName === eventName;
-
-          const itemDate = new Date(item.date);
+         
           const begin = new Date(beginDate);
           const end = new Date(endDate);
-          const dateCondition = itemDate >= begin && itemDate <= end;
+          let dateCondition = false;
+          if (type === CALENDAR_ITEM_TYPE.event) {
+            const itemDateBegin = new Date(item.startDatetime);
+            const itemDateEnd = new Date(item.endDatetime);
+            dateCondition = itemDateBegin >= begin && itemDateEnd <= end
+          } else {
+            const itemDate = new Date(item.date);
+            dateCondition = itemDate >= begin && itemDate <= end;
+          }
 
           return eventNameCondition || dateCondition;
         });
