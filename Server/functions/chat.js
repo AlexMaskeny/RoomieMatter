@@ -198,6 +198,10 @@ async function getFunctions(context) {
       return "ISO";
     }
   };
+  const getMemberField = (type) => {
+    return getMemberField(type)
+    
+  }
 
   /* ============== [ HELPER: CREATE GET CALENDAR ITEM(S) ] =============*/
   const createGetCalendarItems = (type) => {
@@ -254,7 +258,7 @@ async function getFunctions(context) {
         const formattedMatchingItems = matchingItems.map((item) => {
           const assignedRoommates = Object.entries(displayNameToUser).reduce(
             (acc, [displayName, userInfo]) => {
-              if (item.assignedRoommates.includes(userInfo.uuid)) {
+              if (item[getMemberField(type)]?.includes(userInfo.uuid)) {
                 return [...acc, userInfo.displayName];
               } else {
                 return acc;
@@ -386,7 +390,7 @@ async function getFunctions(context) {
         }
         if (assignedRoommates) {
           addItemData[
-            type === CALENDAR_ITEM_TYPE.event ? "guests" : "assignedRoommates"
+            getMemberField(type)
           ] = assignedRoommates.map((attendee) => {
             const userInfo = displayNameToUser[attendee];
             return userInfo.uuid;
@@ -523,12 +527,16 @@ async function getFunctions(context) {
 
         if (addedRoommates) {
           editItemData[
-            type === CALENDAR_ITEM_TYPE.event ? "guests" : "assignedRoommates"
+            getMemberField(type)
           ] = [
-            ...(item.assignedRoommates ?? []),
+            ...(item[
+              getMemberField(type)
+            ] ?? []),
             ...addedRoommates.reduce((acc, attendee) => {
               const userInfo = displayNameToUser[attendee];
-              if (item.assignedRoommates?.includes(userInfo.uuid)) {
+              if (item[
+                getMemberField(type)
+              ]?.includes(userInfo.uuid)) {
                 return acc;
               } else {
                 return [...acc, userInfo.uuid];
@@ -543,9 +551,9 @@ async function getFunctions(context) {
             return userInfo?.uuid ?? "";
           });
           editItemData[
-            type === CALENDAR_ITEM_TYPE.event ? "guests" : "assignedRoommates"
+            getMemberField(type)
           ] =
-            item.assignedRoommates?.filter(
+            item[getMemberField(type)]?.filter(
               (attendeeUuid) => !removedRoommatesUuids.includes(attendeeUuid)
             ) ?? [];
         }
