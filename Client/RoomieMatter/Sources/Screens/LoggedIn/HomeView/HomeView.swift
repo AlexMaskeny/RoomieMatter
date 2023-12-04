@@ -10,16 +10,6 @@ struct HomeView: View {
     var body: some View {
         ScrollView {
             VStack(alignment: .leading){
-                Button{
-                    loggedInViewViewModel.getChores1()
-                } label: {
-                    Text("Get chores")
-                }
-                Button{
-                    loggedInViewViewModel.getEvents1()
-                } label: {
-                    Text("Get Events")
-                }
                 RoommateStatusView(isSelf: true, roommate: loggedInViewViewModel.user)
                 Divider()
                     .onChange(of: AuthenticationViewModel.shared.room_id) { _, _ in
@@ -32,6 +22,10 @@ struct HomeView: View {
                 }
                 
                 Group{
+                    CustomButton(title: "Update Chores", backgroundColor: .roomieMatter) {
+                        loggedInViewViewModel.getChores1()
+                    }
+                    .padding(.horizontal)
                     HStack {
                         Text("Chore Tracking")
                             .font(.title)
@@ -109,6 +103,10 @@ struct HomeView: View {
                     .padding(.horizontal)
                 }
                 Group{
+                    CustomButton(title: "Update Events", backgroundColor: .roomieMatter) {
+                        loggedInViewViewModel.getEvents1()
+                    }
+                    .padding(.horizontal)
                     HStack {
                         Text("All Events")
                             .font(.title)
