@@ -52,13 +52,13 @@ struct MainScreen: View {
         }
         
         Button {
-            completeChore(instanceId: "12us5cup6gtbl2cklmr5ns8mvg_20231202")
+            completeChore(instanceId: "0j6p8847ek2tsn8473e5f281rj_20231205")
         } label: {
             Text("Complete chore")
         }
         
         Button {
-            deleteChore(instanceId: "n0v8v2lhnnrkrka7no8ml8d8bc_20231202")
+            deleteChore(instanceId: "sfc4buft70gte2mopumh7ie0lc")
         } label: {
             Text("Delete chore")
         }

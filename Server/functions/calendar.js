@@ -133,6 +133,8 @@ async function getInstanceId(eventId, calendar) {
     return "";
   }
 
+  functions.logger.log(res);
+
   return res.data.items[0].id;
 }
 
@@ -153,13 +155,16 @@ async function parseChore(instanceId, event) {
     author: creator,
   };
 
-  if (event.recurrence) {
+  functions.logger.log(event.recurrence);
+
+  if (event.recurrence && event.recurrence.length != 0) {
     const startIndex = event.recurrence[0].indexOf("FREQ=") + 5;
     let endIndex = event.recurrence[0].indexOf(";");
     if (endIndex == -1) {
       endIndex = event.recurrence[0].length;
     }
     const freq = event.recurrence[0].substring(startIndex, endIndex);
+    functions.logger.log(freq);
 
     switch (freq) {
       case "DAILY":
@@ -204,7 +209,10 @@ async function parseChore(instanceId, event) {
   return eventData;
 }
 
-function parseEvent(event) {
+async function parseEvent(event) {
+  functions.logger.log(event.creator.email);
+  const creator = await getUuidFromEmail(event.creator.email);
+
   let eventData = {
     eventId: event.id,
     eventName: event.summary,
@@ -218,16 +226,17 @@ function parseEvent(event) {
   }
 
   if (event.attendees) {
-    let assignees = [];
+    let guests = [];
     functions.logger.log(event.attendees);
     for (const attendee of event.attendees) {
-      const uuid = getUuidFromEmail(attendee.email);
-      assignees.push(uuid);
+      const uuid = await getUuidFromEmail(attendee.email);
+      functions.logger.log(uuid);
+      guests.push(uuid);
     }
-    eventData.guests = assignees;
+    eventData.guests = guests;
   }
 
-  // functions.logger.log(eventData);
+  functions.logger.log(eventData);
   return eventData;
 }
 
@@ -299,6 +308,8 @@ async function getChoreHelper(instanceId, calendar) {
 
   functions.logger.log(res?.data ?? "Failurreeee! in getChore");
   const event = res.data;
+
+  functions.logger.log("event from get() using instanceId");
   functions.logger.log(event);
 
   if (!event) {
@@ -425,20 +436,26 @@ async function getChoresBody(data, context) {
     return { status: false };
   }
 
-  const eventsIds = [];
+  let eventsOutput = [];
 
+  functions.logger.log("events using list()");
+  functions.logger.log(events);
   for (const event of events) {
-    functions.logger.log(event.id);
-
+    
     // make sure it's a confirmed event
     if (event.status != "confirmed") {
       continue;
     }
 
+    // parse chore
+    functions.logger.log("event.recurrence:")
+    functions.logger.log(event.recurrence);
     // if non-recurring event, use eventId as instanceId
-    if (!event.id.includes('_')) {
+    if (!event.recurrence || event.recurrence.length == 0) {
+    // if (!event.id.includes('_')){
       functions.logger.log("Non-recurring event");
-      eventsIds.push({ instanceId: event.id });
+      const output = await parseChore(event.id, event);
+      eventsOutput.push(output);
     }
 
     // recurring event, find instanceId
@@ -462,36 +479,9 @@ async function getChoresBody(data, context) {
         );
       }
 
-      eventsIds.push({ instanceId: instanceId });
+      const output = await parseChore(instanceId, event);
+      eventsOutput.push(output);
     }
-  }
-
-  functions.logger.log("eventsIds:");
-  functions.logger.log(eventsIds);
-
-  // return chores using getChore with eventsIds
-  let eventsOutput = [];
-  for (const eventId of eventsIds) {
-    let eventOutput;
-    try {
-      eventOutput = await getChoreHelper(eventId.instanceId, calendar);
-    } catch (error) {
-      functions.logger.error("Error getting chore:", error.message);
-      throw new functions.https.HttpsError(
-        "Error getting chore:",
-        error.message
-      );
-    }
-
-    if (!eventOutput || eventOutput.length == 0) {
-      functions.logger.error("No chore found with eventId");
-      throw new functions.https.HttpsError(
-        "No chore found with eventId:",
-        eventId
-      );
-    }
-
-    eventsOutput.push(eventOutput);
   }
 
   return { status: true, chores: eventsOutput };
@@ -537,7 +527,7 @@ async function addChoreBody(data, context) {
   eventInput.start.date = data.date;
   eventInput.end.date = data.date;
 
-  eventInput.recurrence = formatRecurrence(data.frequency, data.date, data.endRecurrenceDate);
+  eventInput.recurrence = [formatRecurrence(data.frequency, data.date, data.endRecurrenceDate)];
 
   // add description
   if (data.description) {
@@ -645,7 +635,7 @@ async function editChoreBody(data, context) {
   }
 
   if (data.description) {
-    input.resource.summary = data.description;
+    input.resource.description = data.description;
   }
   if (data.assignedRoommates) {
     let attendees = [];
@@ -813,7 +803,7 @@ async function getEventsBody(data, context) {
   const events = res.data.items;
   if (!events || events.length === 0) {
     functions.logger.log("No upcoming events found.");
-    return { status: false };
+    return { status: true, events: {} };
   }
 
   let eventsOutput = [];
@@ -826,7 +816,8 @@ async function getEventsBody(data, context) {
       continue;
     }
 
-    eventsOutput.push(parseEvent(event));
+    const eventOutput = await parseEvent(event);
+    eventsOutput.push(eventOutput);
   }
 
   functions.logger.log(eventsOutput);
@@ -880,10 +871,10 @@ async function addEventBody(data, context) {
     eventInput.description = data.description;
   }
 
-  // add attendees
-  if (data.attendees) {
+  // add guests
+  if (data.guests) {
     let attendees = [];
-    for (const attendee of data.attendees) {
+    for (const attendee of data.guests) {
       const email = await getEmailFromUuid(attendee);
       attendees.push({ email: email });
     }

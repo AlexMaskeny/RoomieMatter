@@ -127,7 +127,7 @@ func addChore(name: String, date: Date, description: String, assignedRoommates: 
      */
     
     let data: [String: Any] = ["token": token, "eventName": "Teresa's chore", "date": "2023-12-04", "frequency": "Weekly",
-                "endRecurrenceDate": "2023-12-30", "description": "gibberish", "assignedRoommates": ["uqWhv6HG6QPqjGyJV2a9FF6R1pm2"]]
+                "description": "gibberish", "assignedRoommates": ["uqWhv6HG6QPqjGyJV2a9FF6R1pm2"]]
 
     
     Functions.functions().httpsCallable("addChore").call(data) { (result, error) in
@@ -168,7 +168,7 @@ func editChore(name: String, date: Date, description: String, assignedRoommates:
      * example for all arguments is listed below:
      */
     
-    let data: [String: Any] = ["token": token, "instanceId": "a2lf044tpbvst5cm3gg523jd9g", "eventName": "Trash", "date": "2023-12-03", "frequency": "Weekly", "description": "gibberish", "assignedRoommates": ["uqWhv6HG6QPqjGyJV2a9FF6R1pm2"]]
+    let data: [String: Any] = ["token": token, "instanceId": "25bfh79k3uk9dgi6k1llaoef4v_20231205", "eventName": "teresa's new chore", "date": "2023-12-04", "frequency": "Weekly", "description": "gibberish", "assignedRoommates": ["uqWhv6HG6QPqjGyJV2a9FF6R1pm2"]]
 //    let data: [String: Any] = ["token": token, "instanceId": "a2lf044tpbvst5cm3gg523jd9g", "eventName": "Teresa's new chore", "date": "2023-12-05", "frequency": "Once"]
     
     Functions.functions().httpsCallable("editChore").call(data) { (result, error) in
