@@ -33,7 +33,7 @@ ROOMIEMATTER ROLES:
 */
 
 const settings = {
-  model: "gpt-4",
+  model: "gpt-3.5-turbo-16k",
   temperature: 0.5,
   apiKey: "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", //This should probably be an env var
   modelName: "Housekeeper",
@@ -90,10 +90,16 @@ async function getFunctions(context) {
 
   //Get all the chores & event.
   const allChores = (
-    await getChoresBody({ token: context.token }, context.context)
+    await getChoresBody(
+      { token: context.token, roomId: context.roomId },
+      context.context
+    )
   ).chores;
   const allEvents = (
-    await getEventsBody({ token: context.token }, context.context)
+    await getEventsBody(
+      { token: context.token, roomId: context.roomId },
+      context.context
+    )
   ).events;
 
   /* ============== [ FUNC: CHANGE STATUS ] ============== */
@@ -178,6 +184,20 @@ async function getFunctions(context) {
   }
 
   const CALENDAR_ITEM_TYPE = { event: "event", chore: "chore" };
+  const currentDate = (type) => {
+    if (type === CALENDAR_ITEM_TYPE.chore) {
+      return americanDateFormatter(now);
+    } else {
+      return now.toISOString();
+    }
+  };
+  const currentDateFormat = (type) => {
+    if (type === CALENDAR_ITEM_TYPE.chore) {
+      return "YYYY-MM-DD";
+    } else {
+      return "ISO";
+    }
+  };
 
   /* ============== [ HELPER: CREATE GET CALENDAR ITEM(S) ] =============*/
   const createGetCalendarItems = (type) => {
@@ -187,8 +207,9 @@ async function getFunctions(context) {
       name: `get${capitalizeFirstLetter(type)}`,
       description:
         `The user will attempt to identify one or more ${type}s using plain text. The plain text contains at least 1 ` +
-        `parameter that can be used to identify a list of ${type}s. This list will be returned and will contain a ` +
-        "eventName parameter for each element. Always include that parameter in your response",
+        `parameter that can be used to identify a list of ${type}s. For relative dates (like 'tomorrow') the current date is ${currentDate(
+          type
+        )}`,
       parameters: {
         type: "object",
         properties: {
@@ -197,35 +218,37 @@ async function getFunctions(context) {
             description: `The name of the ${type}`,
             enum: allItems.map((item) => item.eventName),
           },
-          date: {
+          beginDate: {
             type: "string",
-            description: `The ${type}'s date in YYYY-MM-DD format. For relative dates (like 'tomorrow') the current date is ${americanDateFormatter(
-              now
-            )}`,
+            description: `The start of a date range to look in. ${currentDateFormat(
+              type
+            )} format.`,
           },
-          status: {
-            type: "boolean",
-            description: `True if the ${type} chore is completed. False if not`,
+          endDate: {
+            type: "string",
+            description: `The end of a date range to look in. ${currentDateFormat(
+              type
+            )} format.`,
           },
         },
       },
-      func: async ({ eventName, date, status = false }) => {
-        const matchingItems = allItems.eventsData.filter((item) => {
+      func: async ({ eventName, beginDate, endDate }) => {
+        const matchingItems = allItems.filter((item) => {
           const eventNameCondition = item.eventName === eventName;
 
           const itemDate = new Date(item.date);
-          const dateCondition = americanDateFormatter(itemDate) === date;
+          const begin = new Date(beginDate);
+          const end = new Date(endDate);
+          const dateCondition = itemDate >= begin && itemDate <= end;
 
-          const statusCondition = item.status === status;
-
-          return eventNameCondition || dateCondition || statusCondition;
+          return eventNameCondition || dateCondition;
         });
 
-        const formattedMatchingItems = matchingItems.map((chore) => {
+        const formattedMatchingItems = matchingItems.map((item) => {
           const assignedRoommates = Object.entries(displayNameToUser).reduce(
             (acc, [displayName, userInfo]) => {
-              if (chore.assignedRoommates.includes(userInfo.uuid)) {
-                return [...acc, displayName];
+              if (item.assignedRoommates.includes(userInfo.uuid)) {
+                return [...acc, userInfo.displayName];
               } else {
                 return acc;
               }
@@ -233,10 +256,27 @@ async function getFunctions(context) {
             []
           );
 
-          return {
-            ...chore,
-            assignedRoommates,
-          };
+          let itemSummary = `On ${item.date} there is a ${type} called ${item.eventName}. `;
+          if (item.frequency) {
+            itemSummary += `This ${type} repeats ${item.frequency}. `;
+          }
+          if (assignedRoommates?.length > 0) {
+            itemSummary += `The following roommates are assigned to this ${type}: `;
+            assignedRoommates.forEach((roommate, index) => {
+              if (index === assignedRoommates.length - 1) {
+                itemSummary += `${roommate}.`;
+              } else {
+                itemSummary += `${roommate}, `;
+              }
+            });
+          } else {
+            itemSummary += `No one is assigned to this ${type} yet. `;
+          }
+          if (item.description) {
+            itemSummary += `Description: ${item.description}.`;
+          }
+
+          return itemSummary;
         });
 
         return JSON.stringify(formattedMatchingItems);
@@ -250,8 +290,8 @@ async function getFunctions(context) {
   const createAddCalendarItem = (type) => {
     apiFunctions.push({
       name: `add${capitalizeFirstLetter(type)}`,
-      description: `Creates a new ${type}. the current date is ${americanDateFormatter(
-        now
+      description: `Creates a new ${type}. the current date is ${currentDate(
+        type
       )}`,
       parameters: {
         type: "object",
@@ -262,18 +302,32 @@ async function getFunctions(context) {
           },
           date: {
             type: "string",
-            description: `The date the ${type} beings in YYYY-MM-DD format.`,
+            description: `The date the ${type} beings in ${currentDateFormat(
+              type
+            )} format.`,
           },
-          frequency: {
-            type: "string",
-            description: `How often the ${type} repeats`,
-            enum: ["Once", "Daily", "Biweekly", "Weekly", "Monthly"],
-          },
-          endRecurrenceDate: {
-            type: "string",
-            description:
-              "Date stating when the recurrence specified by the frequency ends in YYYY-MM-DD format",
-          },
+          ...(type === CALENDAR_ITEM_TYPE.event
+            ? {
+                endDate: {
+                  type: "string",
+                  description: `The date the ${type} ends in ${currentDateFormat(
+                    type
+                  )} format.`,
+                },
+              }
+            : {
+                frequency: {
+                  type: "string",
+                  description: `How often the ${type} repeats`,
+                  enum: ["Once", "Daily", "Biweekly", "Weekly", "Monthly"],
+                },
+                endRecurrenceDate: {
+                  type: "string",
+                  description: `Date stating when the recurrence specified by the frequency ends in ${currentDateFormat(
+                    type
+                  )} format`,
+                },
+              }),
           description: {
             type: "string",
             description: `Description of the ${type}`,
@@ -294,17 +348,28 @@ async function getFunctions(context) {
       func: async ({
         eventName,
         date,
+        endDate,
         frequency,
         endRecurrenceDate,
         description,
         assignedRoommates,
       }) => {
-        let addItemData = {
-          eventName,
-          date,
-          frequency,
-          token: context.token,
-        };
+        let addItemData =
+          type === CALENDAR_ITEM_TYPE.event
+            ? {
+                eventName,
+                startDatetime: date,
+                endDatetime: endDate,
+                token: context.token,
+                roomId: context.roomId,
+              }
+            : {
+                eventName,
+                date,
+                frequency,
+                token: context.token,
+                roomId: context.roomId,
+              };
 
         if (endRecurrenceDate) {
           addItemData.endRecurrenceDate = endRecurrenceDate;
@@ -313,7 +378,9 @@ async function getFunctions(context) {
           addItemData.description = description;
         }
         if (assignedRoommates) {
-          addItemData.assignedRoommates = assignedRoommates.map((attendee) => {
+          addItemData[
+            type === CALENDAR_ITEM_TYPE.event ? "guests" : "assignedRoommates"
+          ] = assignedRoommates.map((attendee) => {
             const userInfo = displayNameToUser[attendee];
             return userInfo.uuid;
           });
@@ -341,8 +408,8 @@ async function getFunctions(context) {
       name: `edit${capitalizeFirstLetter(type)}`,
       description:
         `Edits an existing ${type} with at least 1 parameter. If one of newFrequency, newEndFrequency, or newDate are specified, they all must be. ` +
-        `For relative dates (like 'tomorrow'), the current date is ${americanDateFormatter(
-          now
+        `For relative dates (like 'tomorrow'), the current date is ${currentDate(
+          type
         )}`,
       parameters: {
         type: "object",
@@ -358,18 +425,33 @@ async function getFunctions(context) {
           },
           newDate: {
             type: "string",
-            description: `A new start date of the ${type} in YYYY-MM-DD format`,
+            description: `A new start date of the ${type} in ${currentDateFormat(
+              type
+            )} format`,
           },
-          newFrequency: {
-            type: "string",
-            description: `A new frequency specifying how often the ${type} repeats`,
-            enum: ["Once", "Daily", "Biweekly", "Weekly", "Monthly"],
-          },
-          newEndFrequency: {
-            type: "string",
-            description: `Specifies when the repeating stops in YYYY-MM-DD format.`,
-            enum: ["Once", "Daily", "Biweekly", "Weekly", "Monthly"],
-          },
+          ...(type === CALENDAR_ITEM_TYPE.event
+            ? {
+                newEndDate: {
+                  type: "string",
+                  description: `A new end date of the ${type} in ${currentDateFormat(
+                    type
+                  )} format. Must be used with newDate`,
+                },
+              }
+            : {
+                newFrequency: {
+                  type: "string",
+                  description: `A new frequency specifying how often the ${type} repeats`,
+                  enum: ["Once", "Daily", "Biweekly", "Weekly", "Monthly"],
+                },
+                newEndFrequency: {
+                  type: "string",
+                  description: `Specifies when the repeating stops in ${currentDateFormat(
+                    type
+                  )} format.`,
+                  enum: ["Once", "Daily", "Biweekly", "Weekly", "Monthly"],
+                },
+              }),
           description: {
             type: "string",
             description: `a new description of the ${type}`,
@@ -401,6 +483,7 @@ async function getFunctions(context) {
         eventName,
         newEventName,
         newDate,
+        newEndDate,
         newFrequency,
         description,
         addedRoommates,
@@ -410,13 +493,19 @@ async function getFunctions(context) {
         let editItemData = {
           instanceId: item.instanceId,
           token: context.token,
+          roomId: context.roomId,
         };
 
         if (newEventName) {
           editItemData.eventName = newEventName;
         }
         if (newDate) {
-          editItemData.date = newDate;
+          editItemData[
+            type === CALENDAR_ITEM_TYPE.event ? "startDatetime" : "date"
+          ] = newDate;
+        }
+        if (newEndDate) {
+          editItemData.endDatetime = newEndDate;
         }
         if (newFrequency) {
           editItemData.frequency = newFrequency;
@@ -426,7 +515,9 @@ async function getFunctions(context) {
         }
 
         if (addedRoommates) {
-          editItemData.assignedRoommates = [
+          editItemData[
+            type === CALENDAR_ITEM_TYPE.event ? "guests" : "assignedRoommates"
+          ] = [
             ...(item.assignedRoommates ?? []),
             ...addedRoommates.reduce((acc, attendee) => {
               const userInfo = displayNameToUser[attendee];
@@ -444,7 +535,9 @@ async function getFunctions(context) {
             const userInfo = displayNameToUser[attendee];
             return userInfo?.uuid ?? "";
           });
-          editItemData.assignedRoommates =
+          editItemData[
+            type === CALENDAR_ITEM_TYPE.event ? "guests" : "assignedRoommates"
+          ] =
             item.assignedRoommates?.filter(
               (attendeeUuid) => !removedRoommatesUuids.includes(attendeeUuid)
             ) ?? [];
@@ -489,6 +582,7 @@ async function getFunctions(context) {
         const deleteItemData = {
           instanceId: item.instanceId,
           token: context.token,
+          roomId: context.roomId,
         };
         const result = await deleteItemFunction(
           deleteItemData,
@@ -526,6 +620,7 @@ async function getFunctions(context) {
         const completeChoreData = {
           instanceId: chore.instanceId,
           token: context.token,
+          roomId: context.roomId,
         };
         const result = await completeChoreBody(
           completeChoreData,
