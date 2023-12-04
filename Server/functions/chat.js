@@ -406,13 +406,13 @@ async function getFunctions(context) {
         };
 
         if (newEventName) {
-          editItemData.newEventName = newEventName;
+          editItemData.eventName = newEventName;
         }
         if (newDate) {
-          editItemData.newDate = newDate;
+          editItemData.date = newDate;
         }
         if (newFrequency) {
-          editItemData.newFrequency = newFrequency;
+          editItemData.frequency = newFrequency;
         }
         if (description) {
           editItemData.description = newEventName;
