@@ -126,7 +126,7 @@ struct HomeView: View {
                         }
                         Spacer()
                         NavigationLink("View All") {
-                            Text("View all events")
+                            AllEvents(events: loggedInViewViewModel.events)
                         }
                         .padding()
                     }
@@ -165,7 +165,7 @@ struct HomeView: View {
                         }
                         Spacer()
                         NavigationLink("View Mine") {
-                            Text("View all my events")
+                            AllEvents(events: loggedInViewViewModel.myEvents)
                         }
                         .padding()
                     }
@@ -190,5 +190,3 @@ struct HomeView: View {
     }
     
 }
-
-
