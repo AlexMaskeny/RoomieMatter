@@ -6,16 +6,23 @@ import GoogleSignIn
 
 class EditEventViewModel:ObservableObject{
     @Published var event: Event
+    var user: Roommate
     @Published var dateStart = Date.now
     @Published var dateEnd = Date.now
     @Published var addAssignees = false
+    var possibleAssignees: [Roommate]  {
+        var ret = [user]
+        ret.append(contentsOf: roommates)
+        return ret
+    }
     var roommates: [Roommate]
     
-    init(roommates: [Roommate], event: Event){
+    init(roommates: [Roommate], event: Event, user: Roommate){
         self.roommates = roommates
         self.event = event
         dateStart = Date(timeIntervalSince1970: event.date)
         dateEnd = Date(timeIntervalSince1970: event.dateEnd)
+        self.user = user
     }
     
     func saveEvent(){

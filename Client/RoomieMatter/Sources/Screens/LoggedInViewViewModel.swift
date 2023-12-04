@@ -29,39 +29,53 @@ class LoggedInViewViewModel: ObservableObject{
         events = [Event]()
         roommates = [Roommate]()
         
-        let userID = Auth.auth().currentUser?.uid ?? "uid"
-        let displayName = Auth.auth().currentUser?.displayName ?? "unknown"
-        let photoURL = Auth.auth().currentUser?.photoURL
-        self.user = Roommate(id: userID, displayName: displayName, photoURL: photoURL, status: .home)
-        
-        let userRef = db.collection("users").document(userID)
-        
-        db.collection("user_rooms").whereField("user", isEqualTo: userRef).getDocuments { snapshot, error in
-            
-            let roomRef = snapshot!.documents[0].get("room") as! DocumentReference
-            
-            roomRef.getDocument { snapshot1, error in
-                if let roomName = snapshot1?.get("name") as? String {
-                    self.roomName = roomName
+        if Auth.auth().currentUser == nil {
+            user = Roommate(id: "1", displayName: "Demo User", status: .home)
+            self.getChores()
+            self.getEvents()
+            self.roommates = [Roommate.Example1, Roommate.Example2, Roommate.Example3, Roommate.Example4]
+        } else {
+            let userID = Auth.auth().currentUser?.uid ?? "uid"
+            let displayName = Auth.auth().currentUser?.displayName ?? "unknown"
+            let photoURL = Auth.auth().currentUser?.photoURL
+            self.user = Roommate(id: userID, displayName: displayName, photoURL: photoURL, status: .home)
+            let userRef = db.collection("users").document(userID)
+            db.collection("user_rooms").whereField("user", isEqualTo: userRef).getDocuments { snapshot, error in
+                guard let snapshot = snapshot else { return }
+                guard snapshot.documents.count > 0 else { print("documents cound = 0"); return }
+                guard let roomRef = snapshot.documents[0].get("room") as? DocumentReference else { return }
+                
+                
+                roomRef.getDocument { snapshot1, error in
+                    if let roomName = snapshot1?.get("name") as? String {
+                        self.roomName = roomName
+                    }
+                }
+                
+                
+                self.listener = db.collection("user_rooms").whereField("room", isEqualTo: roomRef).whereField("user", isEqualTo: userRef).addSnapshotListener { snapshot, error in
+                    guard let documents = snapshot?.documents else { return }
+                    guard documents.count == 1 else { return }
+                    guard let userStatus = documents[0].data()["status"] as? String else { return }
+                    self.user.status = interpretString(status: userStatus)
                 }
             }
-            
-            
-            self.listener = db.collection("user_rooms").whereField("room", isEqualTo: roomRef).whereField("user", isEqualTo: userRef).addSnapshotListener { snapshot, error in
-                guard let documents = snapshot?.documents else { return }
-                guard documents.count == 1 else { return }
-                guard let userStatus = documents[0].data()["status"] as? String else { return }
-                self.user.status = interpretString(status: userStatus)
-            }
+            getChores1()
+            getEvents1()
+            getRoommates1()
         }
-        getChores1()
-        getEvents()
-        getRoommates()
+        
+        
+        
+        
+        
+        
+        
         
         
     }
     
-    func getRoommates(){
+    func getRoommates1(){
         if Auth.auth().currentUser != nil{
             let userRef = db.collection("users").document(user.id)
             db.collection("user_rooms").whereField("user", isEqualTo: userRef).getDocuments { snapshot, error in
@@ -139,7 +153,7 @@ class LoggedInViewViewModel: ObservableObject{
                 var freq = chore["frequency"] as? String ?? " "
                 var description = chore["description"] as? String ?? " "
                 var authorID = chore["author"] as? String ?? "uqWhv6HG6QPqjGyJV2a9FF6R1pm2" //CHANGE
-                print("DEBUG assigned roommates \(chore["assignedRoommates"])")
+                
                 var assignedRoommateIDs = chore["assignedRoommates"] as? [String] ?? [] //CHange
                 var assignedRoommates = [Roommate]()
                 for assignedRoommateID in assignedRoommateIDs {

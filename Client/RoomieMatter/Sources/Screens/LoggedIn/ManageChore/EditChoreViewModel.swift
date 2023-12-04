@@ -6,14 +6,21 @@ import GoogleSignIn
 
 class EditChoreViewModel:ObservableObject{
     @Published var chore: Chore
+    var user: Roommate
     @Published var date: Date
     @Published var addAssignees = false
+    var possibleAssignees: [Roommate]  {
+        var ret = [user]
+        ret.append(contentsOf: roommates)
+        return ret
+    }
     var roommates: [Roommate]
     
-    init(roommates: [Roommate], chore: Chore){
+    init(roommates: [Roommate], chore: Chore, user: Roommate){
         self.roommates = roommates
         self.chore = chore
         self.date = Date(timeIntervalSince1970: chore.date)
+        self.user = user
     }
     
     func saveChore(){

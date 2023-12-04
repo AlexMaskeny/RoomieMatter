@@ -52,7 +52,7 @@ struct AuthScreen: View {
                 
                 Text(err).foregroundColor(.red).caption()
                 NavigationLink{
-                    Text("Demo View Here")
+                    LoggedInView()
                 } label: {
                     Text("Try demo")
                         .foregroundStyle(.white)

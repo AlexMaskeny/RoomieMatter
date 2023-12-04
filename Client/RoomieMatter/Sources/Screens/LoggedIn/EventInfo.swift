@@ -11,6 +11,7 @@ struct EventInfo: View {
     var event: Event
     var roommates: [Roommate]
     @Environment(\.dismiss) private var dismiss
+    @ObservedObject var loggedInViewViewModel: LoggedInViewViewModel
     @State private var showing = true
 
     var body: some View {
@@ -161,7 +162,7 @@ struct EventInfo: View {
             })
             .toolbar{
                 NavigationLink{
-                    EditEventView(roommates: roommates, event: event, showing: $showing)
+                    EditEventView(loggedInViewViewModel: loggedInViewViewModel, roommates: roommates, event: event, showing: $showing)
                 } label: {
                     Image(systemName: "pencil")
                         .foregroundStyle(.white)
@@ -173,9 +174,5 @@ struct EventInfo: View {
     }
 }
 
-struct EventInfo_Previews: PreviewProvider {
-    static var previews: some View {
-        EventInfo(event: Event.Example1, roommates: [Roommate.Example1])
-    }
-}
+
 

@@ -17,6 +17,11 @@ class AddEventViewModel:ObservableObject{
     @Published var author: Roommate
     @Published var guests = [Roommate]()
     @Published var addGuests = false
+    var possibleGuests: [Roommate] {
+        var ret = [author]
+        ret.append(contentsOf: roommates)
+        return ret
+    }
     var roommates: [Roommate]
     
     func saveEvent(){

@@ -18,6 +18,7 @@ import FirebaseFirestore
     var roomname: String?
     var room_id: String?
     private var db = Firestore.firestore()
+    static let shared = AuthenticationViewModel()
     
     init() {
         fetchUser()

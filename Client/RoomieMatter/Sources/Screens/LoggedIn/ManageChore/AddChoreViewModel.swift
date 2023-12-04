@@ -11,6 +11,11 @@ class AddChoreViewModel:ObservableObject{
     @Published var addAssignees = false
     @Published var frequency = Chore.Frequency.once
     @Published var assignedRoommates = [Roommate]()
+    var possibleAssignees: [Roommate] {
+        var ret = [author]
+        ret.append(contentsOf: roommates)
+        return ret
+    }
     var roommates: [Roommate]
     
     init(author: Roommate, roommates: [Roommate]){
@@ -19,7 +24,7 @@ class AddChoreViewModel:ObservableObject{
     }
     
     func saveChore(){
-        //print("DEBUG in saveChore")
+        
         guard !name.isEmpty else { return }
         guard !description.isEmpty else { return }
         
@@ -34,7 +39,7 @@ class AddChoreViewModel:ObservableObject{
         let dateStr = formatter.string(from: date)
         
         let data: [String: Any] = ["token": token, "roomId": AuthenticationViewModel.shared.room_id ?? "","eventName": name, "date": dateStr, "frequency": self.frequency.asString,
-                    "endRecurrenceDate": "2023-12-30", "description": description, "assignedRoommates": assignedRoommates.map({ roommate in roommate.id })]
+                                   "endRecurrenceDate": "2023-12-30", "description": description, "assignedRoommates": assignedRoommates.map({ roommate in roommate.id })]
         Functions.functions().httpsCallable("addChore").call(data) { (result, error) in
             if let error = error as NSError? {
                 if error.domain == FunctionsErrorDomain {
@@ -45,11 +50,13 @@ class AddChoreViewModel:ObservableObject{
                 }
                 // Handle the error
             }
-            if let data = result?.data as? [String: Any] {
-                print(data)
-            }
+            /* if let data = result?.data as? [String: Any] {
+             print(data)
+             } */
         }
-
+        
+        
+        
     }
     
     func checkContains(roommate: Roommate) -> Bool{

@@ -12,33 +12,39 @@ struct AddEventView: View {
     @StateObject var loggedInViewViewModel: LoggedInViewViewModel
     @Environment(\.dismiss) private var dismiss
     
-    init(author: Roommate, roommates: [Roommate], loggedInViewViewModel: LoggedInViewViewModel){
+    init(loggedInViewViewModel: LoggedInViewViewModel){
         self._loggedInViewViewModel = StateObject(wrappedValue: loggedInViewViewModel)
-        self._viewModel = StateObject(wrappedValue: AddEventViewModel(author: author, roommates: roommates))
+        self._viewModel = StateObject(wrappedValue: AddEventViewModel(author: loggedInViewViewModel.user, roommates: loggedInViewViewModel.roommates))
     }
     var body: some View {
         ScrollView {
             VStack {
                 InputView(placeholder: "Event Name", text: $viewModel.name)
-                InputView(placeholder: "\(viewModel.date.formatted(date: .abbreviated, time: .omitted))", text: .constant(""))
+                InputView(placeholder: "Start Time: \(viewModel.date.formatted(date: .abbreviated, time: .shortened))", text: .constant(""))
                     .disabled(true)
                     .overlay {
-                        Button{
-                            //viewModel.showingDatePicker.toggle()
-                        } label: {
-                            HStack {
-                                Spacer()
-                                Image(systemName: "calendar")
-                                    .padding(.trailing)
-                                    .font(.title)
-                            }
+                        HStack {
+                            Spacer()
+                            Image(systemName: "calendar")
+                                .padding(.trailing)
+                                .font(.title)
+                                .foregroundStyle(.roomieMatter)
                         }
                     }
-                Text("Start Time")
-                DatePicker("Event Start", selection: $viewModel.date, in: Date.now...)
+                DatePicker("Event Start: ", selection: $viewModel.date, in: Date.now...)
                     .datePickerStyle(.graphical)
-                Text("End Time")
-                DatePicker("Event End", selection: $viewModel.dateEnd, in: Date.now...)
+                InputView(placeholder: "End Time: \(viewModel.dateEnd.formatted(date: .abbreviated, time: .shortened))", text: .constant(""))
+                    .disabled(true)
+                    .overlay {
+                        HStack {
+                            Spacer()
+                            Image(systemName: "calendar")
+                                .padding(.trailing)
+                                .font(.title)
+                                .foregroundStyle(.roomieMatter)
+                        }
+                    }
+                DatePicker("Event End: ", selection: $viewModel.dateEnd, in: Date.now...)
                     .datePickerStyle(.graphical)
                 
                 TextEditorView(placeholder: "Description", text: $viewModel.description)
@@ -67,7 +73,7 @@ struct AddEventView: View {
                         }
                     }
                 if viewModel.addGuests{
-                    ForEach(viewModel.roommates){ roommate in
+                    ForEach(viewModel.possibleGuests){ roommate in
                         HStack {
                             RoommateStatusView(isSelf: false, roommate: roommate)
                             Button{
@@ -91,8 +97,12 @@ struct AddEventView: View {
                     }
                 }
                 CustomButton(title: "Save", backgroundColor: .roomieMatter){
-                    viewModel.saveEvent()
-                    //loggedInViewViewModel.getChores1()
+                    if loggedInViewViewModel.user.id == "1"{
+                        let newEvent = Event(id: UUID().uuidString, name: viewModel.name, date: viewModel.date.timeIntervalSince1970, dateEnd: viewModel.dateEnd.timeIntervalSince1970, description: viewModel.description, author: viewModel.author, Guests: viewModel.guests)
+                        loggedInViewViewModel.events.append(newEvent)
+                    } else{
+                        viewModel.saveEvent()
+                    }
                     dismiss()
                 }
                 

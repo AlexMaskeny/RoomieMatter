@@ -11,7 +11,7 @@ struct LoggedInView: View {
     var body: some View {
         NavigationStack{
             TabView {
-                HomeView(chores: viewModel.chores, events: viewModel.events)
+                HomeView(loggedInViewViewModel: viewModel)
                     .tabItem {
                         Image(systemName: "house")
                     }
@@ -26,7 +26,6 @@ struct LoggedInView: View {
                         Image(systemName: "person.fill")
                     }
             }
-            
             .toolbar{
                 ToolbarItemGroup(placement: .topBarLeading) {
                     Text(viewModel.roomName)
@@ -48,13 +47,13 @@ struct LoggedInView: View {
                         Image(systemName: "ellipsis.message")
                             .foregroundStyle(.white)
                     }
+                    .disabled(viewModel.user.id == "1")
                 }
                 
             }
             .toolbarBackground(Color.roomieMatter)
             .toolbarBackground(.visible, for: .navigationBar)
         }
-        .environmentObject(viewModel)
     }
 }
 

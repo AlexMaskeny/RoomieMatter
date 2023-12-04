@@ -7,9 +7,9 @@ struct AddChoreView: View {
     @StateObject var loggedInViewViewModel: LoggedInViewViewModel
     @Environment(\.dismiss) private var dismiss
     
-    init(author: Roommate, roommates: [Roommate], loggedInViewViewModel: LoggedInViewViewModel){
+    init(loggedInViewViewModel: LoggedInViewViewModel){
         self._loggedInViewViewModel = StateObject(wrappedValue: loggedInViewViewModel)
-        self._viewModel = StateObject(wrappedValue: AddChoreViewModel(author: author, roommates: roommates))
+        self._viewModel = StateObject(wrappedValue: AddChoreViewModel(author: loggedInViewViewModel.user, roommates: loggedInViewViewModel.roommates))
     }
     var body: some View {
         ScrollView {
@@ -18,18 +18,15 @@ struct AddChoreView: View {
                 InputView(placeholder: "\(viewModel.date.formatted(date: .abbreviated, time: .omitted))", text: .constant(""))
                     .disabled(true)
                     .overlay {
-                        Button{
-                            //viewModel.showingDatePicker.toggle()
-                        } label: {
-                            HStack {
-                                Spacer()
-                                Image(systemName: "calendar")
-                                    .padding(.trailing)
-                                    .font(.title)
-                            }
+                        HStack {
+                            Spacer()
+                            Image(systemName: "calendar")
+                                .padding(.trailing)
+                                .font(.title)
+                                .foregroundStyle(.roomieMatter)
                         }
                     }
-                DatePicker("Date Picker", selection: $viewModel.date, in: Date.now..., displayedComponents: .date)
+                DatePicker("Chore Date", selection: $viewModel.date, in: Date.now..., displayedComponents: .date)
                     .datePickerStyle(.graphical)
                 InputView(placeholder: "Frequency", text: .constant(""))
                     .disabled(true)
@@ -70,7 +67,7 @@ struct AddChoreView: View {
                         }
                     }
                 if viewModel.addAssignees{
-                    ForEach(viewModel.roommates){ roommate in
+                    ForEach(viewModel.possibleAssignees){ roommate in
                         HStack {
                             RoommateStatusView(isSelf: false, roommate: roommate)
                             Button{
@@ -94,8 +91,15 @@ struct AddChoreView: View {
                     }
                 }
                 CustomButton(title: "Save", backgroundColor: .roomieMatter){
-                    viewModel.saveChore()
-                    loggedInViewViewModel.getChores1()
+                    if loggedInViewViewModel.user.id == "1"{
+                        let newChore = Chore(id: UUID().uuidString, name: viewModel.name, date: viewModel.date.timeIntervalSince1970, description: viewModel.description, author: viewModel.author, assignedRoommates: viewModel.assignedRoommates, frequency: viewModel.frequency)
+                        loggedInViewViewModel.chores.append(newChore)
+                    } else{
+                        //Dispatch queue?
+                        viewModel.saveChore()
+                        loggedInViewViewModel.getChores1()
+                    }
+                    
                     dismiss()
                 }
                 
