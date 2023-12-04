@@ -33,7 +33,7 @@ ROOMIEMATTER ROLES:
 */
 
 const settings = {
-  model: "gpt-3.5-turbo",
+  model: "gpt-3.5-turbo-16k",
   temperature: 0.5,
   apiKey: "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", //This should probably be an env var
   modelName: "Housekeeper",
