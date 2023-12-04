@@ -22,6 +22,10 @@ struct HomeView: View {
                 }
                 RoommateStatusView(isSelf: true, roommate: loggedInViewViewModel.user)
                 Divider()
+                    .onChange(of: AuthenticationViewModel.shared.room_id) { _, _ in
+                        loggedInViewViewModel.getChores1()
+                        loggedInViewViewModel.getEvents1()
+                    }
                 ForEach(loggedInViewViewModel.roommates){ roommate in
                     RoommateStatusView(isSelf: false, roommate: roommate)
                     Divider()
@@ -84,7 +88,7 @@ struct HomeView: View {
                                 )
                         }
                         Spacer()
-                        NavigationLink("View All") {
+                        NavigationLink("View Mine") {
                             AllChores(chores: loggedInViewViewModel.myChores)
                         }
                         .padding()

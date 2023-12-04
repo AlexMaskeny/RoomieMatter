@@ -61,7 +61,7 @@ class EditChoreViewModel:ObservableObject{
         
         let token = user.accessToken.tokenString
         
-        let data = ["token": token, "roomId": AuthenticationViewModel.shared.room_id ?? ""]
+        let data = ["token": token, "instanceId": chore.id,"roomId": AuthenticationViewModel.shared.room_id ?? ""]
         
         Functions.functions().httpsCallable("deleteChore").call(data) { result, error in
             if let error = error as NSError? {
@@ -69,7 +69,7 @@ class EditChoreViewModel:ObservableObject{
                     let code = FunctionsErrorCode(rawValue: error.code)
                     let message = error.localizedDescription
                     let details = error.userInfo[FunctionsErrorDetailsKey]
-                    print("Error: \(message)")
+                    print("Error: \(message) in delete chore")
                 }
                 // Handle the error
             }

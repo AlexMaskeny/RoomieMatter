@@ -1,9 +1,3 @@
-//
-//  CalendarView.swift
-//  RoomieMatter
-//
-//  Created by Anish Sundaram on 11/27/23.
-//
 import Foundation
 import SwiftUI
 import FirebaseAuth
@@ -12,10 +6,17 @@ import FirebaseFirestore
 struct CalendarView: View {
     @State private var selectedDate = Date()
     @State private var events: [Event]
-    private var authViewModel = AuthenticationViewModel()
+    @State private var fetchedEvents: [Event] = []
+    var currentEvents: [Event] {
+        events.filter { event in
+            Calendar.current.isDate(Date(timeIntervalSince1970: event.date), inSameDayAs: selectedDate)
+        }
+    }
+    private var authViewModel = AuthenticationViewModel.shared
     
-    init(events: [Event] = []) {
+    init(events: [Event]) {
         _events = State(initialValue: events)
+        _fetchedEvents = State(initialValue: events)
     }
 
     var body: some View {
@@ -27,29 +28,26 @@ struct CalendarView: View {
                     selection: $selectedDate,
                     displayedComponents: [.date]
                 )
-                
                 .datePickerStyle(.graphical)
                 .labelsHidden()
                 .overlay(Divider().background(Color.black), alignment: .bottom)
                 .padding()
                 
+                ForEach(currentEvents){event in
+                    EventCardView(event: event)
+                }
+                
                 
 
                 // Event cards
-                VStack {
-                    ForEach(events) { event in
-                        EventCardView(event: event)
-                    }
-                }
+                
+                // Fetched Event cards
+                
                 
                 // Add Event Button
-                AddEventButton(title: "Add Event", backgroundColor: .roomieMatter) {
-                    // add event view
-                    print("Selected Date: \(selectedDate)")
-                    print(events)
-                }
+                
 
-                Spacer()
+                
             }
             .padding()
             .toolbarBackground(Color.roomieMatter)
@@ -57,13 +55,72 @@ struct CalendarView: View {
         }
         .onAppear {
                     // Fetch events when the view appears
-                    fetchEvents(for: selectedDate)
+                    //fetchEvents(for: selectedDate)
         }
 
     }
     
     // Function to fetch events from Firestore
     private func fetchEvents(for date: Date) {
+        let db = Firestore.firestore()
+        let eventsCollection = db.collection("events")  // Replace with your Firestore collection name
+
+        // Convert the selectedDate to a timestamp for comparison
+        let selectedDateTimestamp = Timestamp(date: date)
+
+        // Query events for the selected date
+        eventsCollection
+            .whereField("date", isEqualTo: selectedDateTimestamp)
+            .getDocuments { querySnapshot, error in
+                if let error = error {
+                    print("Error fetching events: \(error.localizedDescription)")
+                } else {
+                    // Clear existing events using wrappedValue
+                    _events.wrappedValue = []
+
+                    // Parse the fetched events manually
+                    for document in querySnapshot!.documents {
+                        let data = document.data()
+                        do {
+                            let id = document.documentID
+                            let name = data["name"] as? String ?? ""
+                            let date = data["date"] as? Double ?? 0
+                            let description = data["description"] as? String ?? ""
+                            
+                            // Extract Roommate data
+                            let roommateData = data["author"] as? [String: Any] ?? [:]
+                            let roommate = self.parseRoommateData(roommateData: roommateData)
+                            
+                            // Extract Guests data
+                            var guests: [Roommate] = []
+                            if let guestsData = data["Guests"] as? [[String: Any]] {
+                                for guestData in guestsData {
+                                    let guest = self.parseRoommateData(roommateData: guestData)
+                                    guests.append(guest)
+                                }
+                            }
+                            
+                            let event = Event(id: id, name: name, date: date, dateEnd: date + 3600, description: description, author: roommate, Guests: guests)
+                            
+                            // Append the event to the @State variable's content
+                            fetchedEvents.append(event)
+                        } catch {
+                            print("Error creating event: \(error.localizedDescription)")
+                        }
+                    }
+                }
+            }
+    }
+
+    private func parseRoommateData(roommateData: [String: Any]) -> Roommate {
+        let id = roommateData["id"] as? String ?? ""
+        let displayName = roommateData["displayName"] as? String ?? ""
+        let photoURLString = roommateData["photoURL"] as? String
+        let photoURL = photoURLString != nil ? URL(string: photoURLString!) : nil
+        let statusString = roommateData["status"] as? String ?? "notHome"
+        let status = interpretString(status: statusString)
+        
+        return Roommate(id: id, displayName: displayName, photoURL: photoURL, status: status)
     }
 
     struct AddEventButton: View {
@@ -140,5 +197,5 @@ struct CalendarView: View {
 }
 
 #Preview {
-    CalendarView(events: [Event.Example1, Event.Example2])
+    CalendarView(events: [Event.Example1])
 }

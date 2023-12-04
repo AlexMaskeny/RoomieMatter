@@ -16,7 +16,7 @@ struct LoggedInView: View {
                         Image(systemName: "house")
                     }
                 
-                CalendarView()
+                CalendarView(events: viewModel.events)
                     .tabItem {
                         Image(systemName: "calendar")
                     }

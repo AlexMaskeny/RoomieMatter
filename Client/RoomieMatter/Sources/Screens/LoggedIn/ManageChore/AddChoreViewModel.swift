@@ -50,9 +50,9 @@ class AddChoreViewModel:ObservableObject{
                 }
                 // Handle the error
             }
-            /* if let data = result?.data as? [String: Any] {
-             print(data)
-             } */
+            if let data = result?.data as? [String: Any] {
+                //print(data)
+            }
         }
         
         
