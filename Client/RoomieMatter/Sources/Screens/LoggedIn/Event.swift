@@ -63,8 +63,8 @@ func addEvent() {
     let token = user.accessToken.tokenString
     print(token)
     
-    let data: [String: Any] = ["token": token, "eventName": "event1", "startDatetime": "2023-12-03T09:00:00-05:00",
-                               "endDatetime": "2023-12-03T10:00:00-05:00", "description": "gibberish", "guests": ["uqWhv6HG6QPqjGyJV2a9FF6R1pm2"]]
+    let data: [String: Any] = ["token": token, "eventName": "event1", "startDatetime": "2023-12-05T09:00:00-05:00",
+                               "endDatetime": "2023-12-05T10:00:00-05:00", "description": "gibberish", "guests": ["uqWhv6HG6QPqjGyJV2a9FF6R1pm2"]]
     Functions.functions().httpsCallable("addEvent").call(data) { (result, error) in
         print("in addEvent")
         if let error = error as NSError? {
@@ -90,7 +90,8 @@ func editEvent() {
     let token = user.accessToken.tokenString
     print(token)
     
-    let data: [String: Any] = ["token": token, "eventId": "q6ntfqcjjhe84093ubvjisjams", "eventName": "event2", "startDatetime": "2023-12-04T15:00:00-05:00", "endDatetime": "2023-12-04T18:00:00-05:00", "description": "gibberish", "guests": ["uqWhv6HG6QPqjGyJV2a9FF6R1pm2"]]
+    let data: [String: Any] = ["token": token, "eventId": "ht742trjvndivfttg1vp622f34", "eventName": "event2", "startDatetime": "2023-12-04T22:00:00-05:00", "endDatetime": "2023-12-04T23:00:00-05:00", "description": "new description", "guests": ["uqWhv6HG6QPqjGyJV2a9FF6R1pm2"]]
+//    let data: [String: Any] = ["token": token, "eventId": "ht742trjvndivfttg1vp622f34", "eventName": "new name here"]
     Functions.functions().httpsCallable("editEvent").call(data) { (result, error) in
         print("in editEvent")
         if let error = error as NSError? {
@@ -116,7 +117,7 @@ func deleteEvent() {
     let token = user.accessToken.tokenString
     print(token)
     
-    Functions.functions().httpsCallable("deleteEvent").call(["token": token, "eventId": "1gnf4vlbos6g5a95upqrruit8h"]) { (result, error) in
+    Functions.functions().httpsCallable("deleteEvent").call(["token": token, "eventId": "ht742trjvndivfttg1vp622f34"]) { (result, error) in
         print("in deleteEvent")
         if let error = error as NSError? {
             if error.domain == FunctionsErrorDomain {
