@@ -143,7 +143,8 @@ async function parseChore(instanceId, event) {
     return {};
   }
 
-  const creator = getUuidFromEmail(event.creator.email);
+  functions.logger.log(event.creator.email);
+  const creator = await getUuidFromEmail(event.creator.email);
 
   let eventData = {
     instanceId: instanceId,
@@ -544,10 +545,12 @@ async function addChoreBody(data, context) {
   }
 
   // add attendees
-  if (data.attendees) {
+  if (data.assignedRoommates) {
     let attendees = [];
-    for (const attendee of data.attendees) {
+    for (const attendee of data.assignedRoommates) {
+      functions.logger.log(attendee);
       const email = await getEmailFromUuid(attendee);
+      functions.logger.log(email);
       attendees.push({ email: email });
     }
     eventInput.attendees = attendees;
@@ -652,6 +655,8 @@ async function editChoreBody(data, context) {
     }
     input.resource.attendees = attendees;
   }
+
+  functions.logger.log(input);
 
   // call API to patch event
   let res = {};
