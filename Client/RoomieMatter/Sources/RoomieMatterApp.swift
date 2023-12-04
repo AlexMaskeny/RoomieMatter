@@ -1,6 +1,7 @@
 import SwiftUI
 import Firebase
 import FirebaseAuth
+import FirebaseFunctions
 import GoogleSignIn
 
 @main
@@ -57,7 +58,31 @@ struct Content: View {
                     authViewModel.fetchRoom(){
                         userInRoom = authViewModel.room_id != nil
                         isLoading = false
+                        
+                        // Add all roommates to user calendar. Only works if user is creator. Redundant call other wise
+                        guard let _ = authViewModel.room_id else {
+                            return
+                        }
+                        guard let user = GIDSignIn.sharedInstance.currentUser else {
+                            print("User not properly signed in")
+                            return
+                        }
+                        let token = user.accessToken.tokenString
+                        Functions.functions().httpsCallable("addUsersToCalendars").call([
+                            "roomId": authViewModel.room_id,
+                            "token": token
+                        ]) {(result, error) in
+                            
+                            print("addUsersToCalendars called")
+                            
+                            if let error = error as NSError? {
+                                print("Error in addUsersToCalendars: \(error.localizedDescription)")
+                                return
+                            }
+                        }
                     }
+                
+                    
                 } else {
                     userLoggedIn = false
                     userInRoom = false
