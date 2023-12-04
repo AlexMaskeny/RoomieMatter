@@ -60,24 +60,28 @@ struct RoomHome: View {
             // Banner with RoomieMatter text, notification bell, and profile icons
             HStack {
                 Spacer()
-                Button(action: {
-                    // Handle navigation to notifications
-                    print("Notifications tapped")
-                }) {
-                    Image(systemName: "bell")
-                        .font(.title)
-                        .foregroundColor(.white)
-                        .padding(.trailing, 10)
-                }
-                Button(action: {
-                    // Handle navigation to profile
-                    print("Profile tapped")
-                }) {
-                    Image(systemName: "person.circle")
-                        .font(.title)
-                        .foregroundColor(.white)
-                        .padding(.trailing, 16)
-                }
+//                Button(action: {
+//                    // Handle navigation to notifications
+//                    print("Notifications tapped")
+//                }) {
+//                    Image(systemName: "bell")
+//                        .font(.title)
+//                        .foregroundColor(.white)
+//                        .padding(.trailing, 10)
+//                }
+//                Button(action: {
+//                    // Handle navigation to profile
+//                    print("Profile tapped")
+//                }) {
+//                    Image(systemName: "person.circle")
+//                        .font(.title)
+//                        .foregroundColor(.white)
+//                        .padding(.trailing, 16)
+//                }
+                Image(systemName: "person.circle")
+                    .font(.title)
+                    .foregroundColor(.roomieMatter)
+                    .padding(.trailing, 16)
                 
             }
             .padding()
