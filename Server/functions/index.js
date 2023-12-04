@@ -18,6 +18,7 @@ const {
   deleteEvent,
 } = require("./calendar");
 const { changeStatus } = require("./status");
+const { createRoom, deleteRoom, quitRoom, joinRoom } = require("./rooms");
 
 exports.onUserSignUp = onUserSignUp;
 exports.sendChat = sendChat;
@@ -33,3 +34,7 @@ exports.addEvent = addEvent;
 exports.editEvent = editEvent;
 exports.deleteEvent = deleteEvent;
 exports.changeStatus = changeStatus;
+exports.createRoom = createRoom;
+exports.deleteRoom = deleteRoom;
+exports.quitRoom = quitRoom;
+exports.joinRoom = joinRoom;

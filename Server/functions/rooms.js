@@ -44,51 +44,6 @@ const createRoom = functions.https.onCall(async (data, context) => {
   }
 });
 
-const changeRoom = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
-    throw new functions.https.HttpsError(
-      "unauthenticated",
-      "RoomieMatter functions can only be called by Authenticated users."
-    );
-  }
-
-  const roomId = data.roomId;
-  const roomName = data.roomName;
-  const userIds = data.userIds;
-
-  if (!roomId || !roomName || !userIds) {
-    throw new functions.https.HttpsError(
-      "invalid-argument",
-      "Change room requires roomId, roomName, and userIds"
-    );
-  }
-
-  try {
-    const roomRef = db.collection("rooms").doc(roomId);
-
-    await roomRef.update({
-      name: roomName,
-    });
-
-    const userRefs = userIds.map((id) => db.collection("users").doc(id));
-
-    userRefs.forEach(async (userRef) => {
-      await db.collection("user_rooms").add({
-        room: roomRef,
-        user: userRef,
-      });
-    });
-
-    return { success: true };
-  } catch (error) {
-    functions.logger.log(error);
-    throw new functions.https.HttpsError(
-      "internal",
-      "An error occured when changing room"
-    );
-  }
-});
-
 const deleteRoom = functions.https.onCall(async (data, context) => {
   if (!context.auth) {
     throw new functions.https.HttpsError(
@@ -130,4 +85,83 @@ const deleteRoom = functions.https.onCall(async (data, context) => {
   }
 });
 
-module.exports = { createRoom, changeRoom, deleteRoom };
+const quitRoom = functions.https.onCall(async (data, context) => {
+  if (!context.auth) {
+    throw new functions.https.HttpsError(
+      "unauthenticated",
+      "RoomieMatter functions can only be called by Authenticated users."
+    );
+  }
+
+  const roomId = data.roomId;
+  const userId = data.userId;
+
+  if (!roomId || !userId) {
+    throw new functions.https.HttpsError(
+      "invalid-argument",
+      "Quit room requires roomId and userId"
+    );
+  }
+
+  try {
+    const roomRef = db.collection("rooms").doc(roomId);
+    const userRef = db.collection("users").doc(userId);
+
+    await db.collection("user_rooms")
+      .where("room", "==", roomRef)
+      .where("user", "==", userRef)
+      .get()
+      .then((querySnapshot) => {
+        querySnapshot.forEach((doc) => {
+          doc.ref.delete();
+        });
+      });
+
+    return { success: true };
+  } catch (error) {
+    functions.logger.log(error);
+    throw new functions.https.HttpsError(
+      "internal",
+      "An error occured when quitting room"
+    );
+  }
+});
+
+const joinRoom = functions.https.onCall(async (data, context) => {
+  if (!context.auth) {
+    throw new functions.https.HttpsError(
+      "unauthenticated",
+      "RoomieMatter functions can only be called by Authenticated users."
+    );
+  }
+
+  const roomId = data.roomId;
+  const userId = data.userId;
+
+  if (!roomId || !userId) {
+    throw new functions.https.HttpsError(
+      "invalid-argument",
+      "Join room requires roomId and userId"
+    );
+  }
+
+  try {
+    const roomRef = db.collection("rooms").doc(roomId);
+    const userRef = db.collection("users").doc(userId);
+
+    await db.collection("user_rooms").add({
+      room: roomRef,
+      user: userRef,
+    });
+
+    return { success: true };
+  } catch (error) {
+    functions.logger.log(error);
+    throw new functions.https.HttpsError(
+      "internal",
+      "An error occured when joining room"
+    );
+  }
+});
+
+module.exports = { createRoom, deleteRoom, quitRoom, joinRoom };

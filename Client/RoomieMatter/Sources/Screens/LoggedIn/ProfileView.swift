@@ -2,12 +2,15 @@ import SwiftUI
 import Firebase
 import FirebaseAuth
 import FirebaseFirestore
+import FirebaseFunctions
 
 struct ProfileView: View {
     @State private var isLoggedOut = false
     @State private var err : String = ""
+    @State private var showRoomHome : Bool = false
     let isSelf: Bool
     let roommate: Roommate
+    let authViewModel = AuthenticationViewModel.shared
     
     @State private var selectedStatus = "At Home"
         let statusOptions = ["At Home", "Sleeping", "In Class", "Not Home"]
@@ -86,17 +89,40 @@ struct ProfileView: View {
 
                 Spacer()
                     .frame(height: 300)
+                
                 Button{
-                                    // Add leave room action here
-                                }label: {
-                                    Text("Leave Room").padding(8)
-                                        .font(.system(size: 25))
-                                    
-                                }.padding(5)
-                    .frame(maxWidth: .infinity)
-                    .background(Color.red)
-                    .foregroundColor(.white)
-                    .cornerRadius(10)
+                    let params = [
+                        "roomId": authViewModel.room_id,
+                        "userId": authViewModel.user_uid
+                    ]
+                    Functions.functions().httpsCallable("quitRoom").call(params) { (result, error) in
+                        if let error = error as NSError? {
+                            if error.domain == FunctionsErrorDomain {
+                                let code = FunctionsErrorCode(rawValue: error.code)
+                                let message = error.localizedDescription
+                                let details = error.userInfo[FunctionsErrorDetailsKey]
+                                print("Error: \(String(describing: code)) \(message) \(String(describing: details))")
+                            }
+                        }
+                        
+                        if let data = result?.data as? [String: Any] {
+                            if let success = data["success"] as? Bool {
+                                if success {
+                                    print("Room quit success")
+                                    showRoomHome = true
+                                }
+                            }
+                        }
+                    }
+                }label: {
+                    Text("Leave Room").padding(8)
+                        .font(.system(size: 25))
+                    
+                }.padding(5)
+                .frame(maxWidth: .infinity)
+                .background(Color.red)
+                .foregroundColor(.white)
+                .cornerRadius(10)
 
                 Button{
                     Task {
@@ -119,10 +145,12 @@ struct ProfileView: View {
             .alert(isPresented: $isLoggedOut) {
                 Alert(title: Text("Logged Out"), message: Text("You have been logged out."), dismissButton: .default(Text("OK")))
             }
+            .fullScreenCover(isPresented: $showRoomHome, content: LoggedInView.init)
         }
     }
+        
 }
 
-#Preview {
-    ProfileView(isSelf: true, roommate: Roommate.Example1)
-}
+//#Preview {
+//    ProfileView(isSelf: true, roommate: Roommate.Example1)
+//}
