@@ -138,11 +138,28 @@ struct ExpandedChore: View {
                                 Text(roommate.status.status)
                                     .font(.subheadline)
                                     .foregroundStyle(.gray)
+                                
                             }
                             Spacer()
+                            
+                            
                         }
                     }
                 }
+                Spacer()
+                Button(action: {
+                                    // Add your action here
+                                    print("Chore completed!")
+                                }) {
+                                    Text("Complete Chore")
+                                        .font(.title2)
+                                        .padding()
+                                        .frame(maxWidth: .infinity)
+                                        .background(Color.green)
+                                        .foregroundColor(.white)
+                                        .cornerRadius(10)
+                                }
+                                .padding(.horizontal)
                 .padding()
             }
             .toolbar{
