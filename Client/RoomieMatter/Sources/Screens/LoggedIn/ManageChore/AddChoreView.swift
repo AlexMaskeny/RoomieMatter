@@ -100,7 +100,7 @@ struct AddChoreView: View {
                             print("pre chore saved")
                             viewModel.saveChore()
                             print("chore saved1")
-                            Thread.sleep(forTimeInterval: 1_000)
+                            // Thread.sleep(forTimeInterval: 1_000)
                             print("chore saved2")
                             loggedInViewViewModel.getChores1()
                             print("got chores")
