@@ -5,10 +5,159 @@ const { UserDimensions } = require("firebase-functions/v1/analytics");
 
 const db = admin.firestore();
 
-const choresCalendarId =
-  "c_5df0bf9c096fe8c9bf0a70fc19f1cf28dae8901ff0fcab98989a0445fb052625@group.calendar.google.com";
-const eventsCalendarId =
-  "c_13e412c22da53bac13e80008fedb53d172b8ac55ab3d4c838bf5a1b739a66d26@group.calendar.google.com";
+// const choresCalendarId =
+//   "c_5df0bf9c096fe8c9bf0a70fc19f1cf28dae8901ff0fcab98989a0445fb052625@group.calendar.google.com";
+// const eventsCalendarId =
+//   "c_13e412c22da53bac13e80008fedb53d172b8ac55ab3d4c838bf5a1b739a66d26@group.calendar.google.com";
+
+/* NEW ROOM FUNCTIONS */
+
+/* REQUIRES: token
+ * EFFECTS: creates new chores calendar and events calendar
+ * RETURNS: status, choresCalendarId, eventsCalendarId
+ * 
+ * should we add the calendarIds into the database too? need to take in roomId
+ */
+async function createNewCalendars(tokenInput) {
+  const token = tokenInput;
+  functions.logger.log(token);
+  const oAuth2Client = new google.auth.OAuth2();
+  oAuth2Client.setCredentials({ access_token: token });
+  const calendar = google.calendar({ version: "v3", auth: oAuth2Client });
+
+  // create choresCalendarId
+  let choreRes = {};
+  try {
+    choreRes = await calendar.calendars.insert({
+      resource: {
+        summary: "RoomieMatter Chores"
+      }
+    });
+  } catch (error) {
+    throw new functions.https.HttpsError("Error creating new event calendar:", error.message);
+  }
+
+  functions.logger.log(choreRes?.data ?? "Failurreeee!");
+  functions.logger.log(choreRes);
+
+  if (!choreRes?.data || choreRes?.data.length == 0) {
+    throw new functions.https.HttpsError("Error creating new chore calendar:", error.message);
+  }
+
+  // create choresCalendarId
+  const eventRes = await calendar.calendars.insert({
+    resource: {
+      summary: "RoomieMatter Events"
+    }
+  });
+
+  functions.logger.log(eventRes?.data ?? "Failurreeee!");
+  functions.logger.log(eventRes);
+
+  if (!eventRes?.data || eventRes?.data.length == 0) {
+    throw new functions.https.HttpsError("Error creating new event calendar:", error.message);
+  }
+  
+  return { status: true, choresCalendarId: choreRes.data.id,  eventsCalendarId: eventRes.data.id};
+}
+
+/* REQUIRES: token, roomId
+ * EFFECTS: add all new users to existing chores and events calendar
+ * RETURNS: status
+ */
+const addUsersToCalendars = functions.https.onCall(async (data, context) => {
+  const calendar = createOAuth(context.auth, data.token);
+
+  if (!data.roomId || data.roomId.length == 0) {
+    throw new functions.https.HttpsError(
+      "invalid-argument",
+      "Missing roomId"
+    );
+  }
+  
+  // get calendar IDs
+  const choresCalendarId = await getCalendarId(data.roomId, "chore");
+  const eventsCalendarId = await getCalendarId(data.roomId, "event");
+  const calendarIds = [choresCalendarId, eventsCalendarId];
+
+  // get user emails
+  const roomRef = db.collection("rooms").doc(data.roomId);
+  const users = await db.collection("user_rooms").where("room", "==", roomRef).get();
+  functions.logger.log(users.docs);
+
+  // for each user
+  for (const userDoc of users.docs) {
+    const userSnapshot = await userDoc.get("user").get();
+    if (!userSnapshot) {
+      continue;
+    }
+    const email = userSnapshot.get("email");
+    functions.logger.log(email);
+    
+    for (const calendarId of calendarIds) {
+      // Get the current ACL (Access Control List) of the calendar
+      const acl = await calendar.acl.list({ calendarId });
+  
+      // Check if the user is already in the ACL
+      const existingRule = acl.data.items.find((rule) => rule.scope.value === email);
+  
+      if (!existingRule) {
+        // If the user is not in the ACL, add a new rule
+        const res = await calendar.acl.insert({
+          calendarId,
+          requestBody: {
+            role: 'writer',
+            scope: {
+              type: 'user',
+              value: email,
+            },
+          },
+        });
+  
+        if (!res?.data || res?.data.length == 0) {
+          throw new functions.https.HttpsError(
+            "Error adding user to calendar:",
+            error.message
+          );
+        }
+        functions.logger.log(`User ${email} added to calendar`);
+      } else {
+        functions.logger.log(`User ${email} already added to calendar`)
+      }
+    }
+  }
+
+  return { status: true };
+
+});
+
+/*
+const getChore = functions.https.onCall(async (data, context) => {
+  // placeholder function to test createCalendarIds and addUserToCalendars
+  if (!context.auth) {
+    throw new functions.https.HttpsError(
+      "unauthenticated",
+      "RoomieMatter functions can only be called by Authenticated users."
+    );
+  }
+
+  const roomId = "ymHbFA1lhmBJMyHARUMk";
+  const userUuid = "VlxbMur4JHODRhq8ADZDCLrBKl92";
+
+  try {
+    // const res = await createNewCalendars(data.token);
+    const res = await addUserToCalendars(data.token, roomId, userUuid)
+    functions.logger.log(res);
+    return { success: true };
+  } catch (error) {
+    functions.logger.log(error);
+    throw new functions.https.HttpsError(
+      "internal",
+      "An error occured when calling createNewCalendars"
+    );
+  }
+});
+*/
 
 /* HELPER FUNCTIONS */
 
@@ -51,9 +200,16 @@ async function getEmailFromUuid(uuid) {
   return await user.data().email;
 }
 
-// TODO: add calendar IDs to database
-async function getCalendarId(roomid, calendarType) {
-  const room = await db.collection("rooms").doc(roomid).get();
+// REQUIRES: roomId, calendarType = {"chore", "event"}
+// RETURNS: calendarId
+async function getCalendarId(roomId, calendarType) {
+  if (!roomId || roomId.length == 0) {
+    throw new functions.https.HttpsError(
+      "invalid input: missing roomId"
+    );
+  }
+
+  const room = await db.collection("rooms").doc(roomId).get();
 
   if (calendarType == "chore") {
     return await room.data().choresCalendarId;
@@ -62,10 +218,10 @@ async function getCalendarId(roomid, calendarType) {
   }
 }
 
-/* REQUIRES: instanceId
+/* REQUIRES: instanceId, calendar, roomId
  * RETURNS: eventId
  */
-async function getEventId(instanceId, calendar) {
+async function getEventId(instanceId, calendar, roomId) {
   // if non-recurring event, eventId = instanceId
   if (!instanceId.includes("_")) {
     functions.logger.log("Non-recurring event");
@@ -75,6 +231,7 @@ async function getEventId(instanceId, calendar) {
   // recurring event, find eventId
   functions.logger.log("Recurring event");
   let res = {};
+  const choresCalendarId = await getCalendarId(roomId, "chore");
   try {
     res = await calendar.events.get({
       calendarId: choresCalendarId,
@@ -103,11 +260,11 @@ async function getEventId(instanceId, calendar) {
   return res.data.recurringEventId;
 }
 
-/* REQUIRES: eventId, calendar
+/* REQUIRES: eventId, calendar, roomId
  *           only recurring event
  * RETURNS: instanceId
  */
-async function getInstanceId(eventId, calendar) {
+async function getInstanceId(eventId, calendar, roomId) {
   // if instanceID, throws error
   if (eventId.includes("_")) {
     throw new functions.https.HttpsError("Expects eventId only");
@@ -115,6 +272,7 @@ async function getInstanceId(eventId, calendar) {
 
   // find instanceId
   let res = {};
+  const choresCalendarId = await getCalendarId(roomId, "chore");
   try {
     res = await calendar.events.instances({
       calendarId: choresCalendarId,
@@ -283,7 +441,7 @@ function formatRecurrence(frequency, date, endRecurrenceDate) {
   }
 }
 
-/* REQUIRES: token, instanceId
+/* REQUIRES: token, roomId, instanceId
  * RETURNS: chore = {instanceId, eventName, date, frequency, (description), (assignedRoommates)}
  * assignedRoommates = [uuid]
  */
@@ -300,7 +458,8 @@ function formatRecurrence(frequency, date, endRecurrenceDate) {
   },...]
 */
 // returns details of a chore: instanceId, eventName, date, author, frequency, (description), (assignedRoommates)
-async function getChoreHelper(instanceId, calendar) {
+async function getChoreHelper(instanceId, calendar, roomId) {
+  const choresCalendarId = await getCalendarId(roomId, "chore");
   const res = await calendar.events.get({
     calendarId: choresCalendarId,
     eventId: instanceId,
@@ -381,6 +540,7 @@ async function deleteHelper(calendarId, eventId, calendar) {
 
 /* CHORES FUNCTIONS */
 
+
 /* REQUIRES: token, instanceId
  * MODIFIES: nothing
  * EFFECTS: returns details of a chore instance on RoomieMatter Chore calendar
@@ -411,7 +571,8 @@ const getChore = functions.https.onCall(async (data, context) => {
   return await getChoreBody(data, context);
 });
 
-/* REQUIRES: token
+
+/* REQUIRES: token, roomId
  * MODIFIES: nothing
  * EFFECTS: returns list of chores from RoomieMatter Chore calendar
  * RETURNS: status, [chore]
@@ -421,6 +582,9 @@ const getChore = functions.https.onCall(async (data, context) => {
 async function getChoresBody(data, context) {
   const calendar = createOAuth(context.auth, data.token);
 
+  functions.logger.log(data);
+
+  const choresCalendarId = await getCalendarId(data.roomId, "chore");
   const res = await calendar.events.list({
     calendarId: choresCalendarId,
     timeMin: new Date().toISOString(),
@@ -463,7 +627,7 @@ async function getChoresBody(data, context) {
       functions.logger.log("Recurring event");
       let instanceId = "";
       try {
-        instanceId = await getInstanceId(event.id, calendar);
+        instanceId = await getInstanceId(event.id, calendar, data.roomId);
       } catch (error) {
         functions.logger.error("Error getting instance ID:", error.message);
         throw new functions.https.HttpsError(
@@ -490,7 +654,7 @@ const getChores = functions.https.onCall(async (data, context) => {
   return await getChoresBody(data, context);
 });
 
-/* REQUIRES: token, eventName, date, frequency
+/* REQUIRES: token, roomId, eventName, date, frequency
  * OPTIONAL: endRecurrenceDate, description, assignedRoommates
  * MODIFIES: RoomieMatter Chore calendar
  * EFFECTS: add a chore to RoomieMatter Chore calendar
@@ -547,6 +711,7 @@ async function addChoreBody(data, context) {
   }
 
   let event = {};
+  const choresCalendarId = await getCalendarId(data.roomId, "chore");
   try {
     event = await addHelper(choresCalendarId, eventInput, calendar);
   } catch (error) {
@@ -562,7 +727,7 @@ async function addChoreBody(data, context) {
   // recurring event, return instanceId of first instance
   let instanceId = "";
   try {
-    instanceId = await getInstanceId(event.id, calendar);
+    instanceId = await getInstanceId(event.id, calendar, data.roomId);
   } catch (error) {
     functions.logger.error("Error getting instance ID:", error.message);
     throw new functions.https.HttpsError(
@@ -582,7 +747,7 @@ const addChore = functions.https.onCall(async (data, context) => {
   return await addChoreBody(data, context);
 });
 
-/* REQUIRES: token, instanceId
+/* REQUIRES: token, roomId, instanceId
  * OPTIONAL: eventName, date, frequency, endRecurrenceDate, description, assignedRoommates
  * MODIFIES: RoomieMatter Chore calendar
  * EFFECTS: modifies all instances of a chore on RoomieMatter Chore calendar
@@ -601,7 +766,7 @@ async function editChoreBody(data, context) {
   // get eventId with instanceId
   let eventId = "";
   try {
-    eventId = await getEventId(data.instanceId, calendar);
+    eventId = await getEventId(data.instanceId, calendar, data.roomId);
   } catch (error) {
     functions.logger.error("Error getting eventId:", error.message);
     throw new functions.https.HttpsError(
@@ -611,6 +776,7 @@ async function editChoreBody(data, context) {
   }
 
   // patch event
+  const choresCalendarId = await getCalendarId(data.roomId, "chore");
   let input = {
     calendarId: choresCalendarId,
     eventId: eventId,
@@ -671,7 +837,7 @@ const editChore = functions.https.onCall(async (data, context) => {
   return await editChoreBody(data, context);
 });
 
-/* REQUIRES: token, instanceId
+/* REQUIRES: token, roomId, instanceId
  * MODIFIES: RoomieMatter Chore calendar
  * EFFECTS: delete one instance of a chore on RoomieMatter Chore calendar
  * RETURNS: status, (nextInstanceId)
@@ -688,7 +854,7 @@ async function completeChoreBody(data, context) {
   // get eventId with instanceId
   let eventId = "";
   try {
-    eventId = await getEventId(data.instanceId, calendar);
+    eventId = await getEventId(data.instanceId, calendar, data.roomId);
   } catch (error) {
     functions.logger.error("Error getting eventId:", error.message);
     throw new functions.https.HttpsError(
@@ -699,6 +865,7 @@ async function completeChoreBody(data, context) {
 
   // delete instance of event with instanceId
   let res = {};
+  const choresCalendarId = await getCalendarId(data.roomId, "chore");
   try {
     res = await calendar.events.delete({
       calendarId: choresCalendarId,
@@ -721,7 +888,7 @@ async function completeChoreBody(data, context) {
   }
 
   try {
-    const instanceId = await getInstanceId(eventId, calendar);
+    const instanceId = await getInstanceId(eventId, calendar, data.roomId);
     if (instanceId == "") {
       return { status: true };
     } else {
@@ -739,7 +906,7 @@ const completeChore = functions.https.onCall(async (data, context) => {
   return await completeChoreBody(data, context);
 });
 
-/* REQUIRES: token, instanceId
+/* REQUIRES: token, roomId, instanceId
  * MODIFIES: RoomieMatter Chore calendar
  * EFFECTS: delete all instances of a chore on RoomieMatter Chore calendar
  * RETURNS: status
@@ -754,7 +921,7 @@ async function deleteChoreBody(data, context) {
   // get eventId with instanceId
   let eventId = "";
   try {
-    eventId = await getEventId(data.instanceId, calendar);
+    eventId = await getEventId(data.instanceId, calendar, data.roomId);
   } catch (error) {
     functions.logger.error("Error getting eventId:", error.message);
     throw new functions.https.HttpsError(
@@ -764,6 +931,7 @@ async function deleteChoreBody(data, context) {
   }
 
   // delete event with eventId
+  const choresCalendarId = await getCalendarId(data.roomId, "chore");
   try {
     deleteHelper(choresCalendarId, eventId, calendar);
   } catch (error) {
@@ -782,7 +950,7 @@ const deleteChore = functions.https.onCall(async (data, context) => {
 
 /* EVENTS FUNCTIONS */
 
-/* REQUIRES: token
+/* REQUIRES: token, roomId
  * MODIFIES: nothing
  * EFFECTS: returns list of events from RoomieMatter Events calendar
  * RETURNS: status, [event]
@@ -791,6 +959,7 @@ const deleteChore = functions.https.onCall(async (data, context) => {
 async function getEventsBody(data, context) {
   const calendar = createOAuth(context.auth, data.token);
 
+  const eventsCalendarId = await getCalendarId(data.roomId, "event");
   const res = await calendar.events.list({
     calendarId: eventsCalendarId,
     timeMin: new Date().toISOString(),
@@ -828,7 +997,7 @@ const getEvents = functions.https.onCall(async (data, context) => {
   return await getEventsBody(data, context);
 });
 
-/* REQUIRES: token, eventName, startDatetime, endDatetime
+/* REQUIRES: token, roomId, eventName, startDatetime, endDatetime
  * OPTIONAL: description, guests
  * MODIFIES: RoomieMatter Event calendar
  * EFFECTS: add an event to RoomieMatter Events calendar
@@ -882,6 +1051,7 @@ async function addEventBody(data, context) {
   }
 
   let event = {};
+  const eventsCalendarId = await getCalendarId(data.roomId, "event");
   try {
     event = await addHelper(eventsCalendarId, eventInput, calendar);
   } catch (error) {
@@ -895,7 +1065,7 @@ const addEvent = functions.https.onCall(async (data, context) => {
   return await addEventBody(data, context);
 });
 
-/* REQUIRES: token, eventId
+/* REQUIRES: token, roomId, eventId
  * OPTIONAL: eventName, startDatetime, endDatetime, description, guests
  * MODIFIES: RoomieMatter Event calendar
  * EFFECTS: modifies an event on RoomieMatter Event calendar
@@ -913,6 +1083,7 @@ async function editEventBody(data, context) {
   }
 
   // patch event
+  const eventsCalendarId = await getCalendarId(data.roomId, "event");
   let input = {
     calendarId: eventsCalendarId,
     eventId: data.eventId,
@@ -980,13 +1151,14 @@ const editEvent = functions.https.onCall(async (data, context) => {
   return await editEventBody(data, context);
 });
 
-/* REQUIRES: token, eventId
+/* REQUIRES: token, roomId, eventId
  * MODIFIES: RoomieMatter Event calendar
  * EFFECTS: delete event on RoomieMatter Event calendar
  * RETURNS: status
  */
 async function deleteEventBody(data, context) {
   const calendar = createOAuth(context.auth, data.token);
+  const eventsCalendarId = await getCalendarId(data.roomId, "event");
   try {
     deleteHelper(eventsCalendarId, data.eventId, calendar);
   } catch (error) {
@@ -1018,6 +1190,8 @@ module.exports = {
   addEvent,
   editEvent,
   deleteEvent,
+  addUsersToCalendars,
+  createNewCalendars, 
   getChoreBody,
   getChoresBody,
   addChoreBody,

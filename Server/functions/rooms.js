@@ -1,7 +1,9 @@
 const functions = require("firebase-functions");
 const admin = require("firebase-admin");
-
 const db = admin.firestore();
+const {
+  createNewCalendars,
+} = require("./calendar");
 
 const createRoom = functions.https.onCall(async (data, context) => {
   if (!context.auth) {
@@ -22,6 +24,8 @@ const createRoom = functions.https.onCall(async (data, context) => {
   }
 
   try {
+    const res = await createNewCalendars(data.token);
+
     const userRef = db.collection("users").doc(userId);
 
     const roomRef = await db.collection("rooms").add({
@@ -29,6 +33,8 @@ const createRoom = functions.https.onCall(async (data, context) => {
       owner: userRef,
       createdAt: admin.firestore.FieldValue.serverTimestamp(),
       typing: [],
+      choresCalendarId: res.choresCalendarId, 
+      eventsCalendarId: res.eventsCalendarId,
     });
 
     await db.collection("user_rooms").add({

@@ -16,6 +16,7 @@ const {
   addEvent,
   editEvent,
   deleteEvent,
+  addUsersToCalendars,
 } = require("./calendar");
 const { changeStatus } = require("./status");
 const { createRoom, deleteRoom, quitRoom, joinRoom } = require("./rooms");
@@ -38,3 +39,4 @@ exports.createRoom = createRoom;
 exports.deleteRoom = deleteRoom;
 exports.quitRoom = quitRoom;
 exports.joinRoom = joinRoom;
+exports.addUsersToCalendars = addUsersToCalendars;
