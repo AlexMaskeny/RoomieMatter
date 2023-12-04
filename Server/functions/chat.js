@@ -199,7 +199,7 @@ async function getFunctions(context) {
           },
           date: {
             type: "string",
-            description: `The ${type}'s date in MM/DD/YYYY format. For relative dates (like 'tomorrow') the current date is ${americanDateFormatter(
+            description: `The ${type}'s date in YYYY-MM-DD format. For relative dates (like 'tomorrow') the current date is ${americanDateFormatter(
               now
             )}`,
           },
@@ -223,7 +223,7 @@ async function getFunctions(context) {
 
         const formattedMatchingItems = matchingItems.map((chore) => {
           const assignedRoommates = Object.entries(displayNameToUser).reduce(
-            ([displayName, userInfo], acc) => {
+            (acc, [displayName, userInfo]) => {
               if (chore.assignedRoommates.includes(userInfo.uuid)) {
                 return [...acc, displayName];
               } else {
@@ -250,7 +250,9 @@ async function getFunctions(context) {
   const createAddCalendarItem = (type) => {
     apiFunctions.push({
       name: `add${capitalizeFirstLetter(type)}`,
-      description: `Creates a new ${type}. The current date is ${now.toISOString()}`,
+      description: `Creates a new ${type}. the current date is ${americanDateFormatter(
+        now
+      )}`,
       parameters: {
         type: "object",
         properties: {
@@ -260,7 +262,7 @@ async function getFunctions(context) {
           },
           date: {
             type: "string",
-            description: `The date the ${type} beings in ISO format.`,
+            description: `The date the ${type} beings in YYYY-MM-DD format.`,
           },
           frequency: {
             type: "string",
@@ -270,7 +272,7 @@ async function getFunctions(context) {
           endRecurrenceDate: {
             type: "string",
             description:
-              "Date stating when the recurrence specified by the frequency ends in ISO format",
+              "Date stating when the recurrence specified by the frequency ends in YYYY-MM-DD format",
           },
           description: {
             type: "string",
@@ -352,7 +354,9 @@ async function getFunctions(context) {
           },
           newDate: {
             type: "string",
-            description: `A new start date of the ${type} in ISO format. For relative dates (like 'tomorrow'), the current date is ${now.toISOString()}`,
+            description: `A new start date of the ${type} in YYYY-MM-DD format. For relative dates (like 'tomorrow'), the current date is ${americanDateFormatter(
+              now
+            )}`,
           },
           newFrequency: {
             type: "string",
@@ -402,13 +406,13 @@ async function getFunctions(context) {
         };
 
         if (newEventName) {
-          editItemData.newEventName = newEventName;
+          editItemData.eventName = newEventName;
         }
         if (newDate) {
-          editItemData.newDate = newDate;
+          editItemData.date = newDate;
         }
         if (newFrequency) {
-          editItemData.newFrequency = newFrequency;
+          editItemData.frequency = newFrequency;
         }
         if (description) {
           editItemData.description = newEventName;
@@ -417,7 +421,7 @@ async function getFunctions(context) {
         if (addedRoommates) {
           editItemData.attendees = [
             ...item.assignedRoommates,
-            ...addedRoommates.reduce((attendee, acc) => {
+            ...addedRoommates.reduce((acc, attendee) => {
               const userInfo = displayNameToUser[attendee];
               if (item.assignedRoommates.includes(userInfo.uuid)) {
                 return acc;
@@ -472,7 +476,7 @@ async function getFunctions(context) {
       },
       func: async ({ eventName }) => {
         const deleteItemFunction =
-          type === CALENDAR_ITEM_TYPE.event ? deleteChoreBody : deleteEventBody;
+          type === CALENDAR_ITEM_TYPE.event ? deleteEventBody : deleteChoreBody;
         const item = allItems.find((item) => item.eventName === eventName);
         const deleteItemData = {
           instanceId: item.instanceId,
