@@ -8,28 +8,37 @@
 import SwiftUI
 
 struct ChatScreen: View {
-    private let store = ChatStore.shared
+    @StateObject var store = ChatStore.shared
     @State private var textInput: String = ""
-    @State private var authViewModel = AuthenticationViewModel()
+    @State private var authViewModel = AuthenticationViewModel.shared
+    @State private var doNotScroll = false
+    @State private var topChatAnchor: Chat? = nil
 
     var body: some View {
-        List(store.chats.indices, id: \.self) {
-            TextBubble(chat: store.chats[$0],
-                       position: store.chats[$0].username == authViewModel.username ? .right : .left)
-            .listRowSeparator(.hidden)
-            
-            .listRowInsets(.init(top: 0, leading: 0, bottom: 5, trailing: 0))
+        ScrollViewReader { scrollViewProxy in
+            ScrollView {
+                ForEach(store.chats, id: \.id) { chat in
+                    TextBubble(chat: chat,
+                               position: chat.username == authViewModel.username ? .right : .left)
+                    .listRowSeparator(.hidden)
+                    .listRowInsets(EdgeInsets(top: 0, leading: 0, bottom: 5, trailing: 0))
+                }
+                .onAppear {
+                    scrollToBottom(scrollViewProxy)
+                }
+                .onChange(of: store.idSet) {
+                    scrollToBottom(scrollViewProxy)
+                }
+            }
+            .listStyle(.plain)
+            .navigationTitle(authViewModel.roomname ?? "failed_to_fetch_roomname")
+            .navigationBarTitleDisplayMode(.inline)
+            .refreshable {
+                doNotScroll = true
+                topChatAnchor = store.chats.first
+                store.getChats()
+            }
         }
-        .listStyle(.plain)
-        .onAppear {
-            store.getChats(onAppear: true)
-            print("getting chats")
-        }
-        .refreshable {
-            store.getChats()
-        }
-        .navigationTitle(authViewModel.roomname ?? "failed_to_fetch_roomname")
-        .navigationBarTitleDisplayMode(.inline)
         
         HStack {
             TextField("Enter your message", text: $textInput)
@@ -47,8 +56,25 @@ struct ChatScreen: View {
         }
         .padding()
     }
+    
+    func scrollToBottom(_ scrollViewProxy: ScrollViewProxy) {
+        if !doNotScroll {
+            withAnimation(.easeOut(duration: 0.5)) {
+                if let lastChat = store.chats.last {
+                    scrollViewProxy.scrollTo(lastChat.id, anchor: .bottom)
+                }
+            }
+        }
+        else {
+            doNotScroll.toggle()
+            if let topChatAnchor = topChatAnchor {
+                scrollViewProxy.scrollTo(topChatAnchor.id, anchor: .top)
+            }
+        }
+        
+    }
 }
 
-#Preview {
-    ChatScreen()
-}
+//#Preview {
+//    ChatScreen()
+//}

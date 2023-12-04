@@ -17,6 +17,7 @@ const {
   editEvent,
   deleteEvent,
 } = require("./calendar");
+const { changeStatus } = require("./status");
 
 exports.onUserSignUp = onUserSignUp;
 exports.sendChat = sendChat;
@@ -31,4 +32,4 @@ exports.getEvents = getEvents;
 exports.addEvent = addEvent;
 exports.editEvent = editEvent;
 exports.deleteEvent = deleteEvent;
-
+exports.changeStatus = changeStatus;

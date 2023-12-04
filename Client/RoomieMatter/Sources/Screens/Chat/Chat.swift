@@ -8,7 +8,8 @@
 import Foundation
 
 struct Chat {
-    var username: String?
-    var message: String?
-    var timestamp: Date?
+    var id: String
+    var username: String
+    var message: String
+    var timestamp: Date
 }

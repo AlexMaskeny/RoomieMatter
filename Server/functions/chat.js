@@ -532,7 +532,7 @@ async function getFunctions(context) {
 }
 
 function stopGPTTyping(roomId) {
-  db.collection("room")
+  db.collection("rooms")
     .doc(roomId)
     .update({
       typing: admin.firestore.FieldValue.arrayRemove("gpt"),
@@ -684,10 +684,7 @@ const sendChat = functions.https.onCall(async (data, context) => {
 
     if (!response) {
       stopGPTTyping(roomId);
-      throw new functions.https.HttpsError(
-        "internal",
-        "Error thrown by OpenAI"
-      );
+      throw "Error thrown by OpenAI";
     }
 
     const prompt_tokens = response.usage?.prompt_tokens;
@@ -716,7 +713,7 @@ const sendChat = functions.https.onCall(async (data, context) => {
       role: response_role,
       numTokens: prompt_tokens + completion_tokens,
       content: completion.content,
-      function_call: completion.function_call,
+      function_call: completion.function_call ?? "",
       createdAt: admin.firestore.FieldValue.serverTimestamp(),
     });
 
@@ -789,7 +786,10 @@ const sendChat = functions.https.onCall(async (data, context) => {
   } catch (error) {
     functions.logger.log(error);
     stopGPTTyping(roomId);
-    throw new functions.https.HttpsError("internal", "Error thrown by OpenAI");
+    throw new functions.https.HttpsError(
+      "internal",
+      "Error when calling OpenAI"
+    );
   }
 });
 
@@ -814,24 +814,32 @@ const getChats = functions.https.onCall(async (data, context) => {
     ? await db
         .collection("chats")
         .where("room", "==", room)
+        .where("role", "in", ["user", "assistant", "roommate"])
         .where("createdAt", "<", new Date(maxTimestamp))
         .orderBy("createdAt", "desc")
         .limit(20)
         .get()
     : { docs: [] };
   const olderPlainHistoryData = olderRawHistory.docs
-    .map((doc) => doc.data())
+    .map((doc) => ({
+      id: doc.id,
+      ...doc.data(),
+    }))
     .reverse();
 
   const newerRawHistory = minTimestamp
     ? await db
         .collection("chats")
         .where("room", "==", room)
+        .where("role", "in", ["user", "assistant", "roommate"])
         .where("createdAt", ">", new Date(minTimestamp))
         .orderBy("createdAt", "asc")
         .get()
     : { docs: [] };
-  const newerPlainHistoryData = newerRawHistory.docs.map((doc) => doc.data());
+  const newerPlainHistoryData = newerRawHistory.docs.map((doc) => ({
+    id: doc.id,
+    ...doc.data(),
+  }));
 
   const makeHistory = async (plainHistoryData) => {
     let userRefs = [];
@@ -857,6 +865,7 @@ const getChats = functions.https.onCall(async (data, context) => {
         content: chat.content ?? "",
         createdAt: chat.createdAt?.toDate()?.toISOString() ?? "",
         role: chat.role ?? "",
+        id: chat.id ?? "",
       };
 
       switch (chat.role) {

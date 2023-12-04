@@ -12,7 +12,7 @@ struct SyncCalendarView: View {
     @State private var enableNotifications = false
     @State private var syncEvents = false
     @State private var syncChoreTasks = false
-    @State private var authViewModel = AuthenticationViewModel()
+    @State private var authViewModel = AuthenticationViewModel.shared
 
     var body: some View {
             ScrollView{
