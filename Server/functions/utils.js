@@ -15,7 +15,7 @@ function americanDateFormatter(date) {
 }
 
 function capitalizeFirstLetter(text) {
-  return text[0].toUpperCase() + text.substring(0, text.length);
+  return text[0].toUpperCase() + text.substring(1, text.length);
 }
 
 module.exports = { americanDateFormatter, capitalizeFirstLetter };

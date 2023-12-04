@@ -223,7 +223,7 @@ async function getFunctions(context) {
 
         const formattedMatchingItems = matchingItems.map((chore) => {
           const assignedRoommates = Object.entries(displayNameToUser).reduce(
-            ([displayName, userInfo], acc) => {
+            (acc, [displayName, userInfo]) => {
               if (chore.assignedRoommates.includes(userInfo.uuid)) {
                 return [...acc, displayName];
               } else {
@@ -417,7 +417,7 @@ async function getFunctions(context) {
         if (addedRoommates) {
           editItemData.attendees = [
             ...item.assignedRoommates,
-            ...addedRoommates.reduce((attendee, acc) => {
+            ...addedRoommates.reduce((acc, attendee) => {
               const userInfo = displayNameToUser[attendee];
               if (item.assignedRoommates.includes(userInfo.uuid)) {
                 return acc;
