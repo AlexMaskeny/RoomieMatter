@@ -199,7 +199,7 @@ async function getFunctions(context) {
           },
           date: {
             type: "string",
-            description: `The ${type}'s date in MM/DD/YYYY format. For relative dates (like 'tomorrow') the current date is ${americanDateFormatter(
+            description: `The ${type}'s date in YYYY-MM-DD format. For relative dates (like 'tomorrow') the current date is ${americanDateFormatter(
               now
             )}`,
           },
@@ -250,7 +250,9 @@ async function getFunctions(context) {
   const createAddCalendarItem = (type) => {
     apiFunctions.push({
       name: `add${capitalizeFirstLetter(type)}`,
-      description: `Creates a new ${type}. The current date is ${now.toISOString()}`,
+      description: `Creates a new ${type}. the current date is ${americanDateFormatter(
+        now
+      )}`,
       parameters: {
         type: "object",
         properties: {
@@ -260,7 +262,7 @@ async function getFunctions(context) {
           },
           date: {
             type: "string",
-            description: `The date the ${type} beings in ISO format.`,
+            description: `The date the ${type} beings in YYYY-MM-DD format.`,
           },
           frequency: {
             type: "string",
@@ -270,7 +272,7 @@ async function getFunctions(context) {
           endRecurrenceDate: {
             type: "string",
             description:
-              "Date stating when the recurrence specified by the frequency ends in ISO format",
+              "Date stating when the recurrence specified by the frequency ends in YYYY-MM-DD format",
           },
           description: {
             type: "string",
@@ -352,7 +354,9 @@ async function getFunctions(context) {
           },
           newDate: {
             type: "string",
-            description: `A new start date of the ${type} in ISO format. For relative dates (like 'tomorrow'), the current date is ${now.toISOString()}`,
+            description: `A new start date of the ${type} in YYYY-MM-DD format. For relative dates (like 'tomorrow'), the current date is ${americanDateFormatter(
+              now
+            )}`,
           },
           newFrequency: {
             type: "string",
