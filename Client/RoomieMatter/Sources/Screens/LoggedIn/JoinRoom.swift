@@ -31,24 +31,24 @@ struct JoinRoomView: View {
 
     private func joinRoom() {
         // Show loading indicator or disable UI here if needed
+        authViewModel.fetchUser() {
+            Functions.functions().httpsCallable("joinRoom").call([
+                "roomId": roomToken,
+                "userId": authViewModel.user_uid
+            ]) {(result, error) in
 
-        Functions.functions().httpsCallable("joinRoom").call([
-            "roomId": roomToken,
-            "userId": authViewModel.user_uid
-        ]) {(result, error) in
-            // Hide loading indicator or enable UI here
-
-            if let error = error as NSError? {
-                self.alertMessage = "Error: \(error.localizedDescription)"
-                self.showingAlert = true
-                return
-            }
-            
-            if let data = result?.data as? [String: Any], let success = data["success"] as? Bool, success {
-                self.showLoggedInView = true
-            } else {
-                self.alertMessage = "Failed to join room."
-                self.showingAlert = true
+                if let error = error as NSError? {
+                    self.alertMessage = "Error: \(error.localizedDescription)"
+                    self.showingAlert = true
+                    return
+                }
+                
+                if let data = result?.data as? [String: Any], let success = data["success"] as? Bool, success {
+                    self.showLoggedInView = true
+                } else {
+                    self.alertMessage = "Failed to join room."
+                    self.showingAlert = true
+                }
             }
         }
     }

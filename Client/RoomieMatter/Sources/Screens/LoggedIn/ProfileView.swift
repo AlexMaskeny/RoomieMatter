@@ -127,6 +127,11 @@ struct ProfileView: View {
                 .background(Color.red)
                 .foregroundColor(.white)
                 .cornerRadius(10)
+                .fullScreenCover(isPresented: $showRoomHome) {
+                    NavigationStack {
+                        RoomHome()
+                    }
+                }
 
                 Button{
                     Task {
@@ -148,12 +153,7 @@ struct ProfileView: View {
             .padding()
             .alert(isPresented: $isLoggedOut) {
                 Alert(title: Text("Logged Out"), message: Text("You have been logged out."), dismissButton: .default(Text("OK")))
-            }
-            .fullScreenCover(isPresented: $showRoomHome) {
-                NavigationStack {
-                    RoomHome()
-                }
-            }
+            } 
         }
     }
         
