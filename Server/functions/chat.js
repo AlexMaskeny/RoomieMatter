@@ -476,7 +476,7 @@ async function getFunctions(context) {
       },
       func: async ({ eventName }) => {
         const deleteItemFunction =
-          type === CALENDAR_ITEM_TYPE.event ? deleteChoreBody : deleteEventBody;
+          type === CALENDAR_ITEM_TYPE.event ? deleteEventBody : deleteChoreBody;
         const item = allItems.find((item) => item.eventName === eventName);
         const deleteItemData = {
           instanceId: item.instanceId,
