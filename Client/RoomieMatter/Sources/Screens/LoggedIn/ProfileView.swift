@@ -6,7 +6,6 @@ import FirebaseFirestore
 struct ProfileView: View {
     @State private var isLoggedOut = false
     @State private var err : String = ""
-    let authViewModel = AuthenticationViewModel.shared
     let isSelf: Bool
     let roommate: Roommate
     
@@ -108,8 +107,7 @@ struct ProfileView: View {
                     
                     ChangeStatusButton(title: "Change Status", backgroundColor: .roomieMatter) {
                         // call editStatus()
-                        print(editStatus(userID: authViewModel.user_uid, roomID: authViewModel.room_id, status: selectedStatus))
-                        print(authViewModel.user_uid,authViewModel.room_id, selectedStatus)
+                        print(editStatus(status: selectedStatus))
                     }
                 }
                 

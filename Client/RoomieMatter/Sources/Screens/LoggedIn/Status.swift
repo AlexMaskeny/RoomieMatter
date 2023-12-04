@@ -61,22 +61,53 @@ func interpretString(status: String) -> Status{
     }
 }
 
+//Button{
+//    authViewModel.fetchUser(){
+//        authViewModel.fetchRoom(){
+//            let params = [
+//                "roomId": authViewModel.room_id,
+//                "userId": authViewModel.user_uid
+//            ]
+//            Functions.functions().httpsCallable("quitRoom").call(params) { (result, error) in
+//                if let error = error as NSError? {
+//                    if error.domain == FunctionsErrorDomain {
+//                        let code = FunctionsErrorCode(rawValue: error.code)
+//                        let message = error.localizedDescription
+//                        let details = error.userInfo[FunctionsErrorDetailsKey]
+//                        print("Error: \(String(describing: code)) \(message) \(String(describing: details))")
+//                    }
+//                }
+//                
+//                if let data = result?.data as? [String: Any] {
+//                    if let success = data["success"] as? Bool {
+//                        if success {
+//                            print("Room quit success")
+//                            showRoomHome = true
+//                        }
+//                    }
+//                }
+//            }
+//        }
+//    }
+//}
 
-
-func editStatus(userID: String?, roomID: String?, status: String) -> String {
+func editStatus(status: String) -> String {
+    let authViewModel = AuthenticationViewModel.shared
     guard let user = GIDSignIn.sharedInstance.currentUser else {
         print("User not properly signed in")
         return "error"
     }
     let token = user.accessToken.tokenString
-    let data: [String: Any] = [
+    let params = [
         "token": token,
-        "userId": userID,
-        "roomId": roomID,
-        "status": status,
+        "userId": authViewModel.user_uid,
+        "roomId": authViewModel.room_id,
+        "status": status.lowercased()
     ]
+    
+    print(authViewModel.user_uid,authViewModel.room_id, status)
 
-    Functions.functions().httpsCallable("changeStatus").call(data) { (result, error) in
+    Functions.functions().httpsCallable("changeStatus").call(params) { (result, error) in
         print("in changeStatus")
         if let error = error as NSError? {
             if error.domain == FunctionsErrorDomain {
