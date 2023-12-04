@@ -53,6 +53,7 @@ struct Content: View {
             Auth.auth().addStateDidChangeListener{ auth, user in
                 if let _ = user {
                     userLoggedIn = true
+                    silentGoogleSignIn()
                     authViewModel.fetchRoom(){
                         userInRoom = authViewModel.room_id != nil
                         isLoading = false
