@@ -34,7 +34,7 @@ class AddEventViewModel:ObservableObject{
         let formatter = DateFormatter()
         formatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ssZ"
         
-        let data: [String: Any] = ["token": token, "eventName": name, "startDatetime": formatter.string(from: date),
+        let data: [String: Any] = ["token": token, "roomId": AuthenticationViewModel.shared.room_id ?? "", "eventName": name, "startDatetime": formatter.string(from: date),
                                    "endDatetime": formatter.string(from: dateEnd), "description": "description", "guests": guests.map({ guest in
             guest.id
         })]

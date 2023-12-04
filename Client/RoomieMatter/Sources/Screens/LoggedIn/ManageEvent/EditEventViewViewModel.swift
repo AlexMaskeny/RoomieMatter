@@ -28,7 +28,7 @@ class EditEventViewModel:ObservableObject{
         let formatter = DateFormatter()
         formatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ssZ"
         
-        let data: [String: Any] = ["token": token, "eventId": event.id, "eventName": event.name, "startDatetime": formatter.string(from: dateStart), "endDatetime": formatter.string(from: dateEnd), "description": event.description, "guests": event.Guests.map({ guest in
+        let data: [String: Any] = ["token": token, "roomId": AuthenticationViewModel.shared.room_id ?? "", "eventId": event.id, "eventName": event.name, "startDatetime": formatter.string(from: dateStart), "endDatetime": formatter.string(from: dateEnd), "description": event.description, "guests": event.Guests.map({ guest in
             guest.id
         })]
         
@@ -57,7 +57,7 @@ class EditEventViewModel:ObservableObject{
         
         let token = user.accessToken.tokenString
         
-        let data = ["token": token, "eventId": event.id]
+        let data = ["token": token, "eventId": event.id, "roomId": AuthenticationViewModel.shared.room_id ?? ""]
         
         Functions.functions().httpsCallable("deleteEvent").call(data) { (result, error) in
                 print("in deleteEvent")

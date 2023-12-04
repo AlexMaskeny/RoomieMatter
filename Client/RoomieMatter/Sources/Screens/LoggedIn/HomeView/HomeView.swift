@@ -12,10 +12,12 @@ struct HomeView: View {
         ScrollView {
             VStack(alignment: .leading){
                 Button{
-                    //getEvents()
                     loggedInViewViewModel.getChores1()
                 } label: {
                     Text("Get chores")
+                }
+                .onChange(of: AuthenticationViewModel.shared.room_id) { oldValue, newValue in
+                    print("room id set now \(newValue)")
                 }
                 Button{
                     //getEvents()

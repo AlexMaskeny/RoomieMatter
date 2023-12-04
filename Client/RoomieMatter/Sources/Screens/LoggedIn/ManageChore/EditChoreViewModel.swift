@@ -27,7 +27,7 @@ class EditChoreViewModel:ObservableObject{
         formatter.dateFormat = "y-MM-dd"
         let dateStr = formatter.string(from: Date.init(timeIntervalSince1970: chore.date))
         
-        let data: [String: Any] = ["token": token, "instanceId": chore.id, "eventName": chore.name, "date": dateStr, "frequency": chore.frequency.asString,
+        let data: [String: Any] = ["token": token, "roomId": AuthenticationViewModel.shared.room_id ?? "", "instanceId": chore.id, "eventName": chore.name, "date": dateStr, "frequency": chore.frequency.asString,
                                    "endRecurrenceDate": "2023-12-30", "description": chore.description, "assignedRoommates": chore.assignedRoommates.map({ roommate in roommate.id })]
         
         Functions.functions().httpsCallable("editChore").call(data) { result, error in
@@ -54,7 +54,7 @@ class EditChoreViewModel:ObservableObject{
         
         let token = user.accessToken.tokenString
         
-        let data = ["token": token, "instanceId": chore.id]
+        let data = ["token": token, "roomId": AuthenticationViewModel.shared.room_id ?? ""]
         
         Functions.functions().httpsCallable("deleteChore").call(data) { result, error in
             if let error = error as NSError? {

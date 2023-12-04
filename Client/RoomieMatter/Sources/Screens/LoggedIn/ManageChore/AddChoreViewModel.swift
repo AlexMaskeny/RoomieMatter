@@ -33,7 +33,7 @@ class AddChoreViewModel:ObservableObject{
         formatter.dateFormat = "y-MM-dd"
         let dateStr = formatter.string(from: date)
         
-        let data: [String: Any] = ["token": token, "eventName": name, "date": dateStr, "frequency": self.frequency.asString,
+        let data: [String: Any] = ["token": token, "roomId": AuthenticationViewModel.shared.room_id ?? "","eventName": name, "date": dateStr, "frequency": self.frequency.asString,
                     "endRecurrenceDate": "2023-12-30", "description": description, "assignedRoommates": assignedRoommates.map({ roommate in roommate.id })]
         Functions.functions().httpsCallable("addChore").call(data) { (result, error) in
             if let error = error as NSError? {

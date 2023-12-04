@@ -110,8 +110,9 @@ class LoggedInViewViewModel: ObservableObject{
         }
         let token = user.accessToken.tokenString
         
+        print("DEBUG roomID \(AuthenticationViewModel.shared.room_id)")
         
-        Functions.functions().httpsCallable("getChores").call(["token": token]) { (result, error) in
+        Functions.functions().httpsCallable("getChores").call(["token": token, "roomId": AuthenticationViewModel.shared.room_id ?? ""]) { (result, error) in
             
             if let error = error as NSError? {
                 if error.domain == FunctionsErrorDomain {
@@ -168,7 +169,7 @@ class LoggedInViewViewModel: ObservableObject{
         }
         let token = user.accessToken.tokenString
         
-        Functions.functions().httpsCallable("getEvents").call(["token": token]) { result, error in
+        Functions.functions().httpsCallable("getEvents").call(["token": token, "roomId": AuthenticationViewModel.shared.room_id ?? ""]) { result, error in
             if let error = error as NSError? {
                 if error.domain == FunctionsErrorDomain {
                     let code = FunctionsErrorCode(rawValue: error.code)
