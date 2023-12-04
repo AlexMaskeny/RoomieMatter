@@ -26,11 +26,16 @@ async function createNewCalendars(tokenInput) {
   const calendar = google.calendar({ version: "v3", auth: oAuth2Client });
 
   // create choresCalendarId
-  const choreRes = await calendar.calendars.insert({
-    resource: {
-      summary: "RoomieMatter Chores"
-    }
-  });
+  let choreRes = {};
+  try {
+    choreRes = await calendar.calendars.insert({
+      resource: {
+        summary: "RoomieMatter Chores"
+      }
+    });
+  } catch (error) {
+    throw new functions.https.HttpsError("Error creating new event calendar:", error.message);
+  }
 
   functions.logger.log(choreRes?.data ?? "Failurreeee!");
   functions.logger.log(choreRes);
