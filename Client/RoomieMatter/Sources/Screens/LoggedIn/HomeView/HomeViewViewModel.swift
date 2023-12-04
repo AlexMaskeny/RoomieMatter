@@ -28,8 +28,12 @@ class HomeViewViewModel: ObservableObject {
     func getRoommates(){
         let userRef = db.collection("users").document(user.id)
         db.collection("user_rooms").whereField("user", isEqualTo: userRef).getDocuments { snapshot, error in
+
+            guard let snapshot = snapshot else {return}
+
+            guard snapshot.documents.count > 0 else {return}
             
-            let roomRef = snapshot!.documents[0].get("room") as! DocumentReference
+            let roomRef = snapshot.documents[0].get("room") as! DocumentReference
             
             db.collection("user_rooms").whereField("room", isEqualTo: roomRef).getDocuments { snapshot1, error in
                 if let snapshot1 = snapshot1 {

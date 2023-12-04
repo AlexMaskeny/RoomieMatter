@@ -26,7 +26,7 @@ final class AuthenticationViewModel {
         fetchRoom()
     }
 
-    func fetchUser() {
+    func fetchUser(completion: (() -> Void)? = nil) {
         if let currentUser = Auth.auth().currentUser {
             username = currentUser.displayName
             user_uid = currentUser.uid
@@ -34,9 +34,10 @@ final class AuthenticationViewModel {
             username = nil
             user_uid = nil
         }
+        completion?()
     }
     
-    func fetchRoom() {
+    func fetchRoom(completion: (() -> Void)? = nil) {
         guard let user_uid = user_uid else {
             print("Error getting room: failed to fetch signed in user")
             return
@@ -47,18 +48,27 @@ final class AuthenticationViewModel {
         db.collection("user_rooms").whereField("user", isEqualTo: userRef).getDocuments { userRoomDocSnapshot, error in
             guard error == nil else {
                 print("Error getting user: \(error!.localizedDescription)")
+                completion?()
                 return
             }
             
-            guard userRoomDocSnapshot!.documents.count > 0 else {
+            guard let userRoomDocSnapshot = userRoomDocSnapshot else {
+                print("Error getting room: failed to fetch user")
+                completion?()
+                return
+            }
+
+            guard userRoomDocSnapshot.documents.count > 0 else {
                 print("Error getting room: failed to fetch room for user")
+                completion?()
                 return
             }
             
-            let roomRef = userRoomDocSnapshot!.documents[0].get("room") as! DocumentReference
+            let roomRef = userRoomDocSnapshot.documents[0].get("room") as! DocumentReference
             roomRef.getDocument { (roomSnapshot, error) in
                 guard error == nil else {
                     print("Error getting user: \(error!.localizedDescription)")
+                    completion?()
                     return
                 }
                 
@@ -69,6 +79,7 @@ final class AuthenticationViewModel {
                 } else {
                     print("Error getting room: name field does not exist")
                 }
+                completion?()
             }
         }
     }
