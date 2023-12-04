@@ -8,8 +8,54 @@
 import Foundation
 import SwiftUI
 
+import SwiftUI
+
+//struct ContentView: View {
+//    @State private var isNextViewActive = false
+//
+//    var body: some View {
+//        NavigationView {
+//            VStack {
+//                Text("Hello, SwiftUI!")
+//                
+//                // Hidden NavigationLink with a hidden button
+//                NavigationLink("", destination: NextView(), isActive: $isNextViewActive)
+//                    .opacity(0)
+//                    .frame(width: 0, height: 0)
+//
+//                // Actual button to trigger navigation
+//                Button(action: {
+//                    isNextViewActive = true
+//                }) {
+//                    Text("Go to Next View")
+//                }
+//            }
+//            .navigationBarTitle("Main View", displayMode: .inline)
+//        }
+//    }
+//}
+//
+//struct NextView: View {
+//    var body: some View {
+//        Text("This is the Next View")
+//            .navigationBarTitle("Next View", displayMode: .inline)
+//    }
+//}
+//
+//@main
+//struct YourApp: App {
+//    var body: some Scene {
+//        WindowGroup {
+//            ContentView()
+//        }
+//    }
+//}
+
+
 struct RoomHome: View {
+    @State private var isNextViewActive = false
     var body: some View {
+        
         VStack {
             // Banner with RoomieMatter text, notification bell, and profile icons
             HStack {
@@ -23,7 +69,6 @@ struct RoomHome: View {
                         .foregroundColor(.white)
                         .padding(.trailing, 10)
                 }
-                
                 Button(action: {
                     // Handle navigation to profile
                     print("Profile tapped")
@@ -39,32 +84,36 @@ struct RoomHome: View {
             .background(Color.roomieMatter)
             
             // Your Rooms label
-            Text("Rooms")
+            Text("Welcome to RoomieMatter!")
                 .font(.title)
                 .fontWeight(.bold)
                 .padding(.top, 16)
             
-            // Current rooms tiles
-            ScrollView {
-                // Include your TileView here for each room
-                HStack {
-                    Spacer()
-                    TileView(creatorName: "Anish Sundaram", roomName: "1316 Geddes")
-                        .padding(.vertical, 8)
-                    Spacer()
-                }
-                
-                
-                // Add more TileView instances for each room
-                
-            }
+//            // Current rooms tiles
+//            ScrollView {
+//                // Include your TileView here for each room
+//                HStack {
+//                    Spacer()
+//                    TileView(creatorName: "Anish Sundaram", roomName: "1316 Geddes")
+//                        .padding(.vertical, 8)
+//                    Spacer()
+//                }
+//                
+//                
+//                // Add more TileView instances for each room
+//                
+//            }
+//            
+//            Spacer()
             
-            Spacer()
-            
-            HStack {
+            VStack {
                 // Create Room button as a rounded rectangle
+                NavigationLink("", destination: JoinRoomView(), isActive: $isNextViewActive)
+                    .opacity(0)
+                    .frame(width: 0, height: 0)
                 Button(action: {
                     // Handle the action for creating a room
+                    isNextViewActive = true
                     print("Join Room tapped")
                 }) {
                     Text(" Join Room ")
@@ -73,9 +122,12 @@ struct RoomHome: View {
                         .padding()
                         .background(RoundedRectangle(cornerRadius: 10).fill(Color.roomieMatter))
                 }
-                .padding()
+                NavigationLink("", destination: CreateRoomView(), isActive: $isNextViewActive)
+                    .opacity(0)
+                    .frame(width: 0, height: 0)
                 Button(action: {
                     // Handle the action for creating a room
+                    isNextViewActive = true
                     print("Create Room tapped")
                 }) {
                     Text("Create Room")
@@ -84,6 +136,7 @@ struct RoomHome: View {
                         .padding()
                         .background(RoundedRectangle(cornerRadius: 10).fill(Color.roomieMatter))
                 }
+                Spacer()
             }
             
         }
