@@ -1,4 +1,6 @@
 import SwiftUI
+import FirebaseFunctions
+import GoogleSignIn
 
 struct ExpandedChore: View {
     var chore: Chore
@@ -173,6 +175,33 @@ struct ExpandedChore: View {
             .toolbarBackground(Color.roomieMatter)
             .toolbarBackground(.visible, for: .navigationBar)
         }
+    }
+    
+    func completeEvent(){
+        guard let user = GIDSignIn.sharedInstance.currentUser else {
+            print("User not properly signed in")
+            return
+        }
+        
+        let token = user.accessToken.tokenString
+        
+        let data = ["token": token, "instanceId": chore.id,"roomId": AuthenticationViewModel.shared.room_id ?? ""]
+        
+        Functions.functions().httpsCallable("completeChore").call(data) { (result, error) in
+                print("in completeChore")
+                if let error = error as NSError? {
+                    if error.domain == FunctionsErrorDomain {
+                        let code = FunctionsErrorCode(rawValue: error.code)
+                        let message = error.localizedDescription
+                        let details = error.userInfo[FunctionsErrorDetailsKey]
+                        print("Error: \(message)")
+                    }
+                    // Handle the error
+                }
+                if let data = result?.data as? [String: Any] {
+                    print(data)
+                }
+            }
     }
 }
 
