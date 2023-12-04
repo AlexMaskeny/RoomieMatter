@@ -75,41 +75,50 @@ const addUsersToCalendars = functions.https.onCall(async (data, context) => {
   const eventsCalendarId = await getCalendarId(data.roomId, "event");
   const calendarIds = [choresCalendarId, eventsCalendarId];
 
-  // get userIds
+  // get user emails
+  const roomRef = db.collection("rooms").doc(data.roomId);
+  const users = await db.collection("user_rooms").where("room", "==", roomRef).get();
+  functions.logger.log(users.docs);
 
-  // for email in emails
-  // const newEmail = await getEmailFromUuid(userUuid);
-  const newEmail = "lteresa@umich.edu";
+  // for each user
+  for (const userDoc of users.docs) {
+    const userSnapshot = await userDoc.get("user").get();
+    if (!userSnapshot) {
+      continue;
+    }
+    const email = userSnapshot.get("email");
+    functions.logger.log(email);
+    
+    for (const calendarId of calendarIds) {
+      // Get the current ACL (Access Control List) of the calendar
+      const acl = await calendar.acl.list({ calendarId });
   
-  for (const calendarId of calendarIds) {
-    // Get the current ACL (Access Control List) of the calendar
-    const acl = await calendar.acl.list({ calendarId });
-
-    // Check if the user is already in the ACL
-    const existingRule = acl.data.items.find((rule) => rule.scope.value === newEmail);
-
-    if (!existingRule) {
-      // If the user is not in the ACL, add a new rule
-      const res = await calendar.acl.insert({
-        calendarId,
-        requestBody: {
-          role: 'writer',
-          scope: {
-            type: 'user',
-            value: newEmail,
+      // Check if the user is already in the ACL
+      const existingRule = acl.data.items.find((rule) => rule.scope.value === email);
+  
+      if (!existingRule) {
+        // If the user is not in the ACL, add a new rule
+        const res = await calendar.acl.insert({
+          calendarId,
+          requestBody: {
+            role: 'writer',
+            scope: {
+              type: 'user',
+              value: email,
+            },
           },
-        },
-      });
-
-      if (!res?.data || res?.data.length == 0) {
-        throw new functions.https.HttpsError(
-          "Error adding user to calendar:",
-          error.message
-        );
+        });
+  
+        if (!res?.data || res?.data.length == 0) {
+          throw new functions.https.HttpsError(
+            "Error adding user to calendar:",
+            error.message
+          );
+        }
+        functions.logger.log(`User ${email} added to calendar`);
+      } else {
+        functions.logger.log(`User ${email} already added to calendar`)
       }
-      functions.logger.log(`User ${newEmail} added to calendar`);
-    } else {
-      functions.logger.log(`User ${newEmail} already added to calendar`)
     }
   }
 
