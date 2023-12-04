@@ -1,144 +1,135 @@
 //
-//  CalendarView.swift
+//  Event.swift
 //  RoomieMatter
 //
-//  Created by Anish Sundaram on 11/27/23.
+//  Created by Anish Sundaram on 11/28/23.
 //
+
 import Foundation
-import SwiftUI
-import FirebaseAuth
-import FirebaseFirestore
+import FirebaseFunctions
+import GoogleSignIn
 
-struct CalendarView: View {
-    @State private var selectedDate = Date()
-    @State private var events: [Event]
-    private var authViewModel = AuthenticationViewModel.shared
+
+ struct Event: Identifiable{
+     let id: String
+     var name: String
+     var date: Double
+     var description: String
+     var author: Roommate
+     var Guests: [Roommate]
+
+     static let Example1 = Event(id: "1", name: "Michigan vs Ohio State Game", date: Date().timeIntervalSince1970 , description: "Make sure you wear Maize and Blue. We are going to be in the 3rd row towards the field goal post. Hope to see you there!.", author: Roommate.Example2, Guests: [Roommate.Example1, Roommate.Example2, Roommate.Example3, Roommate.Example4])
+
+
+     static let Example2 = Event(id: "2", name: "Dinner at Slurping Turtle", date: Date().timeIntervalSince1970 + 86400, description: "Getting Dinner to celebrate an app well made!", author: Roommate.Example2, Guests: [Roommate.Example1, Roommate.Example2])
+
+     func checkContains(roommate: Roommate) -> Bool{
+         Guests.contains { roommate1 in
+             roommate1.id == roommate.id
+         }
+     }
+ }
+
+func getEvents() {
+    guard let user = GIDSignIn.sharedInstance.currentUser else {
+        print("User not properly signed in")
+        return
+    }
+    let token = user.accessToken.tokenString
+    print(token)
     
-    init(events: [Event] = []) {
-        _events = State(initialValue: events)
-    }
-
-    var body: some View {
-        ScrollView {
-            VStack {
-                // DatePicker
-                DatePicker(
-                    "Select a date",
-                    selection: $selectedDate,
-                    displayedComponents: [.date]
-                )
-                
-                .datePickerStyle(.graphical)
-                .labelsHidden()
-                .overlay(Divider().background(Color.black), alignment: .bottom)
-                .padding()
-                
-                
-
-                // Event cards
-                VStack {
-                    ForEach(events) { event in
-                        EventCardView(event: event)
-                    }
-                }
-                
-                // Add Event Button
-                AddEventButton(title: "Add Event", backgroundColor: .roomieMatter) {
-                    // add event view
-                    print("Selected Date: \(selectedDate)")
-                    print(events)
-                }
-
-                Spacer()
+    Functions.functions().httpsCallable("getEvents").call(["token": token]) { (result, error) in
+        print("in getEvents")
+        if let error = error as NSError? {
+            if error.domain == FunctionsErrorDomain {
+                let code = FunctionsErrorCode(rawValue: error.code)
+                let message = error.localizedDescription
+                let details = error.userInfo[FunctionsErrorDetailsKey]
+                print("Error: \(message)")
             }
-            .padding()
-            .toolbarBackground(Color.roomieMatter)
-            .toolbarBackground(.visible, for: .navigationBar)
+            // Handle the error
         }
-        .onAppear {
-                    // Fetch events when the view appears
-                    fetchEvents(for: selectedDate)
-        }
-
-    }
-    
-    // Function to fetch events from Firestore
-    private func fetchEvents(for date: Date) {
-    }
-
-    struct AddEventButton: View {
-        let title: String
-        let backgroundColor: Color
-        let action: () -> Void
-
-        var body: some View {
-            Button(action: action) {
-                ZStack {
-                    RoundedRectangle(cornerRadius: 10)
-                        .foregroundColor(backgroundColor)
-                    Text(title)
-                        .font(.headline)
-                        .foregroundColor(.white)
-                        .bold()
-                        .padding(.vertical, 10)
-                }
-            }
-        }
-    }
-    
-    struct EventCardView: View {
-        var event: Event
-        
-        var body: some View {
-            VStack(alignment: .leading) {
-                Text(event.name)
-                    .font(.title2)
-                    .bold()
-                    .foregroundStyle(.blue)
-
-                Text(Date(timeIntervalSince1970: event.date), format: .dateTime)
-                    .font(.subheadline)
-            
-                
-                HStack {
-                    ForEach(event.Guests){roommate in
-                        if let image = roommate.image{
-                            image
-                                .frame(width: 40, height: 40)
-                                .clipShape(Circle())
-                                .scaledToFill()
-                                .overlay(
-                                    Circle()
-                                        .stroke()
-                                )
-                        } else {
-                            Image(systemName: "person.fill")
-                                .font(.headline)
-                                .padding(10)
-                                .background(
-                                    Circle()
-                                        .foregroundStyle(.white)
-                                        .overlay(
-                                            Circle()
-                                                .stroke()
-                                        )
-                                )
-                        }
-                        
-                    }
-                }
-                
-                Divider()
-            }
-            .padding()
-            .frame(maxWidth: .infinity, maxHeight: .infinity)
-            .background(Color.white)
-            .cornerRadius(10)
-            .shadow(color: Color.black.opacity(0.2), radius: 7, x: 0, y: 2)
+        if let data = result?.data as? [String: Any] {
+            print(data)
         }
     }
 }
 
-#Preview {
-    CalendarView(events: [Event.Example1, Event.Example2])
+func addEvent() {
+    guard let user = GIDSignIn.sharedInstance.currentUser else {
+        print("User not properly signed in")
+        return
+    }
+    let token = user.accessToken.tokenString
+    print(token)
+    
+    let data: [String: Any] = ["token": token, "eventName": "event1", "startDatetime": "2023-12-05T09:00:00-05:00",
+                               "endDatetime": "2023-12-05T10:00:00-05:00", "description": "gibberish", "guests": ["uqWhv6HG6QPqjGyJV2a9FF6R1pm2"]]
+    Functions.functions().httpsCallable("addEvent").call(data) { (result, error) in
+        print("in addEvent")
+        if let error = error as NSError? {
+            if error.domain == FunctionsErrorDomain {
+                let code = FunctionsErrorCode(rawValue: error.code)
+                let message = error.localizedDescription
+                let details = error.userInfo[FunctionsErrorDetailsKey]
+                print("Error: \(message)")
+            }
+            // Handle the error
+        }
+        if let data = result?.data as? [String: Any] {
+            print(data)
+        }
+    }
+}
+
+func editEvent() {
+    guard let user = GIDSignIn.sharedInstance.currentUser else {
+        print("User not properly signed in")
+        return
+    }
+    let token = user.accessToken.tokenString
+    print(token)
+    
+    let data: [String: Any] = ["token": token, "eventId": "ht742trjvndivfttg1vp622f34", "eventName": "event2", "startDatetime": "2023-12-04T22:00:00-05:00", "endDatetime": "2023-12-04T23:00:00-05:00", "description": "new description", "guests": ["uqWhv6HG6QPqjGyJV2a9FF6R1pm2"]]
+//    let data: [String: Any] = ["token": token, "eventId": "ht742trjvndivfttg1vp622f34", "eventName": "new name here"]
+    Functions.functions().httpsCallable("editEvent").call(data) { (result, error) in
+        print("in editEvent")
+        if let error = error as NSError? {
+            if error.domain == FunctionsErrorDomain {
+                let code = FunctionsErrorCode(rawValue: error.code)
+                let message = error.localizedDescription
+                let details = error.userInfo[FunctionsErrorDetailsKey]
+                print("Error: \(message)")
+            }
+            // Handle the error
+        }
+        if let data = result?.data as? [String: Any] {
+            print(data)
+        }
+    }
+}
+
+func deleteEvent() {
+    guard let user = GIDSignIn.sharedInstance.currentUser else {
+        print("User not properly signed in")
+        return
+    }
+    let token = user.accessToken.tokenString
+    print(token)
+    
+    Functions.functions().httpsCallable("deleteEvent").call(["token": token, "eventId": "ht742trjvndivfttg1vp622f34"]) { (result, error) in
+        print("in deleteEvent")
+        if let error = error as NSError? {
+            if error.domain == FunctionsErrorDomain {
+                let code = FunctionsErrorCode(rawValue: error.code)
+                let message = error.localizedDescription
+                let details = error.userInfo[FunctionsErrorDetailsKey]
+                print("Error: \(message)")
+            }
+            // Handle the error
+        }
+        if let data = result?.data as? [String: Any] {
+            print(data)
+        }
+    }
 }
