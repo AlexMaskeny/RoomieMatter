@@ -31,6 +31,7 @@
 		B285F46A2AF211E30096EE9E /* Chat.swift in Sources */ = {isa = PBXBuildFile; fileRef = B285F4692AF211E30096EE9E /* Chat.swift */; };
 		B285F46E2AF211FA0096EE9E /* ChatScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = B285F46D2AF211FA0096EE9E /* ChatScreen.swift */; };
 		B285F4702AF212040096EE9E /* ChatStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = B285F46F2AF212040096EE9E /* ChatStore.swift */; };
+		B28B6D0D2B1F7F5600D19713 /* AllEvents.swift in Sources */ = {isa = PBXBuildFile; fileRef = B28B6D0C2B1F7F5600D19713 /* AllEvents.swift */; };
 		B2958F432AEDF0E500C9BBFF /* RoomieMatterApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2958F422AEDF0E500C9BBFF /* RoomieMatterApp.swift */; };
 		B2958F452AEDF0E500C9BBFF /* AuthScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2958F442AEDF0E500C9BBFF /* AuthScreen.swift */; };
 		B2958F472AEDF0E600C9BBFF /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = B2958F462AEDF0E600C9BBFF /* Assets.xcassets */; };
@@ -86,6 +87,7 @@
 		B285F4692AF211E30096EE9E /* Chat.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Chat.swift; sourceTree = "<group>"; };
 		B285F46D2AF211FA0096EE9E /* ChatScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatScreen.swift; sourceTree = "<group>"; };
 		B285F46F2AF212040096EE9E /* ChatStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatStore.swift; sourceTree = "<group>"; };
+		B28B6D0C2B1F7F5600D19713 /* AllEvents.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AllEvents.swift; sourceTree = "<group>"; };
 		B2958F3F2AEDF0E500C9BBFF /* RoomieMatter.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = RoomieMatter.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		B2958F422AEDF0E500C9BBFF /* RoomieMatterApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RoomieMatterApp.swift; sourceTree = "<group>"; };
 		B2958F442AEDF0E500C9BBFF /* AuthScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuthScreen.swift; sourceTree = "<group>"; };
@@ -291,6 +293,7 @@
 				EEFC8FDF2AFD6796002AE087 /* HomeView.swift */,
 				F85B9AE62B01EC55008F35C2 /* HomeViewViewModel.swift */,
 				EEFC8FE02AFD6796002AE087 /* ChoreView.swift */,
+				B28B6D0C2B1F7F5600D19713 /* AllEvents.swift */,
 				EE36BBA02B165C32009C5B5C /* ChoreViewViewModel.swift */,
 				EE36BBAF2B17B853009C5B5C /* EventView.swift */,
 				EE36BBAD2B17B84A009C5B5C /* EventViewViewModel.swift */,
@@ -435,6 +438,7 @@
 				F84D7D682B1D795F00DA8D87 /* Status.swift in Sources */,
 				B2FB8B3C2AEECDF400DEBF12 /* InputView.swift in Sources */,
 				B285F46E2AF211FA0096EE9E /* ChatScreen.swift in Sources */,
+				B28B6D0D2B1F7F5600D19713 /* AllEvents.swift in Sources */,
 				B21F02222AF025E90001E8FB /* LineText.swift in Sources */,
 				F8A48F3C2B17F6C700B0638D /* AddEventViewModel.swift in Sources */,
 				EE36BBA62B1661D1009C5B5C /* EditEventView.swift in Sources */,
@@ -603,7 +607,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_ASSET_PATHS = "\"RoomieMatter/Preview Content\"";
-				DEVELOPMENT_TEAM = K24L4VBUTW;
+				DEVELOPMENT_TEAM = TX6TDB7G4L;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = RoomieMatter/Info.plist;
@@ -633,7 +637,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_ASSET_PATHS = "\"RoomieMatter/Preview Content\"";
-				DEVELOPMENT_TEAM = K24L4VBUTW;
+				DEVELOPMENT_TEAM = TX6TDB7G4L;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = RoomieMatter/Info.plist;
