@@ -99,9 +99,3 @@ struct TileView: View {
     }
 }
 
-struct TileView_Previews: PreviewProvider {
-    static var previews: some View {
-        TileView(creatorName: "Anish Sundaram", roomName: "1316 Geddes")
-            .previewLayout(.sizeThatFits)
-    }
-}

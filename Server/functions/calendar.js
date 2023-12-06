@@ -5,18 +5,11 @@ const { UserDimensions } = require("firebase-functions/v1/analytics");
 
 const db = admin.firestore();
 
-// const choresCalendarId =
-//   "c_5df0bf9c096fe8c9bf0a70fc19f1cf28dae8901ff0fcab98989a0445fb052625@group.calendar.google.com";
-// const eventsCalendarId =
-//   "c_13e412c22da53bac13e80008fedb53d172b8ac55ab3d4c838bf5a1b739a66d26@group.calendar.google.com";
-
 /* NEW ROOM FUNCTIONS */
 
 /* REQUIRES: token
  * EFFECTS: creates new chores calendar and events calendar
  * RETURNS: status, choresCalendarId, eventsCalendarId
- * 
- * should we add the calendarIds into the database too? need to take in roomId
  */
 async function createNewCalendars(tokenInput) {
   const token = tokenInput;
@@ -128,36 +121,7 @@ const addUsersToCalendars = functions.https.onCall(async (data, context) => {
   }
 
   return { status: true };
-
 });
-
-/*
-const getChore = functions.https.onCall(async (data, context) => {
-  // placeholder function to test createCalendarIds and addUserToCalendars
-  if (!context.auth) {
-    throw new functions.https.HttpsError(
-      "unauthenticated",
-      "RoomieMatter functions can only be called by Authenticated users."
-    );
-  }
-
-  const roomId = "ymHbFA1lhmBJMyHARUMk";
-  const userUuid = "VlxbMur4JHODRhq8ADZDCLrBKl92";
-
-  try {
-    // const res = await createNewCalendars(data.token);
-    const res = await addUserToCalendars(data.token, roomId, userUuid)
-    functions.logger.log(res);
-    return { success: true };
-  } catch (error) {
-    functions.logger.log(error);
-    throw new functions.https.HttpsError(
-      "internal",
-      "An error occured when calling createNewCalendars"
-    );
-  }
-});
-*/
 
 /* HELPER FUNCTIONS */
 
@@ -452,7 +416,7 @@ function formatRecurrence(frequency, date, endRecurrenceDate) {
     description = gibberish;
     eventName = Trash;
     frequency = Once;
-    assignees = [
+    assignedRoommates = [
       "lteresa@umich.edu"
     ]
   },...]
@@ -539,7 +503,6 @@ async function deleteHelper(calendarId, eventId, calendar) {
 }
 
 /* CHORES FUNCTIONS */
-
 
 /* REQUIRES: token, instanceId
  * MODIFIES: nothing

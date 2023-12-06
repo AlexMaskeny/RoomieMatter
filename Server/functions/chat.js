@@ -35,7 +35,7 @@ ROOMIEMATTER ROLES:
 const settings = {
   model: "gpt-3.5-turbo-16k",
   temperature: 0.5,
-  apiKey: "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", //This should probably be an env var
+  apiKey: /* Your ChatGPT API key here */,
   modelName: "Housekeeper",
   systemMessage:
     "You are The Housekeeper. You act as a Household assistant for RoomieMatter." +
@@ -47,7 +47,7 @@ const settings = {
 
 const db = admin.firestore();
 const openai = new OpenAI({
-  apiKey: "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",
+  apiKey: /* Your ChatGPT API key here */,
 });
 
 //Context here is defined by us. It is special and contains things like userId, roomId, chatId (of the sent chat), etc

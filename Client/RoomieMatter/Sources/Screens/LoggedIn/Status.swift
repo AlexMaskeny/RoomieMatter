@@ -61,35 +61,6 @@ func interpretString(status: String) -> Status{
     }
 }
 
-//Button{
-//    authViewModel.fetchUser(){
-//        authViewModel.fetchRoom(){
-//            let params = [
-//                "roomId": authViewModel.room_id,
-//                "userId": authViewModel.user_uid
-//            ]
-//            Functions.functions().httpsCallable("quitRoom").call(params) { (result, error) in
-//                if let error = error as NSError? {
-//                    if error.domain == FunctionsErrorDomain {
-//                        let code = FunctionsErrorCode(rawValue: error.code)
-//                        let message = error.localizedDescription
-//                        let details = error.userInfo[FunctionsErrorDetailsKey]
-//                        print("Error: \(String(describing: code)) \(message) \(String(describing: details))")
-//                    }
-//                }
-//                
-//                if let data = result?.data as? [String: Any] {
-//                    if let success = data["success"] as? Bool {
-//                        if success {
-//                            print("Room quit success")
-//                            showRoomHome = true
-//                        }
-//                    }
-//                }
-//            }
-//        }
-//    }
-//}
 
 func editStatus(status: String) -> String {
     let authViewModel = AuthenticationViewModel.shared

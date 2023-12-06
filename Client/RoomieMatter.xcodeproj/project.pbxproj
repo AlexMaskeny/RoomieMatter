@@ -50,7 +50,6 @@
 		EE36BBB02B17B853009C5B5C /* EventView.swift in Sources */ = {isa = PBXBuildFile; fileRef = EE36BBAF2B17B853009C5B5C /* EventView.swift */; };
 		EEFC8F592AFAF90D002AE087 /* LoggedInView.swift in Sources */ = {isa = PBXBuildFile; fileRef = EEFC8F582AFAF90D002AE087 /* LoggedInView.swift */; };
 		EEFC8FE62AFD6797002AE087 /* RoommateStatusView.swift in Sources */ = {isa = PBXBuildFile; fileRef = EEFC8FE12AFD6796002AE087 /* RoommateStatusView.swift */; };
-		F4E3200A2AFFF9AF00DB34D3 /* ChoreStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = F4E320092AFFF9AF00DB34D3 /* ChoreStore.swift */; };
 		F4E3200B2B00729900DB34D3 /* Roommate.swift in Sources */ = {isa = PBXBuildFile; fileRef = EEFC8FE22AFD6796002AE087 /* Roommate.swift */; };
 		F4E3200C2B00729E00DB34D3 /* HomeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = EEFC8FDF2AFD6796002AE087 /* HomeView.swift */; };
 		F4E3200D2B0072A100DB34D3 /* ChoreView.swift in Sources */ = {isa = PBXBuildFile; fileRef = EEFC8FE02AFD6796002AE087 /* ChoreView.swift */; };
@@ -112,7 +111,6 @@
 		EEFC8FE12AFD6796002AE087 /* RoommateStatusView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = RoommateStatusView.swift; sourceTree = "<group>"; };
 		EEFC8FE22AFD6796002AE087 /* Roommate.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Roommate.swift; sourceTree = "<group>"; };
 		EEFC8FE32AFD6796002AE087 /* Chore.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Chore.swift; sourceTree = "<group>"; };
-		F4E320092AFFF9AF00DB34D3 /* ChoreStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChoreStore.swift; sourceTree = "<group>"; };
 		F805C0912B15BFD500F6AA9E /* SyncCalendarView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = SyncCalendarView.swift; path = Calendar/SyncCalendarView.swift; sourceTree = "<group>"; };
 		F805C0922B15BFD500F6AA9E /* CalendarView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = CalendarView.swift; path = Calendar/CalendarView.swift; sourceTree = "<group>"; };
 		F84D7D672B1D795F00DA8D87 /* Status.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Status.swift; sourceTree = "<group>"; };
@@ -329,7 +327,6 @@
 				F85B9AE82B01EC55008F35C2 /* ProfileView.swift */,
 				F84D7D672B1D795F00DA8D87 /* Status.swift */,
 				7A93C2862B01663900C2C69A /* MenuView.swift */,
-				F4E320092AFFF9AF00DB34D3 /* ChoreStore.swift */,
 				7A93C2882B01B29500C2C69A /* RoomTile.swift */,
 				7A269D652B190B31009CEE1F /* CreateRoom.swift */,
 				7A3651452B1D60920052B071 /* JoinRoom.swift */,
@@ -432,7 +429,6 @@
 				B2FB8B442AEED92000DEBF12 /* Constants.swift in Sources */,
 				EE36BBAE2B17B84A009C5B5C /* EventViewViewModel.swift in Sources */,
 				B21F02562AF1B1700001E8FB /* MainScreen.swift in Sources */,
-				F4E3200A2AFFF9AF00DB34D3 /* ChoreStore.swift in Sources */,
 				EE36BBA12B165C32009C5B5C /* ChoreViewViewModel.swift in Sources */,
 				EE36BBA82B17AFEF009C5B5C /* Event.swift in Sources */,
 				F84D7D682B1D795F00DA8D87 /* Status.swift in Sources */,
