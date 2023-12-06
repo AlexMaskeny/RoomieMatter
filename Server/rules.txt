@@ -11,32 +11,8 @@ service cloud.firestore {
       allow write: if request.auth != null && request.auth.uid == userId;
     }
     
-    // Rules for the 'calendars' collection
-    match /calendars/{userId} {
-      // Allow any authenticated user to read any user document
-      allow read: if request.auth != null;
-      // Allow writes only if the user is authenticated and the userId matches their own
-      allow write: if request.auth != null && request.auth.uid == userId;
-    }
-    
     // Rules for the 'chats' collection
     match /chats/{userId} {
-      // Allow any authenticated user to read any user document
-      allow read: if request.auth != null;
-      // Allow writes only if the user is authenticated and the userId matches their own
-      allow write: if request.auth != null && request.auth.uid == userId;
-    }
-    
-    // Rules for the 'chores' collection
-    match /chores/{userId} {
-      // Allow any authenticated user to read any user document
-      allow read: if request.auth != null;
-      // Allow writes only if the user is authenticated and the userId matches their own
-      allow write: if request.auth != null && request.auth.uid == userId;
-    }
-    
-    // Rules for the 'events' collection
-    match /events/{userId} {
       // Allow any authenticated user to read any user document
       allow read: if request.auth != null;
       // Allow writes only if the user is authenticated and the userId matches their own
@@ -51,34 +27,12 @@ service cloud.firestore {
       allow write: if request.auth != null && request.auth.uid == userId;
     }
     
-    // Rules for the 'user_chores' collection
-    match /user_chores/{userId} {
-      // Allow any authenticated user to read any user document
-      allow read: if request.auth != null;
-      // Allow writes only if the user is authenticated and the userId matches their own
-      allow write: if request.auth != null && request.auth.uid == userId;
-    }
-    
     // Rules for the 'user_rooms' collection
     match /user_rooms/{userId} {
       // Allow any authenticated user to read any user document
       allow read: if request.auth != null;
       // Allow writes only if the user is authenticated and the userId matches their own
       allow write: if request.auth != null && request.auth.uid == userId;
-    }
-    
-    // Rules for the 'user_events' collection
-    match /user_events/{userId} {
-      // Allow any authenticated user to read any user document
-      allow read: if request.auth != null;
-      // Allow writes only if the user is authenticated and the userId matches their own
-      allow write: if request.auth != null && request.auth.uid == userId;
-    }
-
-    // Rules for the 'test' collection
-    match /test/{document=**} {
-      // Allow any authenticated user to read and write any document in the 'test' collection
-      allow read, write: if request.auth != null;
     }
     
     // ... additional rules for other collections
