@@ -7,7 +7,7 @@
 ![Elevator Pitch](.github/images/title_image.png) <!-- MUST be placed in user-images.githubusercontent.com -->
 ![Team](.github/images/team.png)
 
-[video_page]: [https://youtu.be/sample](https://youtu.be/zfQ5DVqRz34)
+[video_page]: [https://youtu.be/sample]
 [wiki_page]: [https://github.com/member/team/wiki](https://github.com/AlexMaskeny/RoomieMatter/wiki)
 [agile_page]: https://trello.com/b/5Bg8azLq/roomiematter441
 
